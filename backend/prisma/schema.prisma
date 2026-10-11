@@ -1,0 +1,30 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+model User {
+  id                 String   @id @default(uuid())
+  fullName           String
+  email              String   @unique
+  passwordHash       String?  // empty for Google-only accounts
+  googleId           String?  @unique
+  avatarUrl          String?  @db.Text
+  universityName     String?  // Google sign-ups fill this in later
+  role               Role     @default(USER)
+  emailVerified      Boolean  @default(false) // true once Google confirms the email
+  universityVerified Boolean  @default(false) // separate process, handled by admin later
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+
+  @@map("users")
+}
