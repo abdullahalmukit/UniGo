@@ -123,7 +123,9 @@
       "support": "Support Request",
       "policy": "Policy",
       "rateUs": "Rate Us"
-    }
+    },
+    "verifyNow": "Verify now",
+    "viewVerification": "View"
   },
   "notFound": {
     "title": "Page not found",
@@ -197,16 +199,6 @@
       "submit": "Change password",
       "missing": "This reset link is incomplete. Ask for a new one.",
       "requestNew": "Ask for a new link"
-    },
-    "verify": {
-      "title": "Verify your student status",
-      "subtitle": "Only verified students can create, accept or book activities. Choose how to verify:",
-      "email": "University email",
-      "emailHint": "Get a code at your university email address.",
-      "idCard": "Student ID card",
-      "idCardHint": "Upload a photo of your ID card for an admin to check.",
-      "soon": "Coming soon",
-      "continue": "Continue to Home"
     }
   },
   "errors": {
@@ -232,7 +224,67 @@
       "phone": "Enter a Bangladesh mobile number, for example 01712345678.",
       "universityId": "Choose a university from the list.",
       "password": "Use 8–72 characters, with at least one letter and one number.",
-      "token": "This reset link is incomplete."
-    }
+      "token": "This reset link is incomplete.",
+      "code": "Enter the 6-digit code."
+    },
+    "EMAIL_DOMAIN_NOT_ALLOWED": "Use the email address your university gave you. Ask UniGo support if your university's domain is missing.",
+    "UNIVERSITY_EMAIL_TAKEN": "This university email has already verified another UniGo account.",
+    "ALREADY_VERIFIED": "Your student status is already verified.",
+    "VERIFICATION_PENDING": "Your ID card is already being reviewed.",
+    "OTP_INVALID": "This code is not right.",
+    "OTP_EXPIRED": "This code has expired. Ask for a new one.",
+    "OTP_TOO_MANY_ATTEMPTS": "Too many wrong codes. Ask for a new code.",
+    "OTP_RESEND_TOO_SOON": "Wait a moment before asking for a new code.",
+    "FILE_TOO_LARGE": "The file must be 5 MB or smaller.",
+    "FILE_TYPE_NOT_ALLOWED": "Upload a JPG, PNG or PDF file.",
+    "FILE_REQUIRED": "Choose a file to upload.",
+    "INVALID_UPLOAD": "Upload one file."
+  },
+  "verification": {
+    "title": "Verify your student status",
+    "subtitle": "Only verified students can create, accept or book activities. Choose how to verify:",
+    "email": "University email",
+    "emailHint": "Get a code at your university email address.",
+    "idCard": "Student ID card",
+    "idCardHint": "Upload a photo of your ID card for an admin to check.",
+    "underReview": "Under review",
+    "later": "Do this later",
+    "continue": "Continue to Home",
+    "back": "Back",
+    "loading": "Loading…",
+    "loadFailed": "Could not load your verification status.",
+    "retry": "Try again",
+    "statusTitle": "Student verification",
+    "status": {
+      "UNVERIFIED": "Not verified",
+      "PENDING": "Under review",
+      "VERIFIED": "Verified",
+      "REJECTED": "Rejected"
+    },
+    "verified": "You are a verified student.",
+    "verifiedByEmail": "Verified with {{email}}.",
+    "verifiedByIdCard": "Verified with your student ID card.",
+    "pending": "Your ID card was sent on {{date}}. An admin will check it soon. You can verify with your university email instead.",
+    "rejected": "Your ID card was not approved. Reason: {{reason}}",
+    "rejectedHint": "Upload a clearer photo, or verify with your university email.",
+    "emailLabel": "University email",
+    "emailFieldHint": "Use the email address your university gave you.",
+    "sendCode": "Send code",
+    "codeSent": "We sent a 6-digit code to {{email}}. It expires in {{minutes}} minutes.",
+    "codeLabel": "6-digit code",
+    "verify": "Verify",
+    "resend": "Send a new code",
+    "resendIn": "Send a new code in {{seconds}} s",
+    "changeEmail": "Use a different email",
+    "codeWrong_one": "This code is not right. {{count}} try left.",
+    "codeWrong_other": "This code is not right. {{count}} tries left.",
+    "fileLabel": "Photo of your student ID card",
+    "fileHint": "JPG, PNG or PDF, up to 5 MB. Make sure your name, ID number and university are easy to read.",
+    "chooseFile": "Choose a file",
+    "changeFile": "Choose another file",
+    "pdfSelected": "PDF selected: {{name}}",
+    "previewAlt": "Preview of your ID card",
+    "upload": "Send for review",
+    "privacy": "Only UniGo admins can see your ID card. It is never shown to other students."
   }
 }

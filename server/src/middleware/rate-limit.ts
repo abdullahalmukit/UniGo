@@ -35,6 +35,19 @@ export const forgotPasswordIpRateLimit = limiter(forgotPasswordPerIp.window, for
 export const resetPasswordRateLimit = limiter(resetPassword.window, resetPassword.max, ipKey);
 export const googleRateLimit = limiter(google.window, google.max, ipKey);
 
+// A6: student verification. These run after `authenticate`, so they count per
+// account; sending a code is also counted per IP.
+const userKey = (req: Request) => (req.user ? `user:${req.user.id}` : ipKey(req));
+const verificationLimits = rules.studentVerification.rateLimits;
+export const sendOtpUserRateLimit = limiter(verificationLimits.sendOtpPerUser.window, verificationLimits.sendOtpPerUser.max, userKey);
+export const sendOtpIpRateLimit = limiter(verificationLimits.sendOtpPerIp.window, verificationLimits.sendOtpPerIp.max, ipKey);
+export const checkOtpRateLimit = limiter(verificationLimits.checkOtpPerUser.window, verificationLimits.checkOtpPerUser.max, userKey);
+export const idCardUploadRateLimit = limiter(
+  verificationLimits.idCardUploadPerUser.window,
+  verificationLimits.idCardUploadPerUser.max,
+  userKey,
+);
+
 // Lets each test start with empty counters.
 export function resetRateLimits() {
   for (const store of stores) store.resetAll();

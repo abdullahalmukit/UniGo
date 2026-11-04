@@ -4,7 +4,8 @@ import { normalizeBdMobile } from "../../utils/phone.js";
 
 const { minLength, maxLength } = rules.auth.password;
 
-const email = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address").max(254));
+export const emailSchema = z.string().trim().toLowerCase().pipe(z.email("Enter a valid email address").max(254));
+const email = emailSchema;
 
 export const passwordSchema = z
   .string()

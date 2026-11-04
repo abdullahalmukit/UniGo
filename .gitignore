@@ -7,6 +7,9 @@ coverage/
 .env.local
 .env.test
 
+# Private uploads (ID cards); never committed
+server/storage/
+
 # Prisma client is generated on install
 server/src/generated/
 

@@ -9,6 +9,16 @@ const FIELD_CODES: Record<string, string> = {
   EMAIL_TAKEN: "email",
   PHONE_TAKEN: "phone",
   UNIVERSITY_NOT_FOUND: "universityId",
+  // Student verification (A6)
+  EMAIL_DOMAIN_NOT_ALLOWED: "email",
+  UNIVERSITY_EMAIL_TAKEN: "email",
+  OTP_INVALID: "code",
+  OTP_EXPIRED: "code",
+  OTP_TOO_MANY_ATTEMPTS: "code",
+  FILE_TOO_LARGE: "file",
+  FILE_TYPE_NOT_ALLOWED: "file",
+  FILE_REQUIRED: "file",
+  INVALID_UPLOAD: "file",
 };
 
 // Turns any error from an API call into translated messages: one per field

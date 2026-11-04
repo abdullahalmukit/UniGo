@@ -34,7 +34,7 @@ University-only, peer-to-peer PWA for verified students: Ride Sharing, Carpool, 
    CREATE DATABASE unigo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
    ```
 
-3. Copy the example env files. In `server/.env`, fill in your MySQL user and password, two different JWT secrets (at least 32 characters each) and your Google OAuth web client ID (`GOOGLE_CLIENT_ID`):
+3. Copy the example env files. In `server/.env`, fill in your MySQL user and password, two different JWT secrets (at least 32 characters each), a third different secret for private file links (`FILE_SIGNING_SECRET`) and your Google OAuth web client ID (`GOOGLE_CLIENT_ID`). Optionally set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` to get a Super Admin account from the seed:
 
    ```bash
    cp server/.env.example server/.env
@@ -88,7 +88,7 @@ npm run dev
 | `npm run build` | Build server (`server/dist`) and client (`client/dist`) |
 | `npm run typecheck -w server` / `-w client` | Type-check one app |
 | `npm run db:migrate -w server` | Create and apply migrations to the dev database |
-| `npm run db:seed -w server` | Add the dev-only placeholder universities |
+| `npm run db:seed -w server` | Add the dev-only placeholder universities and, if `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` are set, a Super Admin account |
 | `npm run db:generate -w server` | Regenerate the Prisma client after editing the schema |
 
 ## Client

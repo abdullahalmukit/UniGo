@@ -499,3 +499,17 @@ Decisions approved by the developer. Each one is also written into the proposal.
 | 7 | After login | Go to `next` if it is a path on this site (starts with `/`, not `//`, not an auth page), otherwise Home. Registration goes to the "verify your student status" screen (`/verify-student`; real verification in A6). |
 | 8 | Reset link | The reset page reads `#token=…` and removes it from the address bar at once, so it does not stay in the browser history. |
 | 9 | Bangla spelling | A test fails if `bn.json` ever contains "আ্যা"; the correct form is "অ্যা" (U+0985). Hind Siliguri renders অ্যা correctly, so the Bangla font stays. |
+
+### A6 – Universities and student verification (2026-11-04)
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Email domain | The university email's domain must **exactly** match one of the user's own university domains; an admin adds each subdomain separately. Checked when the code is sent and again when it is confirmed. |
+| 2 | Email code | 6 digits, expires after 10 minutes, at most 5 wrong tries per code, a new code at most once a minute and replaces the previous one. Only an HMAC of the code is stored. Sending a code does not change `studentVerificationStatus`. Rate limits: send 5 per hour per account + 20 per hour per IP; check 10 per 15 min per account. All in `rules.studentVerification`. As in A4 #3, the development console prints the code email. |
+| 3 | Email while an ID card is pending | Allowed. When the email is verified, the pending card is closed as `REJECTED` with the system reason "Verified by university email", no reviewer and no email. |
+| 4 | ID card | JPG/PNG/PDF ≤ 5 MB; the declared type and the file's first bytes must both match. Stored under a random name in private storage (`PRIVATE_STORAGE_DIR`, default `server/storage/private`, gitignored); the original filename is never kept. One card under review at a time; re-submit after rejection. 5 uploads per hour per account. |
+| 5 | Signed file links | Admins get a 5-minute link `/api/files/<token>` (JWT signed with `FILE_SIGNING_SECRET`); the link is the permission, so it needs no login and is never logged. Served with `no-store` and `nosniff`. |
+| 6 | Admin review | `GET/POST /api/admin/student-verifications…` for Moderators and Super Admins: list (pending oldest first), file link, approve, reject with a reason (3–500 characters). Atomic, so two admins cannot both decide one card (`ALREADY_REVIEWED`); an admin cannot review their own card. Each decision is in the Audit Log and emailed to the student in their language. The in-app notification comes with B2. |
+| 7 | University admin | `/api/admin/universities` (Super Admin only): list, create (with domains), edit, deactivate, delete, add and remove domains. A university with users cannot be deleted (`UNIVERSITY_HAS_USERS`); deactivate it instead. Every change is in the Audit Log. |
+| 8 | Status on the client | `/verify-student` is the real flow (both methods). Account & Settings shows a status card and the Verification menu item with a status chip (green verified, amber under review, red rejected, grey not verified); A7 reuses the chip on Profile. |
+| 9 | Dev admin | `npm run db:seed -w server` also creates a `SUPER_ADMIN` from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (development only); an existing account with that email is promoted, its password unchanged. |

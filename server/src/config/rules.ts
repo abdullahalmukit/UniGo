@@ -54,6 +54,35 @@ export const rules = {
     allowedMimeTypes: ["image/jpeg", "image/png", "application/pdf"],
   },
 
+  // A6: student verification (proposal section 4, A6 decisions)
+  studentVerification: {
+    otpLength: 6,
+    otpLifetime: 10 * MINUTE,
+    // Wrong codes allowed per code; then a new code must be requested
+    maxOtpAttempts: 5,
+    // Wait between two codes for the same user
+    otpResendAfter: MINUTE,
+    rejectionReason: { minLength: 3, maxLength: 500 },
+    // Stored on a pending ID card closed because the university email was verified
+    closedByEmailReason: "Verified by university email",
+    rateLimits: {
+      sendOtpPerUser: { window: HOUR, max: 5 },
+      sendOtpPerIp: { window: HOUR, max: 20 },
+      checkOtpPerUser: { window: 15 * MINUTE, max: 10 },
+      idCardUploadPerUser: { window: HOUR, max: 5 },
+    },
+  },
+
+  // Private documents (ID cards, later NID and licences) are opened only
+  // through short-lived signed links
+  privateFiles: {
+    signedUrlLifetime: 5 * MINUTE,
+  },
+
+  admin: {
+    pageSize: 20,
+  },
+
   passwordReset: {
     tokenLifetime: 15 * MINUTE,
     // Per email address, registered or not, so a 429 reveals nothing

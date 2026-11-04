@@ -101,7 +101,7 @@ UniGo serves students from multiple universities. Verified students from differe
 
 ### Student verification
 
-1. **University email:** students with an official university email verify it with an email OTP or a verification link. Each university in the list stores its allowed email domains.
+1. **University email:** students with an official university email verify it with an email OTP or a verification link. Each university in the list stores its allowed email domains. The email's domain must exactly match one of them (an admin adds each subdomain separately), and the 6-digit code expires after 10 minutes. If the email is verified while an ID card is still pending, the pending card is closed automatically.
 2. **Student ID card:** students without an official email upload a photo of their ID card. An admin reviews it and approves or rejects it with a reason.
 3. Until verified, the user cannot create, accept or book anything.
 

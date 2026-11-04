@@ -22,6 +22,13 @@ const envSchema = z
     JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),
     JWT_ACCESS_EXPIRES_IN: duration.prefault("15m"),
     JWT_REFRESH_EXPIRES_IN: duration.prefault("30d"),
+    // Signs the short-lived links to private files (A6). At least 32 characters.
+    FILE_SIGNING_SECRET: z.string().min(32, "FILE_SIGNING_SECRET must be at least 32 characters"),
+    // Folder for private uploads; never served as static files.
+    PRIVATE_STORAGE_DIR: z.string().trim().min(1).default("storage/private"),
+    // Dev-only seed: the SUPER_ADMIN account (prisma/seed.ts)
+    SEED_ADMIN_EMAIL: z.string().trim().toLowerCase().pipe(z.email()).optional(),
+    SEED_ADMIN_PASSWORD: optionalText,
     GOOGLE_CLIENT_ID: z.string().trim().min(1, "GOOGLE_CLIENT_ID is required for Google sign-in"),
     // Development only: "console" (default) or "smtp". Production always uses
     // SMTP and tests always use the in-memory outbox.
@@ -35,6 +42,9 @@ const envSchema = z
   .superRefine((value, ctx) => {
     if (value.JWT_ACCESS_SECRET === value.JWT_REFRESH_SECRET) {
       ctx.addIssue({ code: "custom", path: ["JWT_REFRESH_SECRET"], message: "Must be different from JWT_ACCESS_SECRET" });
+    }
+    if (value.FILE_SIGNING_SECRET === value.JWT_ACCESS_SECRET || value.FILE_SIGNING_SECRET === value.JWT_REFRESH_SECRET) {
+      ctx.addIssue({ code: "custom", path: ["FILE_SIGNING_SECRET"], message: "Must be different from the JWT secrets" });
     }
     if (value.NODE_ENV === "production" && value.EMAIL_TRANSPORT === "console") {
       ctx.addIssue({ code: "custom", path: ["EMAIL_TRANSPORT"], message: "Production always sends email by SMTP" });

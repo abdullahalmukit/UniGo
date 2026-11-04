@@ -46,7 +46,7 @@
   padding: 0 var(--space-4);
 }
 
-.menuItem + .menuItem {
+.menu > li + li {
   border-top: 1px solid var(--color-border);
 }
 
@@ -71,4 +71,47 @@
   .logout {
     width: auto;
   }
+}
+
+/* Student verification status (A6) */
+.verificationCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  min-height: 64px;
+  margin-bottom: var(--space-5);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+}
+
+.verificationIcon {
+  flex: none;
+  color: var(--color-accent);
+}
+
+.verificationText {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+}
+
+.verificationTitle {
+  font-weight: var(--weight-bold);
+}
+
+.verificationAction {
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+}
+
+.menuLink {
+  color: var(--color-text);
+}
+
+.menuLink:hover {
+  background: var(--color-surface-muted);
 }

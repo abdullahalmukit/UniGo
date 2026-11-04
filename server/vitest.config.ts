@@ -1,4 +1,6 @@
 import { existsSync, readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
+import { join } from "node:path";
 import { parse } from "dotenv";
 import { defineConfig } from "vitest/config";
 
@@ -9,6 +11,9 @@ const testEnv = {
   JWT_REFRESH_SECRET: "test-refresh-secret-0123456789abcdef012345678",
   GOOGLE_CLIENT_ID: "test-client.apps.googleusercontent.com",
   CLIENT_URL: "http://localhost:5173",
+  FILE_SIGNING_SECRET: "test-file-signing-secret-0123456789abcdef0123",
+  // Uploads made by tests go to a temporary folder, never into server/storage.
+  PRIVATE_STORAGE_DIR: join(tmpdir(), "unigo-test-private-storage"),
 };
 
 // Integration tests use the database in server/.env.test (gitignored).

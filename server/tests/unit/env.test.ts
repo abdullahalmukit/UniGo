@@ -5,6 +5,7 @@ const base = {
   DATABASE_URL: "mysql://user:pass@localhost:3306/unigo",
   JWT_ACCESS_SECRET: "a".repeat(32),
   JWT_REFRESH_SECRET: "b".repeat(32),
+  FILE_SIGNING_SECRET: "c".repeat(32),
   GOOGLE_CLIENT_ID: "client.apps.googleusercontent.com",
 };
 const smtp = { SMTP_HOST: "smtp.example.com", SMTP_USER: "user", SMTP_PASSWORD: "pass", MAIL_FROM: "UniGo <a@b.c>" };
@@ -52,5 +53,18 @@ describe("other settings", () => {
 
     expect(parsed?.JWT_ACCESS_EXPIRES_IN).toBe(10 * 60 * 1000);
     expect(parsed?.JWT_REFRESH_EXPIRES_IN).toBe(7 * 24 * 60 * 60 * 1000);
+  });
+});
+
+describe("FILE_SIGNING_SECRET", () => {
+  it("is required, at least 32 characters and different from the JWT secrets", () => {
+    const { FILE_SIGNING_SECRET: _omit, ...withoutSecret } = base;
+    expect(failingKeys(withoutSecret)).toContain("FILE_SIGNING_SECRET");
+    expect(failingKeys({ ...base, FILE_SIGNING_SECRET: "short" })).toContain("FILE_SIGNING_SECRET");
+    expect(failingKeys({ ...base, FILE_SIGNING_SECRET: base.JWT_ACCESS_SECRET })).toEqual(["FILE_SIGNING_SECRET"]);
+  });
+
+  it("defaults the private storage folder", () => {
+    expect(parseEnv(base).data?.PRIVATE_STORAGE_DIR).toBe("storage/private");
   });
 });
