@@ -4,7 +4,7 @@ import { rules } from "../../config/rules.js";
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
-import { assertCanAccess, effectiveAccountStatus } from "./account-status.js";
+import { accountStatusSelect, assertCanAccess, effectiveAccountStatus } from "./account-status.js";
 import {
   assertEmailAndPhoneFree,
   assertUniversityOpen,
@@ -32,7 +32,7 @@ export async function signInWithGoogle(idToken: string, meta: SessionMeta): Prom
 
   const linked = await prisma.user.findUnique({
     where: { googleId: google.googleId },
-    select: { id: true, accountStatus: true, suspendedUntil: true },
+    select: { id: true, ...accountStatusSelect },
   });
   if (linked) {
     assertCanAccess(effectiveAccountStatus(linked));
@@ -91,7 +91,7 @@ export async function linkGoogle(input: GoogleLinkInput, meta: SessionMeta) {
   const google = await verifyGoogleStepToken("google-link", input.linkToken);
   const user = await prisma.user.findUnique({
     where: { id: google.userId ?? "" },
-    select: { id: true, email: true, googleId: true, passwordHash: true, accountStatus: true, suspendedUntil: true },
+    select: { id: true, email: true, googleId: true, passwordHash: true, ...accountStatusSelect },
   });
 
   if (!user?.passwordHash || user.email !== google.email || !(await verifyPassword(input.password, user.passwordHash))) {

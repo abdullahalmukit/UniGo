@@ -81,6 +81,15 @@ export const rules = {
 
   admin: {
     pageSize: 20,
+    // Every warning, restriction, suspension, ban, unban and reactivation
+    reason: { minLength: 3, maxLength: 500 },
+    // A suspension may start this long before "now" (clock differences).
+    suspensionStartTolerance: MINUTE,
+  },
+
+  jobs: {
+    // How often the account-status job ends suspensions and restrictions (A8)
+    accountStatusInterval: MINUTE,
   },
 
   passwordReset: {

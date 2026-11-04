@@ -32,3 +32,29 @@ describe("assertCanAccess", () => {
     expect(() => assertCanAccess("BANNED")).toThrow(expect.objectContaining({ code: "ACCOUNT_BANNED" }));
   });
 });
+
+describe("effectiveAccountStatus with A8 periods", () => {
+  const later = new Date("2026-11-05T10:00:00Z");
+
+  it("applies a suspension booked for later only from its start", () => {
+    const booked = { accountStatus: "ACTIVE" as const, suspendedFrom: after, suspendedUntil: later };
+    expect(effectiveAccountStatus(booked, NOW)).toBe("ACTIVE");
+    expect(effectiveAccountStatus(booked, new Date("2026-11-04T10:00:00Z"))).toBe("SUSPENDED");
+    expect(effectiveAccountStatus(booked, later)).toBe("ACTIVE");
+    expect(effectiveAccountStatus({ ...booked, accountStatus: "RESTRICTED" }, NOW)).toBe("RESTRICTED");
+  });
+
+  it("ends a restriction at its end date, and keeps one without an end date", () => {
+    expect(effectiveAccountStatus({ accountStatus: "RESTRICTED", suspendedUntil: null, restrictedUntil: before }, NOW)).toBe("ACTIVE");
+    expect(effectiveAccountStatus({ accountStatus: "RESTRICTED", suspendedUntil: null, restrictedUntil: after }, NOW)).toBe(
+      "RESTRICTED",
+    );
+    expect(effectiveAccountStatus({ accountStatus: "RESTRICTED", suspendedUntil: null, restrictedUntil: null }, NOW)).toBe(
+      "RESTRICTED",
+    );
+  });
+
+  it("never lets a date lift a ban", () => {
+    expect(effectiveAccountStatus({ accountStatus: "BANNED", suspendedUntil: before, restrictedUntil: before }, NOW)).toBe("BANNED");
+  });
+});

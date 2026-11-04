@@ -1,5 +1,13 @@
 import type { RouteObject } from "react-router";
 import { AccountPage } from "../features/account/AccountPage";
+import { AdminAuditLogPage } from "../features/admin/AdminAuditLogPage";
+import { AdminDashboardPage } from "../features/admin/AdminDashboardPage";
+import { AdminLayout, RequireSuperAdmin } from "../features/admin/AdminLayout";
+import { AdminSubAreasPage } from "../features/admin/AdminSubAreasPage";
+import { AdminUniversitiesPage } from "../features/admin/AdminUniversitiesPage";
+import { AdminUserPage } from "../features/admin/AdminUserPage";
+import { AdminUsersPage } from "../features/admin/AdminUsersPage";
+import { AdminVerificationsPage } from "../features/admin/AdminVerificationsPage";
 import { ActivityPage } from "../features/activity/ActivityPage";
 import { AllServicesPage } from "../features/all-services/AllServicesPage";
 import { AuthLayout } from "../features/auth/AuthLayout";
@@ -36,6 +44,26 @@ export const routes: RouteObject[] = [
         ],
       },
       { path: "*", element: <NotFoundPage /> },
+    ],
+  },
+  // The admin area (A8): its own layout, Moderators and Super Admins only.
+  {
+    path: "admin",
+    element: <AdminLayout />,
+    children: [
+      { index: true, element: <AdminDashboardPage /> },
+      { path: "verifications", element: <AdminVerificationsPage /> },
+      { path: "users", element: <AdminUsersPage /> },
+      { path: "users/:id", element: <AdminUserPage /> },
+      {
+        element: <RequireSuperAdmin />,
+        children: [
+          { path: "universities", element: <AdminUniversitiesPage /> },
+          { path: "sub-areas", element: <AdminSubAreasPage /> },
+          { path: "audit-log", element: <AdminAuditLogPage /> },
+        ],
+      },
+      { path: "*", element: <AdminDashboardPage /> },
     ],
   },
   {

@@ -567,7 +567,7 @@ UniGo does not process any payment in version 1; it only records what users agre
 
 Audit Log fields: admin, action, time, affected user or content, old value and new value.
 
-Admin levels: **Super Admin** (everything) and **Moderator** (verifications, reports, disputes, requests and content only).
+Admin levels: **Super Admin** (everything) and **Moderator** (verifications, reports, disputes, requests and content only). Moderators can view users and moderation history; account actions (warn, restrict, suspend, ban, unban, reactivate), Sub-Areas and the Audit Log are Super Admin only.
 
 ### 17.1 User Account Management
 
@@ -597,7 +597,7 @@ Authorised admins manage every user account from the Admin Panel.
 **Admin action rules**
 
 - A reason is required for every warning, restriction, suspension or ban.
-- A temporary suspension must include a start and end date; the account returns to ACTIVE automatically at the end date.
+- A temporary suspension must include a start and end date (the start can be now or a future date); the account returns to ACTIVE automatically at the end date. A restriction can have an optional end date; without one it lasts until an admin reactivates the account.
 - Users receive a notification when their account status changes.
 - All admin actions are recorded in the Audit Log and in the user's moderation history.
 - Only authorised admins can perform account management actions.

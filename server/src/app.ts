@@ -5,6 +5,7 @@ import helmet from "helmet";
 import { env } from "./config/env.js";
 import { errorHandler } from "./middleware/error-handler.js";
 import { notFound } from "./middleware/not-found.js";
+import { adminRouter } from "./modules/admin/admin.routes.js";
 import { adminStudentVerificationsRouter } from "./modules/admin/student-verifications.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
@@ -27,6 +28,7 @@ app.use("/api/verification", verificationRouter);
 app.use("/api/files", filesRouter);
 app.use("/api/admin/student-verifications", adminStudentVerificationsRouter);
 app.use("/api/admin/universities", adminUniversitiesRouter);
+app.use("/api/admin", adminRouter);
 
 app.use(notFound);
 app.use(errorHandler);

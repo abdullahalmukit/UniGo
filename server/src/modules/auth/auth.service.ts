@@ -2,7 +2,7 @@ import { randomUUID } from "node:crypto";
 import { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
-import { assertCanAccess, effectiveAccountStatus } from "./account-status.js";
+import { accountStatusSelect, assertCanAccess, effectiveAccountStatus } from "./account-status.js";
 import type { LoginInput, RegisterInput } from "./auth.validation.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "./password.js";
 import { hashToken, invalidRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "./tokens.js";
@@ -15,8 +15,7 @@ const meSelect = {
   email: true,
   phone: true,
   role: true,
-  accountStatus: true,
-  suspendedUntil: true,
+  ...accountStatusSelect,
   studentVerificationStatus: true,
   isVerifiedRider: true,
   riderActive: true,
@@ -86,7 +85,7 @@ export async function assertUniversityOpen(universityId: string) {
 export async function login(input: LoginInput, meta: SessionMeta) {
   const user = await prisma.user.findUnique({
     where: { email: input.email },
-    select: { id: true, passwordHash: true, accountStatus: true, suspendedUntil: true },
+    select: { id: true, passwordHash: true, ...accountStatusSelect },
   });
 
   // Unknown email, Google-only account and wrong password all look the same.
@@ -131,7 +130,7 @@ export async function refresh(token: string, meta: SessionMeta) {
 
   const user = await prisma.user.findUnique({
     where: { id: stored.userId },
-    select: { accountStatus: true, suspendedUntil: true },
+    select: { ...accountStatusSelect },
   });
   if (!user) throw invalidRefreshToken();
   assertCanAccess(effectiveAccountStatus(user));

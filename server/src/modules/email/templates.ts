@@ -2,9 +2,9 @@
 // The Bangla wording is waiting for the developer's review (A4).
 import type { Language } from "../../generated/prisma/client.js";
 
-type Email = { subject: string; text: string; html: string };
+export type Email = { subject: string; text: string; html: string };
 
-const numbers = { BN: new Intl.NumberFormat("bn-BD"), EN: new Intl.NumberFormat("en") };
+export const numbers = { BN: new Intl.NumberFormat("bn-BD"), EN: new Intl.NumberFormat("en") };
 
 const copy = {
   passwordReset: {
@@ -168,14 +168,14 @@ export function passwordChangedEmail(language: Language, data: { name: string })
   };
 }
 
-function layout(language: Language, body: string) {
+export function layout(language: Language, body: string) {
   return `<!doctype html><html lang="${language === "BN" ? "bn" : "en"}"><body style="font-family:Inter,'Hind Siliguri',Arial,sans-serif;line-height:1.5">${body}</body></html>`;
 }
 
-function paragraph(text: string) {
+export function paragraph(text: string) {
   return `<p>${text}</p>`;
 }
 
-function escapeHtml(value: string) {
+export function escapeHtml(value: string) {
   return value.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 }

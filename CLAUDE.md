@@ -365,8 +365,10 @@ This build order replaces proposal §21.2 for build sequence only. For all busin
 | A4 | Forgot password, Google sign-in, email service |
 | A5 | Frontend shell + auth pages; Bangla/English UI and dark mode (theme + i18n from the start) |
 | A6 | Universities + student verification |
-| A7 | User dashboard: Home, Profile, Account & Settings, Saved Addresses, My Sub-Areas |
 | A8 | Admin panel base: admin dashboard, User Account Management incl. suspension, Audit Log |
+| A7 | User dashboard: Home, Profile, Account & Settings, Saved Addresses, My Sub-Areas |
+
+A8 is built before A7 (developer decision, 2026-11-04); the step numbers stay the same.
 
 ### Stage B – Features, one at a time
 
@@ -448,7 +450,7 @@ Decisions approved by the developer. Each one is also written into the proposal.
 | 4 | `users.tokens_valid_after` | Access tokens issued at or before this time are refused. Set by logout-all now and by password reset in A4. |
 | 5 | Auth rate limits | Login 10 per 15 min per IP + email; register 5 per hour per IP; refresh 30 per 15 min per IP (`rules.auth.rateLimits`). In memory until Redis arrives in B2. |
 | 6 | Duplicate email / phone | Registration answers `EMAIL_TAKEN` / `PHONE_TAKEN` explicitly; the register rate limit guards against probing. |
-| 7 | Expired suspension | Until the A8 job exists, a SUSPENDED account whose `suspendedUntil` has passed is treated as ACTIVE by the auth checks; the stored status is not changed. |
+| 7 | Expired suspension | A SUSPENDED account whose `suspendedUntil` has passed is treated as ACTIVE by the auth checks; since A8 the account-status job also writes ACTIVE within a minute (A8 #5). |
 | 8 | Test setup | `tests/unit` (no database) and `tests/integration` (real MySQL database named `*_test` from `server/.env.test`, emptied before every test). Dev-only seed: Test University A and B. |
 
 ### A4 – Forgot password, Google sign-in, email (2026-11-03)
@@ -513,3 +515,17 @@ Decisions approved by the developer. Each one is also written into the proposal.
 | 7 | University admin | `/api/admin/universities` (Super Admin only): list, create (with domains), edit, deactivate, delete, add and remove domains. A university with users cannot be deleted (`UNIVERSITY_HAS_USERS`); deactivate it instead. Every change is in the Audit Log. |
 | 8 | Status on the client | `/verify-student` is the real flow (both methods). Account & Settings shows a status card and the Verification menu item with a status chip (green verified, amber under review, red rejected, grey not verified); A7 reuses the chip on Profile. |
 | 9 | Dev admin | `npm run db:seed -w server` also creates a `SUPER_ADMIN` from `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` (development only); an existing account with that email is promoted, its password unchanged. |
+
+### A8 – Admin panel base (2026-11-04)
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Suspension start | A suspension starts now or at a later date (`users.suspended_from`, migration `a8_account_status_periods`). A suspension booked for later keeps the current status until it starts; from its start date the auth checks treat the account as SUSPENDED even before the job writes it. |
+| 2 | Restriction end | A restriction has an optional end date (`users.restricted_until`); without one it lasts until a Super Admin reactivates the account. |
+| 3 | Who acts on accounts | Moderators and Super Admins can open `/admin` and view users, verification and moderation history. Warn, restrict, suspend, ban, unban and reactivate are Super Admin only. Nobody can act on their own account or on a Super Admin. |
+| 4 | Super-Admin-only modules | Universities (A6), Sub-Areas and the Audit Log. |
+| 5 | Ending statuses | `server/src/jobs/account-status.job.ts` runs every minute in the API process (until BullMQ in B2): starts booked suspensions, returns ended suspensions and restrictions to ACTIVE and emails the user. Idempotent (conditional updates). Not an admin action, so it writes no Audit Log row; the original entry holds the end date. |
+| 6 | Removing a sub-area | Deleted when no activity uses it (users' selections go with it); otherwise deactivated. Every change is audited. |
+| 7 | Account actions | Reason 3–500 characters for every action. Allowed starting status: warn any but BANNED; restrict from ACTIVE/RESTRICTED; suspend from ACTIVE/RESTRICTED/SUSPENDED; ban any but BANNED; unban from BANNED; reactivate from RESTRICTED/SUSPENDED or with a booked suspension. Conditional update, so two admins at once cannot both apply (`STATUS_CHANGED`). Each action writes `moderation_actions` and `audit_logs` in one transaction and emails the user in their language (dates in Asia/Dhaka). Closing OPEN posts and notifying participants is a hook (`onAccountLocked`) that B2/B3 fill in. |
+| 8 | Dashboard | Counts from the real tables: total users, active users (status ACTIVE), verified students, verified riders, pending ID cards, pending rider applications, open disputes, open reports, No-Show reports, new requests today per feature (from midnight Asia/Dhaka). Unbuilt features show 0. |
+| 9 | Admin UI | `/admin` has its own layout: sidebar on desktop, a menu drawer on phones. A normal user sees "Not allowed"; a Moderator sees "Not allowed" on Super Admin pages. Admins get an "Admin panel" link in Account & Settings. ID cards open through the 5-minute signed link (image inline, PDF in a frame, plus "open in a new tab"); the file-url response includes `mimeType`. Audit Log date filters are whole days in Asia/Dhaka. |

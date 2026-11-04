@@ -1,14 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
 import { prisma } from "../lib/prisma.js";
-import { assertCanAccess, effectiveAccountStatus } from "../modules/auth/account-status.js";
+import { accountStatusSelect, assertCanAccess, effectiveAccountStatus } from "../modules/auth/account-status.js";
 import { verifyAccessToken } from "../modules/auth/tokens.js";
 import { AppError } from "../utils/app-error.js";
 
 const authUserSelect = {
   id: true,
   role: true,
-  accountStatus: true,
-  suspendedUntil: true,
+  ...accountStatusSelect,
   studentVerificationStatus: true,
   isVerifiedRider: true,
   riderActive: true,

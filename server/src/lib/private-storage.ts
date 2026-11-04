@@ -34,6 +34,12 @@ export async function putPrivateFile(folder: PrivateFolder, data: Uint8Array, mi
   return key;
 }
 
+// The file type from its key, or null for an invalid key.
+export function mimeTypeForKey(key: string): AllowedMimeType | null {
+  const match = key.match(KEY);
+  return match ? MIME_BY_EXTENSION[match[3]] : null;
+}
+
 export async function deletePrivateFile(key: string) {
   if (!KEY.test(key)) return;
   await rm(path.join(root, key), { force: true });

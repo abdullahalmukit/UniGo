@@ -294,8 +294,13 @@ model User {
   universityId              String                    @map("university_id") @db.Char(36)
   role                      UserRole                  @default(USER)
   accountStatus             AccountStatus             @default(ACTIVE) @map("account_status")
-  // Set while SUSPENDED; the suspension-end job returns the account to ACTIVE.
+  // A suspension runs from suspendedFrom to suspendedUntil. A suspension that
+  // starts later keeps the current status until then (A8 decision 1); the
+  // account-status job sets SUSPENDED at the start and ACTIVE at the end.
+  suspendedFrom             DateTime?                 @map("suspended_from")
   suspendedUntil            DateTime?                 @map("suspended_until")
+  // Optional end of a restriction; null means until an admin reactivates (A8 decision 2).
+  restrictedUntil           DateTime?                 @map("restricted_until")
   studentVerificationStatus StudentVerificationStatus @default(UNVERIFIED) @map("student_verification_status")
   // Lower-cased university email that verified this account. Unique, so one
   // email verifies only one account. Null when verified by ID card.

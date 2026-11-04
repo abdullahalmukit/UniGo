@@ -115,3 +115,11 @@
 .menuLink:hover {
   background: var(--color-surface-muted);
 }
+
+.adminLink {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+}

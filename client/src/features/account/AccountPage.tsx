@@ -1,4 +1,4 @@
-import { ChevronRight, LogOut, ShieldCheck } from "lucide-react";
+import { ChevronRight, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -6,6 +6,7 @@ import { useTheme } from "../../app/theme-provider";
 import { useSession } from "../../app/use-session";
 import { buttonStyles, PageHeader, Section } from "../../components/ui";
 import { VerificationChip } from "../../components/VerificationChip";
+import { isAdminRole, useAdminRole } from "../admin/admin-ui";
 import { getStudentVerification, type StudentVerificationStatus } from "../verification/verification-api";
 import { setLanguage, type AppLanguage } from "../../i18n";
 import { session } from "../../lib/api";
@@ -38,6 +39,7 @@ export function AccountPage() {
   const theme = useTheme();
   const signedIn = useSession().status === "authenticated";
   const verification = useVerificationStatus(signedIn);
+  const role = useAdminRole();
 
   return (
     <>
@@ -78,6 +80,17 @@ export function AccountPage() {
       </Section>
 
       <ul className={styles.menu}>
+        {isAdminRole(role) && (
+          <li>
+            <Link to="/admin" className={`${styles.menuItem} ${styles.menuLink}`}>
+              <span className={styles.adminLink}>
+                <LayoutDashboard aria-hidden size={18} />
+                {t("account.adminPanel")}
+              </span>
+              <ChevronRight aria-hidden size={18} />
+            </Link>
+          </li>
+        )}
         {menu.map((key) =>
           key === "verification" ? (
             <li key={key}>

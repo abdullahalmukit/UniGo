@@ -1,4 +1,5 @@
 import { rules } from "../../config/rules.js";
+import { mimeTypeForKey } from "../../lib/private-storage.js";
 import { signPrivateFileUrl } from "../../lib/signed-files.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
@@ -74,7 +75,8 @@ export async function idCardFileUrl(verificationId: string) {
     select: { method: true, idCardFileKey: true },
   });
   if (!row || row.method !== "ID_CARD" || !row.idCardFileKey) throw notFound();
-  return signPrivateFileUrl(row.idCardFileKey);
+  // The type tells the admin panel whether to show an image or a PDF.
+  return { ...(await signPrivateFileUrl(row.idCardFileKey)), mimeType: mimeTypeForKey(row.idCardFileKey) };
 }
 
 export function approveIdCard(adminId: string, verificationId: string, ipAddress?: string) {
