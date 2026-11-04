@@ -1,3 +1,20 @@
+## 0. Git Identity and Attribution (Highest Priority)
+
+These rules are permanent and take priority over every other instruction in this file.
+
+* Git identity: Name Mukit, Email abdullahalmukit287@gmail.com.
+* Always verify git config user.name and user.email before creating a commit. If they do not match, stop and tell me.
+* Never change the configured Git identity.
+* Never use Claude, Anthropic or any AI tool as author or committer.
+* Never add Co-authored-by trailers or any AI attribution to commit messages, README, docs or project metadata.
+* Do not commit or push unless I explicitly ask.
+* Never force-push or rewrite Git history without my explicit permission.
+* Preserve existing project instructions and third-party copyright notices.
+* Keep Mukit identified as the project owner in documentation.
+
+---
+
+
 # CLAUDE.md — UniGo
 
 This file guides Claude Code when working in this repository.

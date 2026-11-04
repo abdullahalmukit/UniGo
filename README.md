@@ -1,3 +1,5 @@
+- Project owner: **Mukit**
+
 # UniGo
 
 University-only, peer-to-peer PWA for verified students: Ride Sharing, Carpool, Food Delivery and Uni Service.
