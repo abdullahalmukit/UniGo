@@ -5,12 +5,16 @@ import { AppError } from "../../utils/app-error.js";
 import { accountStatusSelect, assertCanAccess, effectiveAccountStatus } from "./account-status.js";
 import type { LoginInput, RegisterInput } from "./auth.validation.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "./password.js";
+import { photoLink } from "../users/photo.js";
 import { hashToken, invalidRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "./tokens.js";
 
 export type SessionMeta = { userAgent?: string; ipAddress?: string };
 
-// The caller's own account. Never includes passwordHash or googleId.
+// The caller's own account. passwordHash, googleId and the photo key are read
+// only to answer hasPassword, hasGoogle and photo; they are never returned.
 const meSelect = {
+  passwordHash: true,
+  googleId: true,
   id: true,
   email: true,
   phone: true,
@@ -26,7 +30,7 @@ const meSelect = {
   createdAt: true,
   university: { select: { id: true, name: true, shortName: true } },
   profile: {
-    select: { fullName: true, photoUrl: true, studentIdNumber: true, department: true, batch: true, location: true },
+    select: { fullName: true, photoKey: true, studentIdNumber: true, department: true, batch: true, location: true },
   },
 } satisfies Prisma.UserSelect;
 
@@ -179,7 +183,17 @@ export async function logoutAll(userId: string) {
 export async function getMe(userId: string) {
   const user = await prisma.user.findUnique({ where: { id: userId }, select: meSelect });
   if (!user) throw new AppError(401, "UNAUTHENTICATED", "Log in to continue");
-  return { ...user, accountStatus: effectiveAccountStatus(user) };
+  const { passwordHash, googleId, profile, ...rest } = user;
+  const { photoKey, ...profileFields } = profile ?? { photoKey: null };
+  return {
+    ...rest,
+    accountStatus: effectiveAccountStatus(user),
+    // Google-only accounts set a first password through an emailed link (A7).
+    hasPassword: passwordHash !== null,
+    hasGoogle: googleId !== null,
+    profile: profile ? profileFields : null,
+    photo: await photoLink(photoKey),
+  };
 }
 
 async function startSession(

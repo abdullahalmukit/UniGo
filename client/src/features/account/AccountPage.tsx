@@ -4,56 +4,93 @@ import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { useTheme } from "../../app/theme-provider";
 import { useSession } from "../../app/use-session";
-import { buttonStyles, PageHeader, Section } from "../../components/ui";
+import { Avatar } from "../../components/Avatar";
+import { useToast } from "../../components/toast";
+import { buttonStyles, Section } from "../../components/ui";
 import { VerificationChip } from "../../components/VerificationChip";
-import { isAdminRole, useAdminRole } from "../admin/admin-ui";
-import { getStudentVerification, type StudentVerificationStatus } from "../verification/verification-api";
 import { setLanguage, type AppLanguage } from "../../i18n";
 import { session } from "../../lib/api";
+import { formErrors } from "../../lib/errors";
 import type { ThemeChoice } from "../../lib/theme";
+import { isAdminRole, useAdminRole } from "../admin/admin-ui";
+import { getStudentVerification, type StudentVerificationStatus } from "../verification/verification-api";
+import { fileUrl, updatePreferences, useMe } from "./account-api";
 import styles from "./AccountPage.module.css";
 
-const menu = [
-  "profile",
-  "verification",
-  "drive",
-  "savedAddresses",
-  "subAreas",
-  "paymentMethods",
-  "notifications",
-  "blocked",
-  "promos",
-  "support",
-  "policy",
-  "rateUs",
-] as const;
+// Every menu of proposal section 5. Items for later steps say "Coming soon".
+const menu: { key: string; to?: string }[] = [
+  { key: "profile", to: "/account/profile" },
+  { key: "verification", to: "/verify-student?next=%2Faccount" },
+  { key: "drive" },
+  { key: "savedAddresses", to: "/account/addresses" },
+  { key: "subAreas", to: "/account/sub-areas" },
+  { key: "paymentMethods" },
+  { key: "notifications", to: "/account/notifications" },
+  { key: "blocked", to: "/account/blocked" },
+  { key: "promos" },
+  { key: "support" },
+  { key: "policy" },
+  { key: "rateUs" },
+];
 
 const languages: AppLanguage[] = ["bn", "en"];
 const themes: ThemeChoice[] = ["light", "dark", "system"];
 
-// Placeholder Account & Settings. Language and Appearance already work; they are
-// kept on this device until A7 saves them to the account. The student
-// verification status shows at the top and in the menu (A6).
+// Account & Settings (proposal section 5). Language and Appearance apply at
+// once on this device and are saved to the account (A7).
 export function AccountPage() {
   const { t, i18n } = useTranslation();
+  const toast = useToast();
   const theme = useTheme();
+  const me = useMe();
   const signedIn = useSession().status === "authenticated";
   const verification = useVerificationStatus(signedIn);
   const role = useAdminRole();
 
+  // Applied here first, so the change shows even when saving fails.
+  const save = async (preferences: Parameters<typeof updatePreferences>[0]) => {
+    if (!signedIn) return;
+    try {
+      await updatePreferences(preferences);
+    } catch (failure) {
+      toast.show(formErrors(failure, t).form ?? t("errors.generic"), "error");
+    }
+  };
+
+  const chooseLanguage = (language: AppLanguage) => {
+    setLanguage(language);
+    void save({ language: language === "bn" ? "BN" : "EN" });
+  };
+
+  const chooseTheme = (choice: ThemeChoice) => {
+    theme.setChoice(choice);
+    void save({ theme: choice.toUpperCase() as "LIGHT" | "DARK" | "SYSTEM" });
+  };
+
+  const name = me?.profile?.fullName ?? "";
+
   return (
     <>
-      <PageHeader title={t("account.title")} />
+      <h1 className={styles.visuallyHidden}>{t("account.title")}</h1>
 
-      {verification && (
+      {me && (
+        <Link to="/account/profile" className={styles.profileCard}>
+          <Avatar name={name} src={fileUrl(me.photo)} size={56} />
+          <span className={styles.profileText}>
+            <span className={styles.profileName}>{name}</span>
+            <span className={styles.profileMeta}>{me.university?.shortName ?? me.university?.name}</span>
+          </span>
+          <ChevronRight aria-hidden size={18} />
+        </Link>
+      )}
+
+      {verification && verification !== "VERIFIED" && (
         <Link to="/verify-student?next=%2Faccount" className={styles.verificationCard}>
           <ShieldCheck aria-hidden size={22} className={styles.verificationIcon} />
           <span className={styles.verificationText}>
             <span className={styles.verificationTitle}>{t("verification.statusTitle")}</span>
             <span className={styles.verificationAction}>
-              {verification === "VERIFIED" || verification === "PENDING"
-                ? t("account.viewVerification")
-                : t("account.verifyNow")}
+              {verification === "PENDING" ? t("account.viewVerification") : t("account.verifyNow")}
             </span>
           </span>
           <VerificationChip status={verification} />
@@ -66,7 +103,7 @@ export function AccountPage() {
           label={t("account.language")}
           options={languages.map((value) => ({ value, label: t(`account.languages.${value}`) }))}
           value={i18n.language as AppLanguage}
-          onChange={setLanguage}
+          onChange={chooseLanguage}
         />
       </Section>
 
@@ -75,7 +112,7 @@ export function AccountPage() {
           label={t("account.appearance")}
           options={themes.map((value) => ({ value, label: t(`account.theme.${value}`) }))}
           value={theme.choice}
-          onChange={theme.setChoice}
+          onChange={chooseTheme}
         />
       </Section>
 
@@ -91,24 +128,21 @@ export function AccountPage() {
             </Link>
           </li>
         )}
-        {menu.map((key) =>
-          key === "verification" ? (
+        {menu.map(({ key, to }) =>
+          to ? (
             <li key={key}>
-              <Link to="/verify-student?next=%2Faccount" className={`${styles.menuItem} ${styles.menuLink}`}>
+              <Link to={to} className={`${styles.menuItem} ${styles.menuLink}`}>
                 <span>{t(`account.menu.${key}`)}</span>
                 <span className={styles.soon}>
-                  {verification && <VerificationChip status={verification} />}
+                  {key === "verification" && verification && <VerificationChip status={verification} />}
                   <ChevronRight aria-hidden size={18} />
                 </span>
               </Link>
             </li>
           ) : (
-            <li key={key} className={styles.menuItem}>
-              <span>{t(`account.menu.${key}`)}</span>
-              <span className={styles.soon}>
-                {t("account.comingSoon")}
-                <ChevronRight aria-hidden size={18} />
-              </span>
+            <li key={key} className={styles.menuItem} aria-disabled="true">
+              <span className={styles.menuMuted}>{t(`account.menu.${key}`)}</span>
+              <span className={styles.soonBadge}>{t("account.comingSoon")}</span>
             </li>
           ),
         )}
@@ -145,7 +179,7 @@ function Choice<T extends string>({
           role="radio"
           aria-checked={option.value === value}
           className={styles.choiceOption}
-          onClick={() => onChange(option.value)}
+          onClick={() => option.value !== value && onChange(option.value)}
         >
           {option.label}
         </button>

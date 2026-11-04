@@ -1,0 +1,54 @@
+.region {
+  position: fixed;
+  left: 0;
+  right: 0;
+  /* Above the phone bottom tab bar */
+  bottom: calc(80px + env(safe-area-inset-bottom));
+  z-index: 60;
+  display: flex;
+  justify-content: center;
+  padding: 0 var(--space-4);
+  pointer-events: none;
+}
+
+.toast {
+  max-width: 420px;
+  padding: var(--space-3) var(--space-4);
+  border-radius: var(--radius-control);
+  box-shadow: var(--shadow-card-hover);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  pointer-events: auto;
+  animation: rise 160ms ease-out;
+}
+
+.success {
+  background: var(--status-green-bg);
+  color: var(--status-green-fg);
+  border: 1px solid var(--status-green-fg);
+}
+
+.error {
+  background: var(--status-red-bg);
+  color: var(--status-red-fg);
+  border: 1px solid var(--status-red-fg);
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast {
+    animation: none;
+  }
+}
+
+@media (min-width: 768px) {
+  .region {
+    bottom: var(--space-5);
+  }
+}

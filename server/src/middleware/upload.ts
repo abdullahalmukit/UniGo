@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import multer from "multer";
 import { rules } from "../config/rules.js";
 import { AppError } from "../utils/app-error.js";
-import { detectFileType, isAllowedMimeType } from "../utils/file-type.js";
+import { detectFileType, isAllowedMimeType, type AllowedMimeType } from "../utils/file-type.js";
 
 // Kept in memory (at most 5 MB) until the service has checked everything and
 // writes it to private storage.
@@ -14,6 +14,21 @@ const upload = multer({
 // Accepts exactly one JPG, PNG or PDF of at most 5 MB in `field`. The declared
 // type and the file's own first bytes must both be one of those types, and match.
 export function singleDocumentUpload(field: string) {
+  return singleUpload(field, rules.uploads.allowedMimeTypes, {
+    code: "FILE_TYPE_NOT_ALLOWED",
+    message: "Upload a JPG, PNG or PDF file",
+  });
+}
+
+// The same checks for a picture: JPG or PNG only (A7 profile photo).
+export function singleImageUpload(field: string) {
+  return singleUpload(field, rules.profile.photo.allowedMimeTypes, {
+    code: "IMAGE_TYPE_NOT_ALLOWED",
+    message: "Upload a JPG or PNG image",
+  });
+}
+
+function singleUpload(field: string, allowed: readonly AllowedMimeType[], typeError: { code: string; message: string }) {
   const parse = upload.single(field);
 
   return (req: Request, res: Response, next: NextFunction) => {
@@ -36,8 +51,9 @@ export function singleDocumentUpload(field: string) {
         next(new AppError(400, "FILE_REQUIRED", "Choose a file to upload"));
         return;
       }
-      if (!isAllowedMimeType(file.mimetype) || detectFileType(file.buffer) !== file.mimetype) {
-        next(new AppError(415, "FILE_TYPE_NOT_ALLOWED", "Upload a JPG, PNG or PDF file"));
+      const declared = file.mimetype;
+      if (!isAllowedMimeType(declared) || !allowed.includes(declared) || detectFileType(file.buffer) !== declared) {
+        next(new AppError(415, typeError.code, typeError.message));
         return;
       }
       next();

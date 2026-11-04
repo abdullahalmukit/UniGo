@@ -3,6 +3,7 @@ import type { AccountStatus, Prisma, StudentVerificationStatus, UserRole } from 
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { accountStatusSelect, effectiveAccountStatus } from "../auth/account-status.js";
+import { photoLink } from "../users/photo.js";
 
 // Users for the admin panel (proposal section 17.1): list, search and one
 // user's profile with verification and moderation history. Moderators and
@@ -89,7 +90,7 @@ export async function getUserForAdmin(userId: string) {
       ...accountStatusSelect,
       university: { select: { id: true, name: true, shortName: true } },
       profile: {
-        select: { fullName: true, photoUrl: true, studentIdNumber: true, department: true, batch: true, location: true },
+        select: { fullName: true, photoKey: true, studentIdNumber: true, department: true, batch: true, location: true },
       },
       studentVerifications: {
         orderBy: { createdAt: "desc" },
@@ -122,10 +123,14 @@ export async function getUserForAdmin(userId: string) {
   });
   if (!user) throw new AppError(404, "USER_NOT_FOUND", "User not found");
 
-  const { studentVerifications, moderationActions, ...rest } = user;
+  const { studentVerifications, moderationActions, profile, ...rest } = user;
+  const { photoKey, ...profileFields } = profile ?? { photoKey: null };
   return {
     ...rest,
     accountStatus: effectiveAccountStatus(user),
+    profile: profile ? profileFields : null,
+    // A7: the profile photo through a signed link, never its storage key
+    photo: await photoLink(photoKey),
     verifications: studentVerifications.map(({ reviewedBy, ...row }) => ({
       ...row,
       reviewedBy: reviewedBy && { id: reviewedBy.id, name: reviewedBy.profile?.fullName ?? null },

@@ -140,11 +140,11 @@ Each feature has its own page: Ride, Carpool, Food, Service. Other pages: Home, 
 
 | Menu | What it does |
 | --- | --- |
-| Profile | Name*, phone*, email*, university*, student ID, department, batch, location, profile photo, verification status. Edit info, change password. Google-only accounts can set a password later. |
+| Profile | Name*, phone*, email*, university*, student ID, department, batch, location, profile photo, verification status. Edit info, change password. Google-only accounts can set a password later through an emailed link. Email and university cannot be changed after registration. Profile photo: JPG or PNG up to 5 MB. |
 | Verification | Verify university email by OTP, or upload Student ID card for admin review. |
 | Drive with UniGo | Rider and vehicle registration (section 6). Once approved, shows the Rider Dashboard and the Active/Inactive switch. |
-| Saved Addresses | Home, hall, work and custom places, used to prefill forms. |
-| My Sub-Areas | Search and select sub-areas from the admin master list; add or remove at any time. |
+| Saved Addresses | Home, hall, work and custom places, used to prefill forms. One each of Home, Hall and Work; up to 10 addresses in total. |
+| My Sub-Areas | Search and select sub-areas from the admin master list; add or remove at any time (up to 20). |
 | Payment Methods | Information only: Cash, bKash, Nagad are recorded per activity. No online payment in v1. |
 | Notifications | Turn Web Push on or off; email fallback preferences. |
 | Language | Bangla or English. |

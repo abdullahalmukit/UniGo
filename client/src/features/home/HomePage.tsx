@@ -19,16 +19,17 @@ import { featureList } from "../../app/feature-list";
 import { buttonStyles, EmptyState, Section } from "../../components/ui";
 import styles from "./HomePage.module.css";
 
-const quickActions = [
+// `to`: the page it opens; the others arrive in later steps.
+const quickActions: { key: string; icon: typeof Info; to?: string }[] = [
   { key: "about", icon: Info },
-  { key: "savedAddresses", icon: MapPin },
-  { key: "addHome", icon: HousePlus },
-  { key: "subAreas", icon: MapIcon },
+  { key: "savedAddresses", icon: MapPin, to: "/account/addresses" },
+  { key: "addHome", icon: HousePlus, to: "/account/addresses/new?label=HOME" },
+  { key: "subAreas", icon: MapIcon, to: "/account/sub-areas" },
   { key: "promos", icon: TicketPercent },
   { key: "drive", icon: CarFront },
   { key: "support", icon: LifeBuoy },
   { key: "rateUs", icon: Star },
-] as const;
+];
 
 // Placeholder stories until admins publish Spotlight content (B8).
 const spotlightSamples = [
@@ -90,16 +91,29 @@ export function HomePage() {
 
       <Section title={t("home.quickActionsTitle")}>
         <ul className={styles.quickActions}>
-          {quickActions.map(({ key, icon: Icon }) => (
-            <li key={key}>
-              <button type="button" className={styles.quickAction} disabled>
+          {quickActions.map(({ key, icon: Icon, to }) => {
+            const content = (
+              <>
                 <span className={styles.quickIcon}>
                   <Icon aria-hidden strokeWidth={1.9} />
                 </span>
                 <span>{t(`home.quick.${key}`)}</span>
-              </button>
-            </li>
-          ))}
+              </>
+            );
+            return (
+              <li key={key}>
+                {to ? (
+                  <Link to={to} className={styles.quickAction}>
+                    {content}
+                  </Link>
+                ) : (
+                  <button type="button" className={styles.quickAction} disabled>
+                    {content}
+                  </button>
+                )}
+              </li>
+            );
+          })}
         </ul>
       </Section>
 

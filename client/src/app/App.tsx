@@ -1,6 +1,7 @@
 import { useEffect } from "react";
 import { createBrowserRouter, RouterProvider } from "react-router";
 import { session } from "../lib/api";
+import { ToastProvider } from "../components/toast";
 import { routes } from "./routes";
 import { ThemeProvider, useTheme } from "./theme-provider";
 import { useAccountPreferences } from "./use-session";
@@ -10,8 +11,10 @@ const router = createBrowserRouter(routes);
 export function App() {
   return (
     <ThemeProvider>
-      <SessionStarter />
-      <RouterProvider router={router} />
+      <ToastProvider>
+        <SessionStarter />
+        <RouterProvider router={router} />
+      </ToastProvider>
     </ThemeProvider>
   );
 }

@@ -2,17 +2,18 @@ import { jwtVerify, SignJWT } from "jose";
 import { env } from "../config/env.js";
 import { rules } from "../config/rules.js";
 
-// Short-lived links to private files, for authorised admins only. The link
-// itself is the permission, so it lives only rules.privateFiles.signedUrlLifetime
-// and is never logged.
+// Short-lived links to private files: documents for authorised admins only,
+// profile photos for the owner and admins (A7). The link itself is the
+// permission, so it is short-lived and never logged.
 
 const key = new TextEncoder().encode(env.FILE_SIGNING_SECRET);
 const ISSUER = "unigo";
 const AUDIENCE = "unigo-private-file";
 
 // The url is a path on the API origin, like every other endpoint.
-export async function signPrivateFileUrl(fileKey: string, now = Date.now()) {
-  const expiresAt = new Date(now + rules.privateFiles.signedUrlLifetime);
+// `lifetime` is longer only for profile photos (rules.profile.photo).
+export async function signPrivateFileUrl(fileKey: string, now = Date.now(), lifetime: number = rules.privateFiles.signedUrlLifetime) {
+  const expiresAt = new Date(now + lifetime);
   const token = await new SignJWT({})
     .setProtectedHeader({ alg: "HS256" })
     .setSubject(fileKey)

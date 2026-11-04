@@ -5,7 +5,7 @@ import path from "node:path";
 import { env } from "../config/env.js";
 import type { AllowedMimeType } from "../utils/file-type.js";
 
-// Private files (student ID cards now; NID and licences in B1). Kept on local
+// Private files (student ID cards and profile photos now; NID and licences in B1). Kept on local
 // disk outside anything served statically, and opened only through a signed
 // link (signed-files.ts). Moving to object storage later only changes this file.
 
@@ -19,7 +19,7 @@ const EXTENSIONS: Record<AllowedMimeType, string> = {
 
 const MIME_BY_EXTENSION: Record<string, AllowedMimeType> = { jpg: "image/jpeg", png: "image/png", pdf: "application/pdf" };
 
-export type PrivateFolder = "student-id-cards";
+export type PrivateFolder = "student-id-cards" | "profile-photos";
 
 // "<folder>/<uuid>.<ext>" is the only shape a key can have, so a key can never
 // point outside the storage folder.

@@ -19,6 +19,11 @@ const FIELD_CODES: Record<string, string> = {
   FILE_TYPE_NOT_ALLOWED: "file",
   FILE_REQUIRED: "file",
   INVALID_UPLOAD: "file",
+  // Profile and settings (A7)
+  WRONG_PASSWORD: "currentPassword",
+  IMAGE_TYPE_NOT_ALLOWED: "photo",
+  IMAGE_UNREADABLE: "photo",
+  ADDRESS_LABEL_TAKEN: "label",
 };
 
 // Turns any error from an API call into translated messages: one per field

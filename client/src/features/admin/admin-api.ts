@@ -81,6 +81,7 @@ export type UserDetail = {
   lastLoginAt: string | null;
   university: University;
   profile: { fullName: string; studentIdNumber: string | null; department: string | null; batch: string | null } | null;
+  photo: { url: string; expiresAt: string } | null;
   verifications: {
     id: string;
     method: "UNIVERSITY_EMAIL" | "ID_CARD";

@@ -123,3 +123,59 @@
   color: var(--color-accent);
   font-weight: var(--weight-medium);
 }
+
+/* A7: profile card and menu states */
+.visuallyHidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.profileCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+}
+
+.profileCard:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.profileText {
+  flex: 1;
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+}
+
+.profileName {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+}
+
+.profileMeta {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.menuMuted {
+  color: var(--color-text-muted);
+}
+
+.soonBadge {
+  padding: 2px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--status-grey-bg);
+  color: var(--status-grey-fg);
+  font-size: var(--text-caption);
+}

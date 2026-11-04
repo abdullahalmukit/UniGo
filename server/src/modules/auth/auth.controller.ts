@@ -6,6 +6,7 @@ import { runInBackground } from "../../utils/background.js";
 import * as authService from "./auth.service.js";
 import * as googleService from "./google.service.js";
 import * as passwordReset from "./password-reset.service.js";
+import { changePassword as changeOwnPassword } from "../users/profile.service.js";
 
 export const REFRESH_COOKIE = "unigo_refresh";
 
@@ -54,6 +55,11 @@ export async function logoutAll(req: Request, res: Response) {
 
 export async function me(req: Request, res: Response) {
   res.json({ user: await authService.getMe(authUser(req).id) });
+}
+
+// Ends every session and answers with a new one for this device (A7).
+export async function changePassword(req: Request, res: Response) {
+  sendSession(res, await changeOwnPassword(authUser(req).id, req.body, sessionMeta(req)));
 }
 
 // Always the same answer, sent before any lookup happens.

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { authenticate } from "../../middleware/authenticate.js";
 import {
+  changePasswordRateLimit,
   forgotPasswordEmailRateLimit,
   forgotPasswordIpRateLimit,
   googleRateLimit,
@@ -11,6 +12,7 @@ import {
 } from "../../middleware/rate-limit.js";
 import { validateBody } from "../../middleware/validate.js";
 import * as controller from "./auth.controller.js";
+import { changePasswordSchema } from "../users/users.validation.js";
 import {
   forgotPasswordSchema,
   googleLinkSchema,
@@ -29,6 +31,15 @@ authRouter.post("/refresh", refreshRateLimit, controller.refresh);
 authRouter.post("/logout", controller.logout);
 authRouter.post("/logout-all", authenticate, controller.logoutAll);
 authRouter.get("/me", authenticate, controller.me);
+// A7: here, not under /api/me, because it answers with a new session cookie,
+// which lives on /api/auth.
+authRouter.post(
+  "/change-password",
+  authenticate,
+  changePasswordRateLimit,
+  validateBody(changePasswordSchema),
+  controller.changePassword,
+);
 
 authRouter.post(
   "/forgot-password",

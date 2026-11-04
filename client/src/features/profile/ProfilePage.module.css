@@ -1,0 +1,78 @@
+.photoCard {
+  display: flex;
+  align-items: center;
+  gap: var(--space-4);
+}
+
+.photoText {
+  flex: 1;
+  display: grid;
+  gap: var(--space-2);
+  min-width: 0;
+}
+
+.name {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+}
+
+.photoButtons {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-2);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-2) var(--space-4);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  align-self: center;
+}
+
+.facts dd {
+  margin: 0;
+  min-width: 0;
+}
+
+.status {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.inlineLink {
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.locked {
+  margin-top: var(--space-3);
+}
+
+@media (max-width: 420px) {
+  .photoCard {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .photoButtons {
+    justify-content: center;
+  }
+
+  .facts {
+    grid-template-columns: 1fr;
+    gap: 2px;
+  }
+
+  .facts dd + dt {
+    margin-top: var(--space-2);
+  }
+}

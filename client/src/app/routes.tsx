@@ -1,5 +1,10 @@
 import type { RouteObject } from "react-router";
 import { AccountPage } from "../features/account/AccountPage";
+import { AddressEditorPage } from "../features/account/AddressEditorPage";
+import { BlockedUsersPage } from "../features/account/BlockedUsersPage";
+import { MySubAreasPage } from "../features/account/MySubAreasPage";
+import { NotificationSettingsPage } from "../features/account/NotificationSettingsPage";
+import { SavedAddressesPage } from "../features/account/SavedAddressesPage";
 import { AdminAuditLogPage } from "../features/admin/AdminAuditLogPage";
 import { AdminDashboardPage } from "../features/admin/AdminDashboardPage";
 import { AdminLayout, RequireSuperAdmin } from "../features/admin/AdminLayout";
@@ -19,6 +24,7 @@ import { ResetPasswordPage } from "../features/auth/ResetPasswordPage";
 import { HomePage } from "../features/home/HomePage";
 import { InboxPage } from "../features/inbox/InboxPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
+import { ProfilePage } from "../features/profile/ProfilePage";
 import { UpcomingPage } from "../features/upcoming/UpcomingPage";
 import { VerifyStudentPage } from "../features/verification/VerifyStudentPage";
 import { AppLayout } from "./layout/AppLayout";
@@ -41,6 +47,14 @@ export const routes: RouteObject[] = [
           { path: "inbox", element: <InboxPage /> },
           { path: "notifications", element: <NotificationsPage /> },
           { path: "account", element: <AccountPage /> },
+          // Account & Settings sub-pages (A7)
+          { path: "account/profile", element: <ProfilePage /> },
+          { path: "account/addresses", element: <SavedAddressesPage /> },
+          { path: "account/addresses/new", element: <AddressEditorPage /> },
+          { path: "account/addresses/:id", element: <AddressEditorPage /> },
+          { path: "account/sub-areas", element: <MySubAreasPage /> },
+          { path: "account/notifications", element: <NotificationSettingsPage /> },
+          { path: "account/blocked", element: <BlockedUsersPage /> },
         ],
       },
       { path: "*", element: <NotFoundPage /> },

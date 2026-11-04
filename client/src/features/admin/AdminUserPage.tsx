@@ -5,6 +5,8 @@ import { FormAlert } from "../../components/form";
 import { buttonStyles, PageHeader, Section } from "../../components/ui";
 import { VerificationChip } from "../../components/VerificationChip";
 import { useSession } from "../../app/use-session";
+import { Avatar } from "../../components/Avatar";
+import { fileUrl } from "../account/account-api";
 import { adminApi, type AccountAction, type UserDetail } from "./admin-api";
 import {
   AccountStatusChip,
@@ -70,7 +72,10 @@ function UserDetailView({ user, onChanged }: { user: UserDetail; onChanged: () =
       {notice && <FormAlert tone="success">{notice}</FormAlert>}
       <div className={styles.item}>
         <div className={styles.itemHeader}>
-          <span className={styles.itemTitle}>{user.profile?.fullName ?? user.email}</span>
+          <span className={styles.row}>
+            <Avatar name={user.profile?.fullName ?? user.email} src={fileUrl(user.photo)} size={48} />
+            <span className={styles.itemTitle}>{user.profile?.fullName ?? user.email}</span>
+          </span>
           <span className={styles.row}>
             <AccountStatusChip status={user.accountStatus} />
             <VerificationChip status={user.studentVerificationStatus} />

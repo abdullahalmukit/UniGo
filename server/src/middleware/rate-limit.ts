@@ -48,6 +48,15 @@ export const idCardUploadRateLimit = limiter(
   userKey,
 );
 
+// A7: the user's own password, per account (after `authenticate`).
+export const changePasswordRateLimit = limiter(
+  rules.profile.changePasswordPerUser.window,
+  rules.profile.changePasswordPerUser.max,
+  userKey,
+);
+// A Google-only account's "set a password" link: the Forgot password limit, per account.
+export const passwordSetupLinkRateLimit = limiter(HOUR, rules.passwordReset.maxRequestsPerHour, userKey);
+
 // Lets each test start with empty counters.
 export function resetRateLimits() {
   for (const store of stores) store.resetAll();

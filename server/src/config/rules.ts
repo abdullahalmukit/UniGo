@@ -79,6 +79,39 @@ export const rules = {
     signedUrlLifetime: 5 * MINUTE,
   },
 
+  // A7: the user's own profile and settings (proposal section 5, A7 decisions)
+  profile: {
+    name: { minLength: 2, maxLength: 100 },
+    // Optional fields, limited by their column sizes
+    studentIdMaxLength: 50,
+    departmentMaxLength: 100,
+    batchMaxLength: 50,
+    locationMaxLength: 255,
+    photo: {
+      // JPG or PNG only, at most uploads.maxFileSizeBytes; re-encoded to a
+      // square JPEG, which also removes EXIF data such as GPS position
+      allowedMimeTypes: ["image/jpeg", "image/png"],
+      sizePx: 512,
+      jpegQuality: 82,
+      // Longer than documents, so a photo on screen keeps working
+      signedUrlLifetime: HOUR,
+    },
+    changePasswordPerUser: { window: 15 * MINUTE, max: 5 },
+  },
+
+  savedAddresses: {
+    maxPerUser: 10,
+    // Home, Hall and Work at most once each; Custom needs its own name
+    singleLabels: ["HOME", "HALL", "WORK"],
+    customLabel: { minLength: 1, maxLength: 50 },
+    addressMaxLength: 255,
+  },
+
+  subAreas: {
+    maxPerUser: 20,
+    searchResults: 50,
+  },
+
   admin: {
     pageSize: 20,
     // Every warning, restriction, suspension, ban, unban and reactivation

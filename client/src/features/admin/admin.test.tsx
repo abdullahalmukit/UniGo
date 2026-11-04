@@ -97,6 +97,7 @@ const userDetail: UserDetail = {
   isVerifiedRider: false,
   createdAt: "2026-11-01T06:00:00.000Z",
   lastLoginAt: null,
+  photo: null,
   university: { id: "uni", name: "Alpha University", shortName: null },
   profile: { fullName: "Rahim Uddin", studentIdNumber: null, department: null, batch: null },
   verifications: [],

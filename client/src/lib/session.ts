@@ -121,6 +121,16 @@ export class SessionManager {
     this.post({ type: "session", session });
   }
 
+  // After the user changes their own account (A7): keep the token, replace the
+  // account it carries, in every tab.
+  updateUser(user: SessionUser) {
+    const current = this.currentSession();
+    if (!current || current.user.id !== user.id) return;
+    const session = { ...current, user };
+    this.adopt(session);
+    this.post({ type: "session", session });
+  }
+
   async logout() {
     try {
       await this.deps.fetch(`${this.deps.apiBaseUrl}/auth/logout`, { method: "POST", credentials: "include" });

@@ -10,8 +10,10 @@ import { adminStudentVerificationsRouter } from "./modules/admin/student-verific
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
+import { subAreasRouter } from "./modules/subareas/subareas.routes.js";
 import { adminUniversitiesRouter } from "./modules/universities/universities.admin.routes.js";
 import { universitiesRouter } from "./modules/universities/universities.routes.js";
+import { meRouter } from "./modules/users/me.routes.js";
 import { verificationRouter } from "./modules/verification/verification.routes.js";
 
 export const app = express();
@@ -24,6 +26,8 @@ app.use(cookieParser());
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/universities", universitiesRouter);
+app.use("/api/me", meRouter);
+app.use("/api/sub-areas", subAreasRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/files", filesRouter);
 app.use("/api/admin/student-verifications", adminStudentVerificationsRouter);

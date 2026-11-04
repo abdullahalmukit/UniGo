@@ -382,7 +382,8 @@ model User {
 model Profile {
   userId          String   @id @map("user_id") @db.Char(36)
   fullName        String   @map("full_name") @db.VarChar(100)
-  photoUrl        String?  @map("photo_url") @db.VarChar(512)
+  // Private storage key of the profile photo (A7); opened only through a signed link.
+  photoKey        String?  @map("photo_key") @db.VarChar(100)
   studentIdNumber String?  @map("student_id_number") @db.VarChar(50)
   department      String?  @db.VarChar(100)
   batch           String?  @db.VarChar(50)
