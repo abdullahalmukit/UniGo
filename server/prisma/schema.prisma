@@ -1,0 +1,1484 @@
+// UniGo database schema (step A2).
+// Source: proposal section 18 and CLAUDE.md section 7.
+//
+// Conventions
+// - Models are PascalCase, mapped to snake_case tables and columns.
+// - Ids are time-ordered UUID v7 strings (CHAR(36)).
+// - Every DateTime is UTC. A DATE column is a calendar day in Asia/Dhaka.
+// - Money is DECIMAL(10,2) in BDT. Coordinates are DECIMAL(9,6).
+// - Columns ending in `Key` hold a private-storage object key (served only through
+//   signed URLs). Columns ending in `Url` hold a public URL.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "mysql"
+}
+
+// ============================================================================
+// Enums
+// ============================================================================
+
+enum UserRole {
+  USER
+  MODERATOR
+  SUPER_ADMIN
+}
+
+enum AccountStatus {
+  ACTIVE
+  RESTRICTED
+  SUSPENDED
+  BANNED
+}
+
+enum StudentVerificationStatus {
+  UNVERIFIED
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum StudentVerificationMethod {
+  UNIVERSITY_EMAIL
+  ID_CARD
+}
+
+enum Language {
+  BN
+  EN
+}
+
+enum ThemePreference {
+  LIGHT
+  DARK
+  SYSTEM
+}
+
+enum SavedAddressLabel {
+  HOME
+  HALL
+  WORK
+  CUSTOM
+}
+
+enum ModerationActionType {
+  WARN
+  RESTRICT
+  SUSPEND
+  BAN
+  UNBAN
+  REACTIVATE
+  RIDER_SUSPEND
+  RIDER_REINSTATE
+  CARPOOL_SUSPEND
+  CARPOOL_REINSTATE
+}
+
+// Rider applications and vehicles
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RiderApplicationKind {
+  INITIAL
+  REVERIFICATION
+}
+
+enum RiderDocumentType {
+  NID_FRONT
+  NID_BACK
+  CAR_LICENCE
+  MOTORCYCLE_LICENCE
+}
+
+enum VehicleType {
+  BIKE
+  CAR
+}
+
+// One row in `activities` per one-to-one unit of work (two participants).
+enum ActivityType {
+  RIDE_REQUEST
+  RIDE_BOOKING
+  CARPOOL_BOOKING
+  CARPOOL_SESSION
+  FOOD
+  SERVICE
+}
+
+enum ActivityStatus {
+  OPEN
+  ACCEPTED
+  IN_PROGRESS
+  DISPUTED
+  COMPLETED
+  CANCELLED
+  EXPIRED
+  NOT_MARKED
+}
+
+enum ActivitySubStatus {
+  RIDE_CONFIRMED
+  CONTRACT_ACTIVE
+  ORDER_CONFIRMED
+  FOOD_COLLECTED
+  SERVICE_DELIVERED
+  COMPLETION_REQUESTED
+}
+
+// Why the system or an admin (not a participant) ended an activity.
+enum ClosureReason {
+  EXPIRED_UNACCEPTED
+  NOT_MARKED_TIMEOUT
+  AUTO_COMPLETED
+  DELETED_BY_CREATOR
+  BOOKING_REJECTED
+  SEAT_HOLD_EXPIRED
+  ACCOUNT_MODERATED
+  ADMIN_REMOVED
+  DISPUTE_RESOLVED
+}
+
+enum ActorType {
+  USER
+  ADMIN
+  SYSTEM
+}
+
+// Parent posts (ride offers, carpool posts)
+enum PostStatus {
+  OPEN
+  FULL
+  CLOSED
+}
+
+enum CarpoolContractStatus {
+  ACTIVE
+  ENDED
+  TERMINATED
+}
+
+enum ServiceCategoryCode {
+  SHOPPING_PURCHASING
+  PARCEL_DELIVERY
+  PHARMACY_HEALTHCARE
+  DOCUMENT_ACADEMIC
+  WARRANTY_REPAIR
+  FINANCIAL_ADMINISTRATIVE
+  CUSTOM_OTHER
+}
+
+enum MessageKind {
+  TEXT
+  IMAGE
+  SYSTEM
+}
+
+// Proposal section 14
+enum NotificationType {
+  REQUEST_ACCEPTED
+  SEAT_BOOKED
+  CARPOOL_BOOKING_REQUESTED
+  CARPOOL_BOOKING_ACCEPTED
+  CARPOOL_BOOKING_REJECTED
+  CARPOOL_CONTRACT_CREATED
+  CARPOOL_SESSION_REMINDER
+  ACTIVITY_REMINDER
+  COMPLETION_REQUESTED
+  AUTO_COMPLETED
+  AUTO_CLOSED_NOT_MARKED
+  ACTIVITY_CANCELLED
+  DISPUTE_OPENED
+  DISPUTE_UPDATED
+  DISPUTE_RESOLVED
+  NEW_CHAT_MESSAGE
+  SUB_AREA_NEW_REQUEST
+  STUDENT_VERIFICATION_RESULT
+  RIDER_VERIFICATION_RESULT
+  REQUEST_EXPIRED
+  CARPOOL_PAYMENT_DUE
+  REPORT_UPDATE
+  SUPPORT_UPDATE
+  ANNOUNCEMENT
+  ACCOUNT_STATUS_CHANGED
+  PASSWORD_RESET_REQUESTED
+  PASSWORD_CHANGED
+  LICENCE_EXPIRY_REMINDER
+}
+
+enum NotificationChannel {
+  IN_APP
+  PUSH
+  EMAIL
+}
+
+enum NotificationDeliveryStatus {
+  PENDING
+  SENT
+  FAILED
+  SKIPPED
+}
+
+enum DisputeKind {
+  COMPLETION_DISPUTE
+  COMPLAINT
+  EARLY_TERMINATION
+}
+
+enum DisputeStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+}
+
+enum ReportStatus {
+  OPEN
+  UNDER_REVIEW
+  RESOLVED
+  DISMISSED
+}
+
+enum SupportCategory {
+  ACCOUNT
+  VERIFICATION
+  RIDE
+  CARPOOL
+  FOOD
+  SERVICE
+  PAYMENT
+  TECHNICAL
+  APP_FEEDBACK
+  OTHER
+}
+
+enum SupportStatus {
+  OPEN
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum PaymentMethod {
+  CASH
+  BKASH
+  NAGAD
+}
+
+enum PaymentStatus {
+  UNPAID
+  PAID
+}
+
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+// ============================================================================
+// People
+// ============================================================================
+
+model User {
+  id                        String                    @id @default(uuid(7)) @db.Char(36)
+  email                     String                    @unique @db.VarChar(254)
+  phone                     String                    @unique @db.VarChar(20)
+  // Null for Google-only accounts until they set a password.
+  passwordHash              String?                   @map("password_hash") @db.VarChar(255)
+  googleId                  String?                   @unique @map("google_id") @db.VarChar(64)
+  universityId              String                    @map("university_id") @db.Char(36)
+  role                      UserRole                  @default(USER)
+  accountStatus             AccountStatus             @default(ACTIVE) @map("account_status")
+  // Set while SUSPENDED; the suspension-end job returns the account to ACTIVE.
+  suspendedUntil            DateTime?                 @map("suspended_until")
+  studentVerificationStatus StudentVerificationStatus @default(UNVERIFIED) @map("student_verification_status")
+  // Lower-cased university email that verified this account. Unique, so one
+  // email verifies only one account. Null when verified by ID card.
+  verifiedUniversityEmail   String?                   @unique @map("verified_university_email") @db.VarChar(254)
+  isVerifiedRider           Boolean                   @default(false) @map("is_verified_rider")
+  // The rider's own Active / Inactive switch.
+  riderActive               Boolean                   @default(false) @map("rider_active")
+  // Admin suspension of rider tools; null `riderSuspendedUntil` means until lifted.
+  riderSuspended            Boolean                   @default(false) @map("rider_suspended")
+  riderSuspendedUntil       DateTime?                 @map("rider_suspended_until")
+  carpoolSuspendedUntil     DateTime?                 @map("carpool_suspended_until")
+  language                  Language                  @default(EN)
+  theme                     ThemePreference           @default(LIGHT)
+  pushEnabled               Boolean                   @default(false) @map("push_enabled")
+  emailNotificationsEnabled Boolean                   @default(true) @map("email_notifications_enabled")
+  passwordChangedAt         DateTime?                 @map("password_changed_at")
+  // Access tokens issued at or before this moment are rejected (logout from all
+  // sessions, password reset). Null means no cut-off.
+  tokensValidAfter          DateTime?                 @map("tokens_valid_after")
+  lastLoginAt               DateTime?                 @map("last_login_at")
+  createdAt                 DateTime                  @default(now()) @map("created_at")
+  updatedAt                 DateTime                  @updatedAt @map("updated_at")
+
+  university                   University              @relation(fields: [universityId], references: [id])
+  profile                      Profile?
+  refreshTokens                RefreshToken[]
+  passwordResetTokens          PasswordResetToken[]
+  studentVerifications         StudentVerification[]   @relation("StudentVerificationUser")
+  reviewedStudentVerifications StudentVerification[]   @relation("StudentVerificationReviewer")
+  savedAddresses               SavedAddress[]
+  blocksMade                   Block[]                 @relation("Blocker")
+  blocksReceived               Block[]                 @relation("Blocked")
+  moderationActions            ModerationAction[]      @relation("ModerationTarget")
+  moderationActionsTaken       ModerationAction[]      @relation("ModerationAdmin")
+  subAreas                     UserSubArea[]
+  riderApplications            RiderApplication[]      @relation("RiderApplicant")
+  reviewedRiderApplications    RiderApplication[]      @relation("RiderApplicationReviewer")
+  vehicles                     Vehicle[]               @relation("VehicleOwner")
+  reviewedVehicles             Vehicle[]               @relation("VehicleReviewer")
+  createdActivities            Activity[]              @relation("ActivityCreator")
+  acceptedActivities           Activity[]              @relation("ActivityAccepter")
+  completionRequests           Activity[]              @relation("ActivityCompletionRequester")
+  cancelledActivities          Activity[]              @relation("ActivityCanceller")
+  activityStatusChanges        ActivityStatusHistory[]
+  rideOffers                   RideOffer[]
+  carpoolPosts                 CarpoolPost[]
+  carpoolTerminationRequests   CarpoolContract[]
+  carpoolPaymentsMarked        CarpoolMonthlyPayment[]
+  foodReceipts                 FoodReceipt[]
+  messages                     Message[]
+  notifications                Notification[]
+  pushSubscriptions            PushSubscription[]
+  reviewsGiven                 Review[]                @relation("ReviewAuthor")
+  reviewsReceived              Review[]                @relation("ReviewSubject")
+  reviewsHidden                Review[]                @relation("ReviewModerator")
+  disputesRaised               Dispute[]               @relation("DisputeRaiser")
+  disputesAgainst              Dispute[]               @relation("DisputeAgainst")
+  disputesDecided              Dispute[]               @relation("DisputeDecider")
+  disputeEvidence              DisputeEvidence[]
+  reportsMade                  Report[]                @relation("ReportReporter")
+  reportsAgainst               Report[]                @relation("ReportSubject")
+  reportsReviewed              Report[]                @relation("ReportReviewer")
+  noShowReportsMade            NoShowReport[]          @relation("NoShowReporter")
+  noShowReportsAgainst         NoShowReport[]          @relation("NoShowSubject")
+  noShowReportsReviewed        NoShowReport[]          @relation("NoShowReviewer")
+  supportRequests              SupportRequest[]        @relation("SupportRequester")
+  supportRequestsHandled       SupportRequest[]        @relation("SupportHandler")
+  paymentsMarked               PaymentRecord[]
+  auditLogs                    AuditLog[]              @relation("AuditAdmin")
+  auditLogsAbout               AuditLog[]              @relation("AuditTargetUser")
+
+  @@index([universityId])
+  @@index([accountStatus])
+  @@index([studentVerificationStatus])
+  @@index([isVerifiedRider, riderActive])
+  @@map("users")
+}
+
+model Profile {
+  userId          String   @id @map("user_id") @db.Char(36)
+  fullName        String   @map("full_name") @db.VarChar(100)
+  photoUrl        String?  @map("photo_url") @db.VarChar(512)
+  studentIdNumber String?  @map("student_id_number") @db.VarChar(50)
+  department      String?  @db.VarChar(100)
+  batch           String?  @db.VarChar(50)
+  location        String?  @db.VarChar(255)
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("profiles")
+}
+
+// Needed for refresh-token rotation and "log out all sessions" (not listed in section 18).
+model RefreshToken {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  // All tokens from one login share a family; reuse of a rotated token revokes the family.
+  familyId  String    @map("family_id") @db.Char(36)
+  expiresAt DateTime  @map("expires_at")
+  revokedAt DateTime? @map("revoked_at")
+  userAgent String?   @map("user_agent") @db.VarChar(255)
+  ipAddress String?   @map("ip_address") @db.VarChar(45)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([familyId])
+  @@map("refresh_tokens")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  userId    String    @map("user_id") @db.Char(36)
+  tokenHash String    @unique @map("token_hash") @db.Char(64)
+  expiresAt DateTime  @map("expires_at")
+  usedAt    DateTime? @map("used_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId, createdAt])
+  @@map("password_reset_tokens")
+}
+
+model University {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  name      String   @unique @db.VarChar(150)
+  shortName String?  @map("short_name") @db.VarChar(30)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  domains UniversityDomain[]
+  users   User[]
+
+  @@map("universities")
+}
+
+model UniversityDomain {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  universityId String   @map("university_id") @db.Char(36)
+  domain       String   @unique @db.VarChar(253)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  university University @relation(fields: [universityId], references: [id], onDelete: Cascade)
+
+  @@index([universityId])
+  @@map("university_domains")
+}
+
+// One row per attempt. The user's current state is users.studentVerificationStatus.
+model StudentVerification {
+  id              String                    @id @default(uuid(7)) @db.Char(36)
+  userId          String                    @map("user_id") @db.Char(36)
+  method          StudentVerificationMethod
+  // Never UNVERIFIED on a row.
+  status          StudentVerificationStatus @default(PENDING)
+  universityEmail String?                   @map("university_email") @db.VarChar(254)
+  otpHash         String?                   @map("otp_hash") @db.Char(64)
+  otpExpiresAt    DateTime?                 @map("otp_expires_at")
+  otpAttempts     Int                       @default(0) @map("otp_attempts")
+  idCardFileKey   String?                   @map("id_card_file_key") @db.VarChar(512)
+  reviewedById    String?                   @map("reviewed_by_id") @db.Char(36)
+  reviewedAt      DateTime?                 @map("reviewed_at")
+  rejectionReason String?                   @map("rejection_reason") @db.VarChar(500)
+  verifiedAt      DateTime?                 @map("verified_at")
+  createdAt       DateTime                  @default(now()) @map("created_at")
+  updatedAt       DateTime                  @updatedAt @map("updated_at")
+
+  user       User  @relation("StudentVerificationUser", fields: [userId], references: [id])
+  reviewedBy User? @relation("StudentVerificationReviewer", fields: [reviewedById], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status, method])
+  @@index([universityEmail])
+  @@index([reviewedById])
+  @@map("student_verifications")
+}
+
+model SavedAddress {
+  id          String            @id @default(uuid(7)) @db.Char(36)
+  userId      String            @map("user_id") @db.Char(36)
+  label       SavedAddressLabel
+  customLabel String?           @map("custom_label") @db.VarChar(50)
+  address     String            @db.VarChar(255)
+  lat         Decimal           @db.Decimal(9, 6)
+  lng         Decimal           @db.Decimal(9, 6)
+  createdAt   DateTime          @default(now()) @map("created_at")
+  updatedAt   DateTime          @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("saved_addresses")
+}
+
+model Block {
+  blockerId String   @map("blocker_id") @db.Char(36)
+  blockedId String   @map("blocked_id") @db.Char(36)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  blocker User @relation("Blocker", fields: [blockerId], references: [id], onDelete: Cascade)
+  blocked User @relation("Blocked", fields: [blockedId], references: [id], onDelete: Cascade)
+
+  @@id([blockerId, blockedId])
+  @@index([blockedId])
+  @@map("blocks")
+}
+
+// The user's moderation history. Every row is also written to audit_logs.
+model ModerationAction {
+  id             String               @id @default(uuid(7)) @db.Char(36)
+  userId         String               @map("user_id") @db.Char(36)
+  adminId        String               @map("admin_id") @db.Char(36)
+  type           ModerationActionType
+  reason         String               @db.Text
+  startsAt       DateTime?            @map("starts_at")
+  endsAt         DateTime?            @map("ends_at")
+  previousStatus AccountStatus?       @map("previous_status")
+  newStatus      AccountStatus?       @map("new_status")
+  disputeId      String?              @map("dispute_id") @db.Char(36)
+  reportId       String?              @map("report_id") @db.Char(36)
+  noShowReportId String?              @map("no_show_report_id") @db.Char(36)
+  createdAt      DateTime             @default(now()) @map("created_at")
+  updatedAt      DateTime             @updatedAt @map("updated_at")
+
+  user         User          @relation("ModerationTarget", fields: [userId], references: [id])
+  admin        User          @relation("ModerationAdmin", fields: [adminId], references: [id])
+  dispute      Dispute?      @relation(fields: [disputeId], references: [id])
+  report       Report?       @relation(fields: [reportId], references: [id])
+  noShowReport NoShowReport? @relation(fields: [noShowReportId], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([adminId])
+  @@index([type, endsAt])
+  @@index([disputeId])
+  @@index([reportId])
+  @@index([noShowReportId])
+  @@map("moderation_actions")
+}
+
+// ============================================================================
+// Areas
+// ============================================================================
+
+model SubArea {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  name      String   @unique @db.VarChar(100)
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  users           UserSubArea[]
+  rideRequests    RideRequest[]
+  rideOffers      RideOffer[]
+  foodRequests    FoodRequest[]
+  serviceRequests ServiceRequest[]
+
+  @@map("sub_areas")
+}
+
+model UserSubArea {
+  userId    String   @map("user_id") @db.Char(36)
+  subAreaId String   @map("sub_area_id") @db.Char(36)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  subArea SubArea @relation(fields: [subAreaId], references: [id], onDelete: Cascade)
+
+  @@id([userId, subAreaId])
+  @@index([subAreaId])
+  @@map("user_sub_areas")
+}
+
+// ============================================================================
+// Riders
+// ============================================================================
+
+model RiderApplication {
+  id               String               @id @default(uuid(7)) @db.Char(36)
+  userId           String               @map("user_id") @db.Char(36)
+  kind             RiderApplicationKind @default(INITIAL)
+  status           ApprovalStatus       @default(PENDING)
+  licenceExpiresOn DateTime             @map("licence_expires_on") @db.Date
+  reviewedById     String?              @map("reviewed_by_id") @db.Char(36)
+  reviewedAt       DateTime?            @map("reviewed_at")
+  rejectionReason  String?              @map("rejection_reason") @db.VarChar(500)
+  createdAt        DateTime             @default(now()) @map("created_at")
+  updatedAt        DateTime             @updatedAt @map("updated_at")
+
+  user       User            @relation("RiderApplicant", fields: [userId], references: [id])
+  reviewedBy User?           @relation("RiderApplicationReviewer", fields: [reviewedById], references: [id])
+  documents  RiderDocument[]
+  vehicles   Vehicle[]
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([licenceExpiresOn])
+  @@index([reviewedById])
+  @@map("rider_applications")
+}
+
+model RiderDocument {
+  id            String            @id @default(uuid(7)) @db.Char(36)
+  applicationId String            @map("application_id") @db.Char(36)
+  type          RiderDocumentType
+  fileKey       String            @map("file_key") @db.VarChar(512)
+  mimeType      String            @map("mime_type") @db.VarChar(50)
+  sizeBytes     Int               @map("size_bytes")
+  createdAt     DateTime          @default(now()) @map("created_at")
+  updatedAt     DateTime          @updatedAt @map("updated_at")
+
+  application RiderApplication @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+
+  @@unique([applicationId, type])
+  @@map("rider_documents")
+}
+
+model Vehicle {
+  id                           String         @id @default(uuid(7)) @db.Char(36)
+  ownerId                      String         @map("owner_id") @db.Char(36)
+  // The application this vehicle was submitted with.
+  applicationId                String?        @map("application_id") @db.Char(36)
+  type                         VehicleType
+  brand                        String         @db.VarChar(50)
+  model                        String         @db.VarChar(50)
+  colour                       String         @db.VarChar(30)
+  // Stored in full; masked in every API response to students.
+  registrationNumber           String         @map("registration_number") @db.VarChar(30)
+  // normalizeRegistrationNumber(registrationNumber). Unique across riders, so a
+  // re-submission of the same vehicle updates this row instead of adding one.
+  registrationNumberNormalized String         @unique @map("registration_number_normalized") @db.VarChar(30)
+  photoKey                     String         @map("photo_key") @db.VarChar(512)
+  // Passenger seats, rider not counted. BIKE = 1, CAR = 1-4 (rules.ts).
+  seatCapacity                 Int            @map("seat_capacity") @db.TinyInt
+  status                       ApprovalStatus @default(PENDING)
+  reviewedById                 String?        @map("reviewed_by_id") @db.Char(36)
+  reviewedAt                   DateTime?      @map("reviewed_at")
+  rejectionReason              String?        @map("rejection_reason") @db.VarChar(500)
+  // The rider can retire a vehicle without deleting its history.
+  isActive                     Boolean        @default(true) @map("is_active")
+  createdAt                    DateTime       @default(now()) @map("created_at")
+  updatedAt                    DateTime       @updatedAt @map("updated_at")
+
+  owner        User              @relation("VehicleOwner", fields: [ownerId], references: [id])
+  application  RiderApplication? @relation(fields: [applicationId], references: [id])
+  reviewedBy   User?             @relation("VehicleReviewer", fields: [reviewedById], references: [id])
+  rideRequests RideRequest[]
+  rideOffers   RideOffer[]
+  carpoolPosts CarpoolPost[]
+
+  @@index([ownerId, status])
+  @@index([applicationId])
+  @@index([reviewedById])
+  @@map("vehicles")
+}
+
+// ============================================================================
+// Core: common activity engine
+// ============================================================================
+
+// Every one-to-one unit of work has one row here; feature tables link 1:1 to it.
+// Participants: creatorId owns the post or request, accepterId took it (accepted,
+// booked a seat, or requested a carpool seat).
+model Activity {
+  id                      String             @id @default(uuid(7)) @db.Char(36)
+  type                    ActivityType
+  status                  ActivityStatus     @default(OPEN)
+  subStatus               ActivitySubStatus? @map("sub_status")
+  startTime               DateTime           @map("start_time")
+  // False when the item takes no part in the 90-minute conflict check
+  // (service request without a time, carpool booking; sessions block instead).
+  blocksTime              Boolean            @default(true) @map("blocks_time")
+  creatorId               String             @map("creator_id") @db.Char(36)
+  accepterId              String?            @map("accepter_id") @db.Char(36)
+  acceptedAt              DateTime?          @map("accepted_at")
+  startedAt               DateTime?          @map("started_at")
+  completionRequestedAt   DateTime?          @map("completion_requested_at")
+  completionRequestedById String?            @map("completion_requested_by_id") @db.Char(36)
+  completedAt             DateTime?          @map("completed_at")
+  cancelledAt             DateTime?          @map("cancelled_at")
+  cancelledById           String?            @map("cancelled_by_id") @db.Char(36)
+  cancellationReason      String?            @map("cancellation_reason") @db.Text
+  isLateCancellation      Boolean            @default(false) @map("is_late_cancellation")
+  autoClosedAt            DateTime?          @map("auto_closed_at")
+  closureReason           ClosureReason?     @map("closure_reason")
+  // Soft delete of an OPEN item by its creator, so daily limits still count it.
+  deletedAt               DateTime?          @map("deleted_at")
+  createdAt               DateTime           @default(now()) @map("created_at")
+  updatedAt               DateTime           @updatedAt @map("updated_at")
+
+  creator               User                    @relation("ActivityCreator", fields: [creatorId], references: [id])
+  accepter              User?                   @relation("ActivityAccepter", fields: [accepterId], references: [id])
+  completionRequestedBy User?                   @relation("ActivityCompletionRequester", fields: [completionRequestedById], references: [id])
+  cancelledBy           User?                   @relation("ActivityCanceller", fields: [cancelledById], references: [id])
+  statusHistory         ActivityStatusHistory[]
+  rideRequest           RideRequest?
+  rideBooking           RideBooking?
+  carpoolBooking        CarpoolBooking?
+  carpoolSession        CarpoolSession?
+  foodRequest           FoodRequest?
+  serviceRequest        ServiceRequest?
+  chat                  Chat?
+  paymentRecord         PaymentRecord?
+  reviews               Review[]
+  disputes              Dispute[]
+  reports               Report[]
+  notifications         Notification[]
+
+  // Expiry and NOT_MARKED jobs
+  @@index([status, startTime])
+  // Browse open items per feature
+  @@index([type, status, startTime])
+  // Open limit, Activity lists and the conflict check, for each participant
+  @@index([creatorId, status, startTime])
+  @@index([accepterId, status, startTime])
+  // Daily creation limit
+  @@index([creatorId, createdAt])
+  @@index([completionRequestedById])
+  @@index([cancelledById])
+  @@map("activities")
+}
+
+model ActivityStatusHistory {
+  id            String             @id @default(uuid(7)) @db.Char(36)
+  activityId    String             @map("activity_id") @db.Char(36)
+  fromStatus    ActivityStatus?    @map("from_status")
+  toStatus      ActivityStatus     @map("to_status")
+  fromSubStatus ActivitySubStatus? @map("from_sub_status")
+  toSubStatus   ActivitySubStatus? @map("to_sub_status")
+  actorType     ActorType          @map("actor_type")
+  // Null when actorType is SYSTEM.
+  actorId       String?            @map("actor_id") @db.Char(36)
+  reason        String?            @db.Text
+  createdAt     DateTime           @default(now()) @map("created_at")
+  updatedAt     DateTime           @updatedAt @map("updated_at")
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  actor    User?    @relation(fields: [actorId], references: [id])
+
+  @@index([activityId, createdAt])
+  @@index([actorId])
+  @@map("activity_status_history")
+}
+
+// ============================================================================
+// Ride Sharing
+// ============================================================================
+
+// Passenger request: activity creator = passenger, accepter = rider.
+model RideRequest {
+  id                 String   @id @default(uuid(7)) @db.Char(36)
+  activityId         String   @unique @map("activity_id") @db.Char(36)
+  pickupAddress      String   @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal  @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal  @map("pickup_lng") @db.Decimal(9, 6)
+  destinationAddress String   @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal  @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal  @map("destination_lng") @db.Decimal(9, 6)
+  offeredAmount      Decimal  @map("offered_amount") @db.Decimal(10, 2)
+  passengerCount     Int      @map("passenger_count") @db.TinyInt
+  notes              String?  @db.Text
+  subAreaId          String   @map("sub_area_id") @db.Char(36)
+  routeDistanceKm    Decimal? @map("route_distance_km") @db.Decimal(7, 2)
+  // The accepting rider's vehicle, set on accept.
+  vehicleId          String?  @map("vehicle_id") @db.Char(36)
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  activity Activity @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  subArea  SubArea  @relation(fields: [subAreaId], references: [id])
+  vehicle  Vehicle? @relation(fields: [vehicleId], references: [id])
+
+  @@index([subAreaId])
+  @@index([vehicleId])
+  @@map("ride_requests")
+}
+
+// Parent post, not an activity. Each booking is its own activity.
+model RideOffer {
+  id                 String     @id @default(uuid(7)) @db.Char(36)
+  riderId            String     @map("rider_id") @db.Char(36)
+  vehicleId          String     @map("vehicle_id") @db.Char(36)
+  pickupAddress      String     @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal    @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal    @map("pickup_lng") @db.Decimal(9, 6)
+  destinationAddress String     @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal    @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal    @map("destination_lng") @db.Decimal(9, 6)
+  departureTime      DateTime   @map("departure_time")
+  farePerSeat        Decimal    @map("fare_per_seat") @db.Decimal(10, 2)
+  totalSeats         Int        @map("total_seats") @db.TinyInt
+  // Changed only by conditional updates (seatsAvailable >= n) inside the booking transaction.
+  seatsAvailable     Int        @map("seats_available") @db.TinyInt
+  notes              String?    @db.Text
+  subAreaId          String?    @map("sub_area_id") @db.Char(36)
+  routeDistanceKm    Decimal?   @map("route_distance_km") @db.Decimal(7, 2)
+  status             PostStatus @default(OPEN)
+  closedAt           DateTime?  @map("closed_at")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+
+  rider    User          @relation(fields: [riderId], references: [id])
+  vehicle  Vehicle       @relation(fields: [vehicleId], references: [id])
+  subArea  SubArea?      @relation(fields: [subAreaId], references: [id])
+  bookings RideBooking[]
+
+  @@index([status, departureTime])
+  @@index([riderId, status])
+  @@index([vehicleId])
+  @@index([subAreaId])
+  @@map("ride_offers")
+}
+
+// Seat booking: activity creator = rider (offer owner), accepter = passenger.
+model RideBooking {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  activityId  String   @unique @map("activity_id") @db.Char(36)
+  rideOfferId String   @map("ride_offer_id") @db.Char(36)
+  seatsBooked Int      @default(1) @map("seats_booked") @db.TinyInt
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  activity  Activity  @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  rideOffer RideOffer @relation(fields: [rideOfferId], references: [id])
+
+  @@index([rideOfferId])
+  @@map("ride_bookings")
+}
+
+// ============================================================================
+// Carpool
+// ============================================================================
+
+// One schedule = one post. Parent post, not an activity.
+model CarpoolPost {
+  id                 String     @id @default(uuid(7)) @db.Char(36)
+  riderId            String     @map("rider_id") @db.Char(36)
+  vehicleId          String     @map("vehicle_id") @db.Char(36)
+  // Bitmask of weekdays: bit 0 = Sunday ... bit 6 = Saturday.
+  daysOfWeek         Int        @map("days_of_week") @db.TinyInt
+  // Minutes after midnight, Asia/Dhaka (a recurring wall-clock time, not an instant).
+  departureMinute    Int        @map("departure_minute") @db.SmallInt
+  pickupAddress      String     @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal    @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal    @map("pickup_lng") @db.Decimal(9, 6)
+  destinationAddress String     @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal    @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal    @map("destination_lng") @db.Decimal(9, 6)
+  totalSeats         Int        @map("total_seats") @db.TinyInt
+  seatsAvailable     Int        @map("seats_available") @db.TinyInt
+  notes              String?    @db.Text
+  // Range in which a booking may start (see open question on the schedule range).
+  validFrom          DateTime   @map("valid_from") @db.Date
+  validUntil         DateTime?  @map("valid_until") @db.Date
+  status             PostStatus @default(OPEN)
+  closedAt           DateTime?  @map("closed_at")
+  createdAt          DateTime   @default(now()) @map("created_at")
+  updatedAt          DateTime   @updatedAt @map("updated_at")
+
+  rider    User             @relation(fields: [riderId], references: [id])
+  vehicle  Vehicle          @relation(fields: [vehicleId], references: [id])
+  prices   CarpoolPrice[]
+  bookings CarpoolBooking[]
+
+  @@index([riderId, status])
+  @@index([status, departureMinute])
+  @@index([vehicleId])
+  @@map("carpool_posts")
+}
+
+model CarpoolPrice {
+  id             String   @id @default(uuid(7)) @db.Char(36)
+  postId         String   @map("post_id") @db.Char(36)
+  durationMonths Int      @map("duration_months") @db.TinyInt
+  monthlyPrice   Decimal  @map("monthly_price") @db.Decimal(10, 2)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  post CarpoolPost @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, durationMonths])
+  @@map("carpool_prices")
+}
+
+// Seat request: activity creator = rider (post owner), accepter = passenger.
+// OPEN = waiting for the rider; ACCEPTED = seat held until holdExpiresAt.
+model CarpoolBooking {
+  id                    String    @id @default(uuid(7)) @db.Char(36)
+  activityId            String    @unique @map("activity_id") @db.Char(36)
+  postId                String    @map("post_id") @db.Char(36)
+  // Snapshot of the chosen carpool_prices row.
+  durationMonths        Int       @map("duration_months") @db.TinyInt
+  monthlyPrice          Decimal   @map("monthly_price") @db.Decimal(10, 2)
+  startDate             DateTime  @map("start_date") @db.Date
+  holdExpiresAt         DateTime? @map("hold_expires_at")
+  riderAgreedAt         DateTime? @map("rider_agreed_at")
+  passengerAgreedAt     DateTime? @map("passenger_agreed_at")
+  rejectionReason       String?   @map("rejection_reason") @db.VarChar(500)
+  renewedFromContractId String?   @map("renewed_from_contract_id") @db.Char(36)
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  activity            Activity         @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  post                CarpoolPost      @relation(fields: [postId], references: [id])
+  renewedFromContract CarpoolContract? @relation("ContractRenewal", fields: [renewedFromContractId], references: [id])
+  contract            CarpoolContract? @relation("BookingContract")
+
+  @@index([postId])
+  @@index([holdExpiresAt])
+  @@index([renewedFromContractId])
+  @@map("carpool_bookings")
+}
+
+// Created when both press Agree (booking sub-status CONTRACT_ACTIVE).
+model CarpoolContract {
+  id                       String                @id @default(uuid(7)) @db.Char(36)
+  bookingId                String                @unique @map("booking_id") @db.Char(36)
+  startDate                DateTime              @map("start_date") @db.Date
+  endDate                  DateTime              @map("end_date") @db.Date
+  durationMonths           Int                   @map("duration_months") @db.TinyInt
+  monthlyPrice             Decimal               @map("monthly_price") @db.Decimal(10, 2)
+  status                   CarpoolContractStatus @default(ACTIVE)
+  terminationRequestedById String?               @map("termination_requested_by_id") @db.Char(36)
+  terminationRequestedAt   DateTime?             @map("termination_requested_at")
+  terminationReason        String?               @map("termination_reason") @db.Text
+  terminatedAt             DateTime?             @map("terminated_at")
+  endedAt                  DateTime?             @map("ended_at")
+  createdAt                DateTime              @default(now()) @map("created_at")
+  updatedAt                DateTime              @updatedAt @map("updated_at")
+
+  booking                CarpoolBooking          @relation("BookingContract", fields: [bookingId], references: [id])
+  terminationRequestedBy User?                   @relation(fields: [terminationRequestedById], references: [id])
+  sessions               CarpoolSession[]
+  monthlyPayments        CarpoolMonthlyPayment[]
+  renewals               CarpoolBooking[]        @relation("ContractRenewal")
+
+  @@index([status, endDate])
+  @@index([terminationRequestedById])
+  @@map("carpool_contracts")
+}
+
+// One ride day of a contract. Its own activity (ACCEPTED -> COMPLETED / CANCELLED /
+// NOT_MARKED), so it takes part in the conflict check and Upcoming.
+model CarpoolSession {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  activityId  String   @unique @map("activity_id") @db.Char(36)
+  contractId  String   @map("contract_id") @db.Char(36)
+  sessionDate DateTime @map("session_date") @db.Date
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  activity Activity        @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  contract CarpoolContract @relation(fields: [contractId], references: [id])
+
+  @@unique([contractId, sessionDate])
+  @@map("carpool_sessions")
+}
+
+model CarpoolMonthlyPayment {
+  id             String         @id @default(uuid(7)) @db.Char(36)
+  contractId     String         @map("contract_id") @db.Char(36)
+  // 1-based month of the contract.
+  monthNumber    Int            @map("month_number") @db.TinyInt
+  periodStart    DateTime       @map("period_start") @db.Date
+  periodEnd      DateTime       @map("period_end") @db.Date
+  amount         Decimal        @db.Decimal(10, 2)
+  method         PaymentMethod?
+  status         PaymentStatus  @default(UNPAID)
+  paidAt         DateTime?      @map("paid_at")
+  markedPaidById String?        @map("marked_paid_by_id") @db.Char(36)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  contract     CarpoolContract @relation(fields: [contractId], references: [id])
+  markedPaidBy User?           @relation(fields: [markedPaidById], references: [id])
+
+  @@unique([contractId, monthNumber])
+  @@index([status, periodStart])
+  @@index([markedPaidById])
+  @@map("carpool_monthly_payments")
+}
+
+// ============================================================================
+// Food Delivery
+// ============================================================================
+
+// Activity creator = requester, accepter = the student who buys and delivers.
+model FoodRequest {
+  id                    String    @id @default(uuid(7)) @db.Char(36)
+  activityId            String    @unique @map("activity_id") @db.Char(36)
+  restaurantName        String    @map("restaurant_name") @db.VarChar(150)
+  restaurantAddress     String    @map("restaurant_address") @db.VarChar(255)
+  restaurantLat         Decimal   @map("restaurant_lat") @db.Decimal(9, 6)
+  restaurantLng         Decimal   @map("restaurant_lng") @db.Decimal(9, 6)
+  items                 String    @db.Text
+  details               String    @db.Text
+  quantity              Int       @db.SmallInt
+  estimatedBudget       Decimal   @map("estimated_budget") @db.Decimal(10, 2)
+  pickupAddress         String    @map("pickup_address") @db.VarChar(255)
+  pickupLat             Decimal   @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng             Decimal   @map("pickup_lng") @db.Decimal(9, 6)
+  deliveryAddress       String    @map("delivery_address") @db.VarChar(255)
+  deliveryLat           Decimal   @map("delivery_lat") @db.Decimal(9, 6)
+  deliveryLng           Decimal   @map("delivery_lng") @db.Decimal(9, 6)
+  subAreaId             String    @map("sub_area_id") @db.Char(36)
+  deliveryServiceAmount Decimal?  @map("delivery_service_amount") @db.Decimal(10, 2)
+  // ORDER_CONFIRMED once both are set.
+  requesterConfirmedAt  DateTime? @map("requester_confirmed_at")
+  accepterConfirmedAt   DateTime? @map("accepter_confirmed_at")
+  createdAt             DateTime  @default(now()) @map("created_at")
+  updatedAt             DateTime  @updatedAt @map("updated_at")
+
+  activity      Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  subArea       SubArea        @relation(fields: [subAreaId], references: [id])
+  receipts      FoodReceipt[]
+  noShowReports NoShowReport[]
+
+  @@index([subAreaId])
+  @@map("food_requests")
+}
+
+model FoodReceipt {
+  id            String   @id @default(uuid(7)) @db.Char(36)
+  foodRequestId String   @map("food_request_id") @db.Char(36)
+  uploadedById  String   @map("uploaded_by_id") @db.Char(36)
+  fileKey       String   @map("file_key") @db.VarChar(512)
+  mimeType      String   @map("mime_type") @db.VarChar(50)
+  sizeBytes     Int      @map("size_bytes")
+  amount        Decimal? @db.Decimal(10, 2)
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  foodRequest FoodRequest @relation(fields: [foodRequestId], references: [id], onDelete: Cascade)
+  uploadedBy  User        @relation(fields: [uploadedById], references: [id])
+
+  @@index([foodRequestId])
+  @@index([uploadedById])
+  @@map("food_receipts")
+}
+
+// ============================================================================
+// Uni Service
+// ============================================================================
+
+// The seven fixed categories, seeded. Labels come from the i18n files by code.
+model ServiceCategory {
+  id        String              @id @default(uuid(7)) @db.Char(36)
+  code      ServiceCategoryCode @unique
+  sortOrder Int                 @default(0) @map("sort_order")
+  isActive  Boolean             @default(true) @map("is_active")
+  createdAt DateTime            @default(now()) @map("created_at")
+  updatedAt DateTime            @updatedAt @map("updated_at")
+
+  requests ServiceRequest[]
+
+  @@map("service_categories")
+}
+
+// Activity creator = requester, accepter = helper.
+model ServiceRequest {
+  id                 String   @id @default(uuid(7)) @db.Char(36)
+  activityId         String   @unique @map("activity_id") @db.Char(36)
+  categoryId         String   @map("category_id") @db.Char(36)
+  serviceTitle       String   @map("service_title") @db.VarChar(150)
+  taskTitle          String   @map("task_title") @db.VarChar(150)
+  description        String   @db.Text
+  destinationAddress String   @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal  @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal  @map("destination_lng") @db.Decimal(9, 6)
+  preferredDate      DateTime @map("preferred_date") @db.Date
+  // When true, activities.startTime is the exact preferred time and blocksTime is true.
+  hasPreferredTime   Boolean  @default(false) @map("has_preferred_time")
+  offeredAmount      Decimal  @map("offered_amount") @db.Decimal(10, 2)
+  itemDetails        String?  @map("item_details") @db.Text
+  quantity           Int?     @db.SmallInt
+  referenceImageKey  String?  @map("reference_image_key") @db.VarChar(512)
+  pickupAddress      String?  @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal? @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal? @map("pickup_lng") @db.Decimal(9, 6)
+  subAreaId          String?  @map("sub_area_id") @db.Char(36)
+  estimatedBudget    Decimal? @map("estimated_budget") @db.Decimal(10, 2)
+  instructions       String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+  updatedAt          DateTime @updatedAt @map("updated_at")
+
+  activity Activity        @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  category ServiceCategory @relation(fields: [categoryId], references: [id])
+  subArea  SubArea?        @relation(fields: [subAreaId], references: [id])
+
+  @@index([categoryId])
+  @@index([subAreaId])
+  @@map("service_requests")
+}
+
+// ============================================================================
+// Communication
+// ============================================================================
+
+// One chat per activity (per booking for seat posts). Carpool sessions use the
+// chat of their booking. Read-only is derived from the activity status.
+model Chat {
+  id            String    @id @default(uuid(7)) @db.Char(36)
+  activityId    String    @unique @map("activity_id") @db.Char(36)
+  lastMessageAt DateTime? @map("last_message_at")
+  createdAt     DateTime  @default(now()) @map("created_at")
+  updatedAt     DateTime  @updatedAt @map("updated_at")
+
+  activity Activity  @relation(fields: [activityId], references: [id])
+  messages Message[]
+
+  @@index([lastMessageAt])
+  @@map("chats")
+}
+
+model Message {
+  id                 String      @id @default(uuid(7)) @db.Char(36)
+  chatId             String      @map("chat_id") @db.Char(36)
+  // Null for system messages.
+  senderId           String?     @map("sender_id") @db.Char(36)
+  kind               MessageKind @default(TEXT)
+  body               String?     @db.Text
+  // Stable event code for system messages, translated on the client.
+  systemCode         String?     @map("system_code") @db.VarChar(50)
+  attachmentKey      String?     @map("attachment_key") @db.VarChar(512)
+  attachmentMimeType String?     @map("attachment_mime_type") @db.VarChar(50)
+  readAt             DateTime?   @map("read_at")
+  createdAt          DateTime    @default(now()) @map("created_at")
+  updatedAt          DateTime    @updatedAt @map("updated_at")
+
+  chat    Chat     @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender  User?    @relation(fields: [senderId], references: [id])
+  reports Report[]
+
+  @@index([chatId, createdAt])
+  @@index([chatId, readAt])
+  @@index([senderId, createdAt])
+  @@map("messages")
+}
+
+// One row per user per channel per event. dedupeKey identifies the event
+// (for example "ACTIVITY_CANCELLED:<activityId>").
+model Notification {
+  id            String                     @id @default(uuid(7)) @db.Char(36)
+  userId        String                     @map("user_id") @db.Char(36)
+  type          NotificationType
+  channel       NotificationChannel
+  status        NotificationDeliveryStatus @default(PENDING)
+  activityId    String?                    @map("activity_id") @db.Char(36)
+  // Values for the translated text. Never tokens, passwords or document URLs.
+  data          Json?
+  dedupeKey     String                     @map("dedupe_key") @db.VarChar(191)
+  readAt        DateTime?                  @map("read_at")
+  sentAt        DateTime?                  @map("sent_at")
+  failureReason String?                    @map("failure_reason") @db.VarChar(255)
+  createdAt     DateTime                   @default(now()) @map("created_at")
+  updatedAt     DateTime                   @updatedAt @map("updated_at")
+
+  user     User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  activity Activity? @relation(fields: [activityId], references: [id])
+
+  @@unique([userId, channel, dedupeKey])
+  @@index([userId, channel, readAt])
+  @@index([status, createdAt])
+  @@index([activityId])
+  @@map("notifications")
+}
+
+model PushSubscription {
+  id         String    @id @default(uuid(7)) @db.Char(36)
+  userId     String    @map("user_id") @db.Char(36)
+  endpoint   String    @unique @db.VarChar(512)
+  p256dh     String    @db.VarChar(255)
+  auth       String    @db.VarChar(255)
+  userAgent  String?   @map("user_agent") @db.VarChar(255)
+  lastUsedAt DateTime? @map("last_used_at")
+  createdAt  DateTime  @default(now()) @map("created_at")
+  updatedAt  DateTime  @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("push_subscriptions")
+}
+
+// ============================================================================
+// Trust and safety
+// ============================================================================
+
+// Blind review: hidden until publishedAt is set (both submitted, or 7 days passed).
+model Review {
+  id           String    @id @default(uuid(7)) @db.Char(36)
+  activityId   String    @map("activity_id") @db.Char(36)
+  reviewerId   String    @map("reviewer_id") @db.Char(36)
+  revieweeId   String    @map("reviewee_id") @db.Char(36)
+  rating       Int       @db.TinyInt
+  comment      String?   @db.Text
+  publishedAt  DateTime? @map("published_at")
+  // Admin moderation
+  hiddenAt     DateTime? @map("hidden_at")
+  hiddenById   String?   @map("hidden_by_id") @db.Char(36)
+  hiddenReason String?   @map("hidden_reason") @db.VarChar(500)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  activity Activity @relation(fields: [activityId], references: [id])
+  reviewer User     @relation("ReviewAuthor", fields: [reviewerId], references: [id])
+  reviewee User     @relation("ReviewSubject", fields: [revieweeId], references: [id])
+  hiddenBy User?    @relation("ReviewModerator", fields: [hiddenById], references: [id])
+
+  @@unique([activityId, reviewerId])
+  @@index([revieweeId, publishedAt])
+  @@index([reviewerId])
+  @@index([hiddenById])
+  @@map("reviews")
+}
+
+model Dispute {
+  id              String             @id @default(uuid(7)) @db.Char(36)
+  activityId      String             @map("activity_id") @db.Char(36)
+  kind            DisputeKind
+  status          DisputeStatus      @default(OPEN)
+  raisedById      String             @map("raised_by_id") @db.Char(36)
+  againstUserId   String             @map("against_user_id") @db.Char(36)
+  reason          String             @db.VarChar(200)
+  description     String             @db.Text
+  // Activity state when the dispute was opened.
+  statusBefore    ActivityStatus     @map("status_before")
+  subStatusBefore ActivitySubStatus? @map("sub_status_before")
+  decidedById     String?            @map("decided_by_id") @db.Char(36)
+  decidedAt       DateTime?          @map("decided_at")
+  finalStatus     ActivityStatus?    @map("final_status")
+  decisionNote    String?            @map("decision_note") @db.Text
+  createdAt       DateTime           @default(now()) @map("created_at")
+  updatedAt       DateTime           @updatedAt @map("updated_at")
+
+  activity          Activity           @relation(fields: [activityId], references: [id])
+  raisedBy          User               @relation("DisputeRaiser", fields: [raisedById], references: [id])
+  againstUser       User               @relation("DisputeAgainst", fields: [againstUserId], references: [id])
+  decidedBy         User?              @relation("DisputeDecider", fields: [decidedById], references: [id])
+  evidence          DisputeEvidence[]
+  moderationActions ModerationAction[]
+
+  @@index([activityId])
+  @@index([status, createdAt])
+  @@index([raisedById])
+  @@index([againstUserId])
+  @@index([decidedById])
+  @@map("disputes")
+}
+
+model DisputeEvidence {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  disputeId    String   @map("dispute_id") @db.Char(36)
+  uploadedById String   @map("uploaded_by_id") @db.Char(36)
+  fileKey      String   @map("file_key") @db.VarChar(512)
+  mimeType     String   @map("mime_type") @db.VarChar(50)
+  sizeBytes    Int      @map("size_bytes")
+  note         String?  @db.VarChar(500)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  dispute    Dispute @relation(fields: [disputeId], references: [id], onDelete: Cascade)
+  uploadedBy User    @relation(fields: [uploadedById], references: [id])
+
+  @@index([disputeId])
+  @@index([uploadedById])
+  @@map("dispute_evidence")
+}
+
+// A report about a user (from chat, a profile or an activity).
+model Report {
+  id             String       @id @default(uuid(7)) @db.Char(36)
+  reporterId     String       @map("reporter_id") @db.Char(36)
+  reportedUserId String       @map("reported_user_id") @db.Char(36)
+  activityId     String?      @map("activity_id") @db.Char(36)
+  messageId      String?      @map("message_id") @db.Char(36)
+  reason         String       @db.VarChar(200)
+  description    String?      @db.Text
+  evidenceKey    String?      @map("evidence_key") @db.VarChar(512)
+  status         ReportStatus @default(OPEN)
+  reviewedById   String?      @map("reviewed_by_id") @db.Char(36)
+  reviewedAt     DateTime?    @map("reviewed_at")
+  resolutionNote String?      @map("resolution_note") @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  reporter          User               @relation("ReportReporter", fields: [reporterId], references: [id])
+  reportedUser      User               @relation("ReportSubject", fields: [reportedUserId], references: [id])
+  reviewedBy        User?              @relation("ReportReviewer", fields: [reviewedById], references: [id])
+  activity          Activity?          @relation(fields: [activityId], references: [id])
+  message           Message?           @relation(fields: [messageId], references: [id])
+  moderationActions ModerationAction[]
+
+  @@index([status, createdAt])
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([reviewedById])
+  @@index([activityId])
+  @@index([messageId])
+  @@map("reports")
+}
+
+model NoShowReport {
+  id             String       @id @default(uuid(7)) @db.Char(36)
+  foodRequestId  String       @map("food_request_id") @db.Char(36)
+  reporterId     String       @map("reporter_id") @db.Char(36)
+  reportedUserId String       @map("reported_user_id") @db.Char(36)
+  description    String       @db.Text
+  // Array of private-storage keys.
+  evidenceKeys   Json         @map("evidence_keys")
+  status         ReportStatus @default(OPEN)
+  reviewedById   String?      @map("reviewed_by_id") @db.Char(36)
+  reviewedAt     DateTime?    @map("reviewed_at")
+  resolutionNote String?      @map("resolution_note") @db.Text
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  foodRequest       FoodRequest        @relation(fields: [foodRequestId], references: [id])
+  reporter          User               @relation("NoShowReporter", fields: [reporterId], references: [id])
+  reportedUser      User               @relation("NoShowSubject", fields: [reportedUserId], references: [id])
+  reviewedBy        User?              @relation("NoShowReviewer", fields: [reviewedById], references: [id])
+  moderationActions ModerationAction[]
+
+  @@index([foodRequestId])
+  @@index([status, createdAt])
+  @@index([reporterId])
+  @@index([reportedUserId])
+  @@index([reviewedById])
+  @@map("no_show_reports")
+}
+
+model SupportRequest {
+  id            String          @id @default(uuid(7)) @db.Char(36)
+  userId        String          @map("user_id") @db.Char(36)
+  category      SupportCategory
+  message       String          @db.Text
+  screenshotKey String?         @map("screenshot_key") @db.VarChar(512)
+  // Only for APP_FEEDBACK (Rate Us).
+  rating        Int?            @db.TinyInt
+  status        SupportStatus   @default(OPEN)
+  adminReply    String?         @map("admin_reply") @db.Text
+  handledById   String?         @map("handled_by_id") @db.Char(36)
+  resolvedAt    DateTime?       @map("resolved_at")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+
+  user      User  @relation("SupportRequester", fields: [userId], references: [id])
+  handledBy User? @relation("SupportHandler", fields: [handledById], references: [id])
+
+  @@index([userId, createdAt])
+  @@index([status, createdAt])
+  @@index([handledById])
+  @@map("support_requests")
+}
+
+// ============================================================================
+// Money (record only, no payment processing)
+// ============================================================================
+
+// One per ride request, ride booking, food or service activity.
+// Carpool uses carpool_monthly_payments instead.
+model PaymentRecord {
+  id             String         @id @default(uuid(7)) @db.Char(36)
+  activityId     String         @unique @map("activity_id") @db.Char(36)
+  // Total agreed amount. For food: foodCost + deliveryCharge.
+  amount         Decimal        @db.Decimal(10, 2)
+  foodCost       Decimal?       @map("food_cost") @db.Decimal(10, 2)
+  deliveryCharge Decimal?       @map("delivery_charge") @db.Decimal(10, 2)
+  method         PaymentMethod?
+  status         PaymentStatus  @default(UNPAID)
+  paidAt         DateTime?      @map("paid_at")
+  markedPaidById String?        @map("marked_paid_by_id") @db.Char(36)
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  activity     Activity @relation(fields: [activityId], references: [id])
+  markedPaidBy User?    @relation(fields: [markedPaidById], references: [id])
+
+  @@index([status])
+  @@index([markedPaidById])
+  @@map("payment_records")
+}
+
+// ============================================================================
+// Content
+// ============================================================================
+
+model Promo {
+  id          String   @id @default(uuid(7)) @db.Char(36)
+  title       String   @db.VarChar(150)
+  description String?  @db.Text
+  imageUrl    String?  @map("image_url") @db.VarChar(512)
+  promoCode   String?  @map("promo_code") @db.VarChar(50)
+  startsAt    DateTime @map("starts_at")
+  endsAt      DateTime @map("ends_at")
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("promos")
+}
+
+model SpotlightItem {
+  id        String    @id @default(uuid(7)) @db.Char(36)
+  title     String?   @db.VarChar(150)
+  mediaType MediaType @map("media_type")
+  mediaUrl  String    @map("media_url") @db.VarChar(512)
+  linkUrl   String?   @map("link_url") @db.VarChar(512)
+  linkLabel String?   @map("link_label") @db.VarChar(50)
+  startsAt  DateTime  @default(now()) @map("starts_at")
+  expiresAt DateTime? @map("expires_at")
+  sortOrder Int       @default(0) @map("sort_order")
+  isActive  Boolean   @default(true) @map("is_active")
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@index([isActive, startsAt, expiresAt])
+  @@map("spotlight_items")
+}
+
+model Banner {
+  id        String   @id @default(uuid(7)) @db.Char(36)
+  title     String   @db.VarChar(150)
+  imageUrl  String   @map("image_url") @db.VarChar(512)
+  linkUrl   String?  @map("link_url") @db.VarChar(512)
+  startsAt  DateTime @map("starts_at")
+  endsAt    DateTime @map("ends_at")
+  sortOrder Int      @default(0) @map("sort_order")
+  isActive  Boolean  @default(true) @map("is_active")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@index([isActive, startsAt, endsAt])
+  @@map("banners")
+}
+
+// One row per change; the newest row with effectiveFrom <= now is current.
+model FareSetting {
+  id            String   @id @default(uuid(7)) @db.Char(36)
+  ratePerKm     Decimal  @map("rate_per_km") @db.Decimal(8, 2)
+  effectiveFrom DateTime @default(now()) @map("effective_from")
+  createdAt     DateTime @default(now()) @map("created_at")
+  updatedAt     DateTime @updatedAt @map("updated_at")
+
+  @@index([effectiveFrom])
+  @@map("fare_settings")
+}
+
+// ============================================================================
+// Admin
+// ============================================================================
+
+// Read-only record of admin actions: written once, never updated.
+model AuditLog {
+  id           String   @id @default(uuid(7)) @db.Char(36)
+  adminId      String   @map("admin_id") @db.Char(36)
+  action       String   @db.VarChar(64)
+  targetType   String   @map("target_type") @db.VarChar(50)
+  targetId     String?  @map("target_id") @db.Char(36)
+  targetUserId String?  @map("target_user_id") @db.Char(36)
+  oldValue     Json?    @map("old_value")
+  newValue     Json?    @map("new_value")
+  ipAddress    String?  @map("ip_address") @db.VarChar(45)
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  admin      User  @relation("AuditAdmin", fields: [adminId], references: [id])
+  targetUser User? @relation("AuditTargetUser", fields: [targetUserId], references: [id])
+
+  @@index([adminId, createdAt])
+  @@index([targetType, targetId])
+  @@index([targetUserId, createdAt])
+  @@index([createdAt])
+  @@map("audit_logs")
+}

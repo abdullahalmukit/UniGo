@@ -1,0 +1,68 @@
+import "dotenv/config";
+import { z } from "zod";
+
+const DURATION_UNITS_MS = { s: 1000, m: 60 * 1000, h: 60 * 60 * 1000, d: 24 * 60 * 60 * 1000 };
+
+// "15m", "30d" -> milliseconds
+const duration = z
+  .string()
+  .regex(/^\d+[smhd]$/, "Use a number followed by s, m, h or d, for example 15m")
+  .transform((value) => Number(value.slice(0, -1)) * DURATION_UNITS_MS[value.slice(-1) as "s" | "m" | "h" | "d"]);
+
+const optionalText = z.string().trim().min(1).optional();
+
+const envSchema = z
+  .object({
+    NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
+    PORT: z.coerce.number().int().positive().default(4000),
+    CLIENT_URL: z.url().default("http://localhost:5173"),
+    DATABASE_URL: z.string().startsWith("mysql://", "DATABASE_URL must start with mysql://"),
+    DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(3000),
+    JWT_ACCESS_SECRET: z.string().min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),
+    JWT_REFRESH_SECRET: z.string().min(32, "JWT_REFRESH_SECRET must be at least 32 characters"),
+    JWT_ACCESS_EXPIRES_IN: duration.prefault("15m"),
+    JWT_REFRESH_EXPIRES_IN: duration.prefault("30d"),
+    GOOGLE_CLIENT_ID: z.string().trim().min(1, "GOOGLE_CLIENT_ID is required for Google sign-in"),
+    // Development only: "console" (default) or "smtp". Production always uses
+    // SMTP and tests always use the in-memory outbox.
+    EMAIL_TRANSPORT: z.enum(["console", "smtp"]).optional(),
+    SMTP_HOST: optionalText,
+    SMTP_PORT: z.coerce.number().int().positive().default(587),
+    SMTP_USER: optionalText,
+    SMTP_PASSWORD: optionalText,
+    MAIL_FROM: optionalText,
+  })
+  .superRefine((value, ctx) => {
+    if (value.JWT_ACCESS_SECRET === value.JWT_REFRESH_SECRET) {
+      ctx.addIssue({ code: "custom", path: ["JWT_REFRESH_SECRET"], message: "Must be different from JWT_ACCESS_SECRET" });
+    }
+    if (value.NODE_ENV === "production" && value.EMAIL_TRANSPORT === "console") {
+      ctx.addIssue({ code: "custom", path: ["EMAIL_TRANSPORT"], message: "Production always sends email by SMTP" });
+    }
+    if (emailTransportFor(value) === "smtp") {
+      for (const key of ["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"] as const) {
+        if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required to send email by SMTP` });
+      }
+    }
+  })
+  .transform((value) => ({ ...value, emailTransport: emailTransportFor(value) }));
+
+function emailTransportFor(value: { NODE_ENV: string; EMAIL_TRANSPORT?: "console" | "smtp" }) {
+  if (value.NODE_ENV === "test") return "memory" as const;
+  if (value.NODE_ENV === "production") return "smtp" as const;
+  return value.EMAIL_TRANSPORT ?? ("console" as const);
+}
+
+export function parseEnv(source: Record<string, string | undefined>) {
+  return envSchema.safeParse(source);
+}
+
+const result = parseEnv(process.env);
+
+if (!result.success) {
+  console.error("Invalid environment variables. Check server/.env against .env.example.");
+  console.error(z.prettifyError(result.error));
+  process.exit(1);
+}
+
+export const env = result.data;

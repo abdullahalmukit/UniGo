@@ -1,0 +1,2 @@
+-- AlterTable
+ALTER TABLE `users` MODIFY `theme` ENUM('LIGHT', 'DARK', 'SYSTEM') NOT NULL DEFAULT 'LIGHT';

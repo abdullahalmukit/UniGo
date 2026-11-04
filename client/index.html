@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>UniGo</title>
+    <meta name="description" content="Rides, carpools, food and daily help between verified university students." />
+    <meta name="theme-color" content="#FFFFFF" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <link rel="icon" href="/icons/favicon-32.png" type="image/png" sizes="32x32" />
+    <link rel="icon" href="/icons/icon-192.png" type="image/png" sizes="192x192" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
+    <script>
+      // Applies the saved theme before the first paint, so dark mode never
+      // flashes. Light is the default. Same rules as src/lib/theme.ts.
+      (function () {
+        try {
+          var choice = localStorage.getItem("unigo.theme");
+          var dark =
+            choice === "dark" || (choice === "system" && window.matchMedia("(prefers-color-scheme: dark)").matches);
+          document.documentElement.dataset.theme = dark ? "dark" : "light";
+          if (dark) document.querySelector('meta[name="theme-color"]').setAttribute("content", "#131C2E");
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

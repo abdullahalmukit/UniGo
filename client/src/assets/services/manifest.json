@@ -1,0 +1,66 @@
+{
+  "ride": {
+    "widths": [
+      86,
+      115,
+      172,
+      230
+    ],
+    "phone": {
+      "width": 86,
+      "height": 72
+    },
+    "desktop": {
+      "width": 115,
+      "height": 96
+    }
+  },
+  "carpool": {
+    "widths": [
+      92,
+      128,
+      184,
+      256
+    ],
+    "phone": {
+      "width": 92,
+      "height": 66
+    },
+    "desktop": {
+      "width": 128,
+      "height": 93
+    }
+  },
+  "food": {
+    "widths": [
+      78,
+      105,
+      156,
+      210
+    ],
+    "phone": {
+      "width": 78,
+      "height": 72
+    },
+    "desktop": {
+      "width": 105,
+      "height": 96
+    }
+  },
+  "service": {
+    "widths": [
+      72,
+      96,
+      144,
+      192
+    ],
+    "phone": {
+      "width": 72,
+      "height": 72
+    },
+    "desktop": {
+      "width": 96,
+      "height": 96
+    }
+  }
+}

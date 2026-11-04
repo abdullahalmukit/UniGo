@@ -1,0 +1,48 @@
+.mark {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.iconPlate {
+  display: inline-flex;
+  padding: var(--logo-plate-padding);
+  border-radius: 50%;
+  background: var(--logo-plate);
+}
+
+.icon {
+  display: block;
+  width: 32px;
+  height: 32px;
+}
+
+/* 2519 x 613 source: about 66 x 16 */
+.wordmark {
+  display: block;
+  height: 16px;
+  width: auto;
+  filter: var(--logo-wordmark-filter);
+}
+
+.logo {
+  display: inline-block;
+  width: 100%;
+  max-width: 280px;
+}
+
+.logoLight,
+.logoDark {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.logoDark,
+:global([data-theme="dark"]) .logoLight {
+  display: none;
+}
+
+:global([data-theme="dark"]) .logoDark {
+  display: block;
+}

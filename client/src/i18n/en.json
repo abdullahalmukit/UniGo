@@ -1,0 +1,238 @@
+{
+  "app": {
+    "name": "UniGo",
+    "loading": "Loading…"
+  },
+  "nav": {
+    "main": "Main navigation",
+    "tabs": "Bottom tabs",
+    "home": "Home",
+    "activity": "Activity",
+    "upcoming": "Upcoming",
+    "allServices": "All Services",
+    "inbox": "Inbox",
+    "notifications": "Notifications",
+    "account": "Account & Settings",
+    "unread_one": "{{count}} unread",
+    "unread_other": "{{count}} unread"
+  },
+  "features": {
+    "ride": {
+      "name": "Ride",
+      "hint": "Get or offer a ride",
+      "tag": "Bike & Car"
+    },
+    "carpool": {
+      "name": "Carpool",
+      "hint": "Ride on a schedule",
+      "tag": "Weekly"
+    },
+    "food": {
+      "name": "Food",
+      "hint": "Food brought to you",
+      "tag": "From campus"
+    },
+    "service": {
+      "name": "Uni Service",
+      "hint": "Help with daily tasks",
+      "tag": "7 categories"
+    }
+  },
+  "home": {
+    "featuresTitle": "Services",
+    "upcomingTitle": "Upcoming",
+    "seeAll": "See all",
+    "upcomingEmpty": "No upcoming activities yet.",
+    "browseServices": "Browse services",
+    "quickActionsTitle": "Quick actions",
+    "quick": {
+      "about": "About Us",
+      "savedAddresses": "Saved Addresses",
+      "addHome": "Add Home",
+      "subAreas": "My Sub-Areas",
+      "promos": "Promos",
+      "drive": "Drive with UniGo",
+      "support": "Support",
+      "rateUs": "Rate Us"
+    },
+    "spotlightTitle": "UniGo Spotlight",
+    "spotlight": {
+      "sample": "Coming soon",
+      "offers": "Campus offers",
+      "events": "Events this week",
+      "news": "UniGo news",
+      "safety": "Ride safety tips",
+      "partners": "New partners"
+    }
+  },
+  "services": {
+    "title": "All Services",
+    "create": "Create",
+    "browse": "Browse",
+    "comingSoon": "Coming soon"
+  },
+  "activity": {
+    "title": "Activity",
+    "filters": {
+      "all": "All",
+      "ride": "Ride Sharing",
+      "carpool": "Carpool",
+      "food": "Food Delivery",
+      "service": "Uni Service"
+    },
+    "empty": "You have no activities yet.",
+    "statusKey": "Status colours"
+  },
+  "upcoming": {
+    "title": "Upcoming",
+    "empty": "Accepted activities will appear here, nearest first."
+  },
+  "inbox": {
+    "title": "Inbox",
+    "empty": "A chat opens when a request is accepted."
+  },
+  "notifications": {
+    "title": "Notifications",
+    "empty": "You're all caught up."
+  },
+  "account": {
+    "title": "Account & Settings",
+    "language": "Language",
+    "appearance": "Appearance",
+    "theme": {
+      "light": "Light",
+      "dark": "Dark",
+      "system": "System"
+    },
+    "languages": {
+      "en": "English",
+      "bn": "বাংলা"
+    },
+    "logout": "Log out",
+    "comingSoon": "Coming soon",
+    "menu": {
+      "profile": "Profile",
+      "verification": "Verification",
+      "drive": "Drive with UniGo",
+      "savedAddresses": "Saved Addresses",
+      "subAreas": "My Sub-Areas",
+      "paymentMethods": "Payment Methods",
+      "notifications": "Notifications",
+      "blocked": "Blocked Users",
+      "promos": "Promos",
+      "support": "Support Request",
+      "policy": "Policy",
+      "rateUs": "Rate Us"
+    }
+  },
+  "notFound": {
+    "title": "Page not found",
+    "back": "Go to Home"
+  },
+  "status": {
+    "OPEN": "Open",
+    "ACCEPTED": "Accepted",
+    "IN_PROGRESS": "In progress",
+    "DISPUTED": "Disputed",
+    "COMPLETED": "Completed",
+    "CANCELLED": "Cancelled",
+    "EXPIRED": "Expired",
+    "NOT_MARKED": "Not marked"
+  },
+  "auth": {
+    "backHome": "Back to Home",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password",
+    "close": "Close",
+    "or": "or",
+    "email": "Email",
+    "password": "Password",
+    "name": "Full name",
+    "phone": "Mobile number",
+    "phonePlaceholder": "01XXXXXXXXX",
+    "university": "University",
+    "universityPlaceholder": "Choose your university",
+    "universitySearch": "Search universities",
+    "universityNone": "No university matches your search.",
+    "universityLoadFailed": "Could not load the universities.",
+    "retry": "Try again",
+    "passwordHint": "8–72 characters, with at least one letter and one number.",
+    "login": {
+      "title": "Log in",
+      "subtitle": "Welcome back to UniGo.",
+      "submit": "Log in",
+      "forgot": "Forgot password?",
+      "noAccount": "New to UniGo?",
+      "register": "Create an account",
+      "passwordChanged": "Your password was changed. Log in with your new password."
+    },
+    "register": {
+      "title": "Create your account",
+      "subtitle": "For university students in Bangladesh.",
+      "submit": "Create account",
+      "haveAccount": "Already have an account?",
+      "login": "Log in"
+    },
+    "google": {
+      "unavailable": "Google sign-in is not available right now.",
+      "linkTitle": "Link Google sign-in",
+      "linkText": "An account with {{email}} already exists. Enter your UniGo password once to link Google sign-in to it.",
+      "linkSubmit": "Link and log in",
+      "linkForgot": "Don't know the password?",
+      "cancel": "Cancel",
+      "registerTitle": "Finish signing up",
+      "registerSubtitle": "You signed in with Google. Add your mobile number and university."
+    },
+    "forgot": {
+      "title": "Forgot password",
+      "subtitle": "Enter the email you registered with. We'll send you a link to choose a new password.",
+      "submit": "Send reset link",
+      "sent": "If this email is registered, a reset link has been sent. Check your inbox.",
+      "back": "Back to log in"
+    },
+    "reset": {
+      "title": "Choose a new password",
+      "password": "New password",
+      "confirm": "Confirm new password",
+      "submit": "Change password",
+      "missing": "This reset link is incomplete. Ask for a new one.",
+      "requestNew": "Ask for a new link"
+    },
+    "verify": {
+      "title": "Verify your student status",
+      "subtitle": "Only verified students can create, accept or book activities. Choose how to verify:",
+      "email": "University email",
+      "emailHint": "Get a code at your university email address.",
+      "idCard": "Student ID card",
+      "idCardHint": "Upload a photo of your ID card for an admin to check.",
+      "soon": "Coming soon",
+      "continue": "Continue to Home"
+    }
+  },
+  "errors": {
+    "required": "Fill in this field.",
+    "generic": "Something went wrong. Try again.",
+    "NETWORK": "Can't reach UniGo. Check your connection and try again.",
+    "INVALID_CREDENTIALS": "Email or password is incorrect.",
+    "EMAIL_TAKEN": "This email is already registered. Log in instead.",
+    "PHONE_TAKEN": "This mobile number is already registered.",
+    "UNIVERSITY_NOT_FOUND": "Choose a university from the list.",
+    "ACCOUNT_SUSPENDED": "This account is suspended. Contact UniGo support if you think this is a mistake.",
+    "ACCOUNT_BANNED": "This account is banned. Contact UniGo support if you think this is a mistake.",
+    "RATE_LIMITED": "Too many attempts. Wait a few minutes and try again.",
+    "INVALID_RESET_TOKEN": "This reset link is invalid or has expired. Ask for a new one.",
+    "INVALID_GOOGLE_TOKEN": "Google sign-in failed. Try again.",
+    "GOOGLE_EMAIL_NOT_VERIFIED": "Your Google email address is not verified.",
+    "GOOGLE_ACCOUNT_CONFLICT": "This UniGo account is already linked to a different Google account.",
+    "INVALID_GOOGLE_STEP_TOKEN": "Google sign-in took too long. Start again.",
+    "passwordMismatch": "The passwords do not match.",
+    "fields": {
+      "name": "Enter your full name.",
+      "email": "Enter a valid email address.",
+      "phone": "Enter a Bangladesh mobile number, for example 01712345678.",
+      "universityId": "Choose a university from the list.",
+      "password": "Use 8–72 characters, with at least one letter and one number.",
+      "token": "This reset link is incomplete."
+    }
+  }
+}

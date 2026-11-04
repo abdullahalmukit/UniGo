@@ -1,0 +1,112 @@
+/*
+ * Theme tokens. Components use only these variables, never raw colours.
+ * Light values sit on :root; dark values on [data-theme="dark"], which the
+ * theme code (and the script in index.html) sets for Dark, and for System when
+ * the device is dark. Every text/background pair passes WCAG AA; see
+ * src/styles/tokens.test.ts.
+ */
+
+:root {
+  color-scheme: light;
+
+  /* Surfaces and text (A5a polish palette) */
+  --color-bg: #f4f8fd;
+  --color-surface: #ffffff;
+  --color-surface-muted: #eef3fa;
+  --color-border: #e1e8f2;
+  --color-text: #0f1b2d;
+  --color-text-muted: #4b5b72;
+
+  /* Brand */
+  --color-accent: #0a6fd6;
+  --color-on-accent: #ffffff;
+  --color-accent-soft: #f0f6fe;
+  --color-focus: #0a6fd6;
+
+  /* Status chips (CLAUDE.md, accepted = indigo): background / text */
+  --status-green-bg: #e6f6ec;
+  --status-green-fg: #18794e;
+  --status-amber-bg: #fff4d6;
+  --status-amber-fg: #8a5a00;
+  --status-indigo-bg: #eef0ff;
+  --status-indigo-fg: #4338ca;
+  --status-purple-bg: #f5ecfe;
+  --status-purple-fg: #7e22ce;
+  --status-red-bg: #fdecec;
+  --status-red-fg: #c2261f;
+  --status-grey-bg: #eef1f5;
+  --status-grey-fg: #556275;
+
+  --color-badge: #c2261f;
+  --color-on-badge: #ffffff;
+  --shadow-card: 0 1px 2px rgb(15 27 45 / 5%), 0 6px 18px rgb(15 27 45 / 6%);
+  --shadow-card-hover: 0 2px 4px rgb(15 27 45 / 6%), 0 12px 28px rgb(15 27 45 / 10%);
+
+  /* Logo: the round icon sits straight on light surfaces. */
+  --logo-plate: transparent;
+  --logo-plate-padding: 0;
+  --logo-wordmark-filter: none;
+
+  /* Typography: one font stack (Inter, with Hind Siliguri for Bangla), three sizes */
+  --font-sans: "Inter Variable", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --text-title: 1.25rem;
+  --text-body: 1rem;
+  --text-caption: 0.8125rem;
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-bold: 650;
+
+  /* Shape and spacing */
+  --radius-card: 16px;
+  --radius-control: 12px;
+  --radius-pill: 999px;
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 24px;
+  --space-6: 32px;
+  --tap-target: 44px;
+  --content-width: 1100px;
+  --bar-height: 56px;
+  --tabs-height: 64px;
+}
+
+[data-theme="dark"] {
+  color-scheme: dark;
+
+  --color-bg: #0b1220;
+  --color-surface: #131c2e;
+  --color-surface-muted: #1a2539;
+  --color-border: #24324a;
+  --color-text: #e6edf7;
+  --color-text-muted: #9dabc2;
+
+  --color-accent: #4da3ff;
+  --color-on-accent: #0b1220;
+  --color-accent-soft: #14294a;
+  --color-focus: #4da3ff;
+
+  --status-green-bg: #10301f;
+  --status-green-fg: #4ade80;
+  --status-amber-bg: #3a2c0a;
+  --status-amber-fg: #fbbf24;
+  --status-indigo-bg: #1e2150;
+  --status-indigo-fg: #a5b4fc;
+  --status-purple-bg: #2d1b4e;
+  --status-purple-fg: #d8b4fe;
+  --status-red-bg: #3d1618;
+  --status-red-fg: #ff8a80;
+  --status-grey-bg: #222c3d;
+  --status-grey-fg: #a9b5c7;
+
+  --color-badge: #ff6b6b;
+  --color-on-badge: #0b1220;
+  --shadow-card: 0 1px 2px rgb(0 0 0 / 30%);
+  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 45%);
+
+  /* Dark mode: the round icon on a small white circle; the wordmark in white. */
+  --logo-plate: #ffffff;
+  --logo-plate-padding: 2px;
+  --logo-wordmark-filter: brightness(0) invert(1);
+}

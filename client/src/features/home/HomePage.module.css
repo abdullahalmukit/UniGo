@@ -1,0 +1,250 @@
+/* Service cards: 2 x 2 on phones, 1 x 4 on desktop. White card, soft shadow,
+   bold title top-left, one-line subtitle, tag bottom-left, 3D art bottom-right. */
+.features {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-3);
+}
+
+.featureCard {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  min-height: 184px;
+  padding: var(--space-4);
+  overflow: hidden;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition:
+    transform 160ms ease,
+    box-shadow 160ms ease;
+}
+
+.featureCard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-card-hover);
+}
+
+.featureName {
+  position: relative;
+  z-index: 1;
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+  line-height: 1.25;
+}
+
+.featureHint {
+  position: relative;
+  z-index: 1;
+  margin-top: 2px;
+  overflow: hidden;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.featureTag {
+  position: relative;
+  z-index: 1;
+  align-self: flex-start;
+  margin-top: auto;
+  padding: 3px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: 0.75rem;
+  font-weight: var(--weight-medium);
+  line-height: 1.4;
+}
+
+/* The picture box: 92 x 72 on phones, 128 x 96 on desktop (the sizes
+   build-brand-assets.mjs makes). On phones the cards are too narrow for the tag
+   and the picture to share the bottom row, so the picture sits just above it. */
+.featureArt {
+  position: absolute;
+  right: 10px;
+  bottom: 46px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  width: 92px;
+  height: 72px;
+  pointer-events: none;
+}
+
+.featureArt img {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+}
+
+.seeAll {
+  display: inline-flex;
+  align-items: center;
+  min-height: var(--tap-target);
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+/* Quick actions: small cards, brand-colour icons; one sideways row on phones,
+   centred on desktop. */
+.quickActions {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-1) var(--space-4) var(--space-2);
+  overflow-x: auto;
+  scroll-snap-type: x proximity;
+  list-style: none;
+}
+
+.quickActions li {
+  scroll-snap-align: start;
+}
+
+.quickAction {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-2);
+  width: 84px;
+  min-height: 92px;
+  padding: var(--space-3) var(--space-1);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  line-height: 1.25;
+  text-align: center;
+}
+
+.quickAction:disabled {
+  cursor: default;
+}
+
+.quickIcon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.quickIcon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Spotlight: story-style cards in one sideways row. */
+.stories {
+  display: flex;
+  gap: var(--space-3);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-1) var(--space-4) var(--space-2);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+}
+
+.story {
+  flex: none;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 2px;
+  width: 128px;
+  height: 184px;
+  padding: var(--space-3);
+  scroll-snap-align: start;
+  background: linear-gradient(180deg, var(--color-accent-soft) 0%, var(--color-surface) 70%);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+/* The "unseen" ring; seen state lives in local storage (A2 decision 12). */
+.storyRing {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 48px;
+  height: 48px;
+  margin-bottom: auto;
+  border: 2px solid var(--color-accent);
+  border-radius: 50%;
+  background: var(--color-surface);
+  box-shadow: inset 0 0 0 3px var(--color-surface);
+  color: var(--color-accent);
+}
+
+.storyTitle {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+}
+
+.storyNote {
+  color: var(--color-text-muted);
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .features {
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-4);
+  }
+
+  .featureCard {
+    min-height: 184px;
+  }
+
+  .featureArt {
+    right: 12px;
+    bottom: 12px;
+    width: 128px;
+    height: 96px;
+  }
+
+  .quickActions {
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    padding: var(--space-1) 0 var(--space-2);
+    overflow: visible;
+  }
+
+  .quickAction {
+    width: 104px;
+  }
+
+  .stories {
+    margin: 0;
+    padding: var(--space-1) 0 var(--space-2);
+  }
+
+  .story {
+    width: 152px;
+    height: 216px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .featureCard {
+    transition: none;
+  }
+
+  .featureCard:hover {
+    transform: none;
+  }
+}

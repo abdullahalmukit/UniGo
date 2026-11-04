@@ -1,0 +1,40 @@
+.chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px var(--space-3);
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  line-height: 1.6;
+  white-space: nowrap;
+}
+
+.green {
+  background: var(--status-green-bg);
+  color: var(--status-green-fg);
+}
+
+.amber {
+  background: var(--status-amber-bg);
+  color: var(--status-amber-fg);
+}
+
+.indigo {
+  background: var(--status-indigo-bg);
+  color: var(--status-indigo-fg);
+}
+
+.purple {
+  background: var(--status-purple-bg);
+  color: var(--status-purple-fg);
+}
+
+.red {
+  background: var(--status-red-bg);
+  color: var(--status-red-fg);
+}
+
+.grey {
+  background: var(--status-grey-bg);
+  color: var(--status-grey-fg);
+}
