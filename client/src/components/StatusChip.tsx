@@ -34,3 +34,13 @@ export function StatusChip({ status }: { status: ActivityStatus }) {
     </span>
   );
 }
+
+// A chip with any label in one of the status colours (B1: approval status,
+// expired licence).
+export function ToneChip({ tone, label }: { tone: (typeof STATUS_TONE)[ActivityStatus]; label: string }) {
+  return (
+    <span className={`${styles.chip} ${styles[tone]}`} data-tone={tone}>
+      {label}
+    </span>
+  );
+}

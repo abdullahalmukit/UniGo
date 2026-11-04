@@ -97,7 +97,21 @@ function UserDetailView({ user, onChanged }: { user: UserDetail; onChanged: () =
           <dt>{t("admin.users.universityEmail")}</dt>
           <dd>{user.verifiedUniversityEmail ?? "—"}</dd>
           <dt>{t("admin.users.rider")}</dt>
-          <dd>{user.isVerifiedRider ? t("admin.yes") : t("admin.no")}</dd>
+          <dd>
+            {user.isVerifiedRider ? (
+              <Link to="/admin/rider-requests">
+                {t(
+                  user.riderSuspended
+                    ? "admin.riders.riderStatus.SUSPENDED"
+                    : user.riderActive
+                      ? "admin.riders.riderStatus.ACTIVE"
+                      : "admin.riders.riderStatus.INACTIVE",
+                )}
+              </Link>
+            ) : (
+              t("admin.no")
+            )}
+          </dd>
           <dt>{t("admin.users.joined")}</dt>
           <dd>{date(user.createdAt)}</dd>
           <dt>{t("admin.users.lastLogin")}</dt>

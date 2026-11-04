@@ -17,6 +17,8 @@ export type Me = {
   theme: "LIGHT" | "DARK" | "SYSTEM";
   pushEnabled: boolean;
   emailNotificationsEnabled: boolean;
+  isVerifiedRider: boolean;
+  riderActive: boolean;
   hasPassword: boolean;
   hasGoogle: boolean;
   university: { id: string; name: string; shortName: string | null };

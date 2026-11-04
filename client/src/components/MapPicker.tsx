@@ -3,15 +3,12 @@ import L from "leaflet";
 import { LocateFixed, MapPin } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
+import type { LatLng } from "./map-types";
 import styles from "./MapPicker.module.css";
 
-export type LatLng = { lat: number; lng: number };
-
-// Dhaka, when there is no point yet
-export const DEFAULT_CENTER: LatLng = { lat: 23.8103, lng: 90.4125 };
-
-// OpenStreetMap + Leaflet (CLAUDE.md 2). The pin stays in the centre and the
-// user moves the map under it; `onMove` gets the centre after each move. A new
+// OpenStreetMap + Leaflet (CLAUDE.md 2). Loaded on demand (React.lazy), so
+// Leaflet is only downloaded by pages that show a map (B1). The pin stays in
+// the centre and the user moves the map under it; `onMove` gets the centre after each move. A new
 // `center` from outside (a search result) moves the map there.
 export function MapPicker({
   center,
@@ -48,7 +45,6 @@ export function MapPicker({
       map.current = null;
     };
     // The map is created once; later centres move it below.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {

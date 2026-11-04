@@ -57,6 +57,13 @@ export const changePasswordRateLimit = limiter(
 // A Google-only account's "set a password" link: the Forgot password limit, per account.
 export const passwordSetupLinkRateLimit = limiter(HOUR, rules.passwordReset.maxRequestsPerHour, userKey);
 
+// B1: rider applications, per account.
+export const riderApplicationRateLimit = limiter(
+  rules.rider.applicationsPerUser.window,
+  rules.rider.applicationsPerUser.max,
+  userKey,
+);
+
 // Lets each test start with empty counters.
 export function resetRateLimits() {
   for (const store of stores) store.resetAll();

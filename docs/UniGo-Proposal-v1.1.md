@@ -174,6 +174,10 @@ Only admin-approved, Active Riders can offer rides, accept passenger requests an
 - The admin can suspend a Rider at any time.
 - Advanced controls (Phase 4): licence expiry reminders and re-verification, verification history, rider deactivation.
 - Vehicle registration numbers are unique: the same vehicle cannot be registered by two riders.
+- Only verified students can apply. A BIKE needs a motorcycle licence and a CAR needs a car licence. A rider can have up to 5 active vehicles.
+- An admin approves or rejects the whole application. Moderators and Super Admins can review; only Super Admins can suspend or reinstate a rider.
+- When the licence expires, the rider is set to Inactive automatically and cannot switch Active again until a re-verification with a new expiry date is approved. Re-verification is also how a rider adds a vehicle later.
+- A registration number held by another user's pending or approved vehicle cannot be used; one from a rejected application can be registered by someone else.
 
 ### What students see before booking
 

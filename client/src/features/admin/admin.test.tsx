@@ -95,6 +95,7 @@ const userDetail: UserDetail = {
   studentVerificationStatus: "VERIFIED",
   verifiedUniversityEmail: null,
   isVerifiedRider: false,
+  riderActive: false,
   createdAt: "2026-11-01T06:00:00.000Z",
   lastLoginAt: null,
   photo: null,

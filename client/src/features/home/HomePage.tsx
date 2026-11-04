@@ -26,7 +26,7 @@ const quickActions: { key: string; icon: typeof Info; to?: string }[] = [
   { key: "addHome", icon: HousePlus, to: "/account/addresses/new?label=HOME" },
   { key: "subAreas", icon: MapIcon, to: "/account/sub-areas" },
   { key: "promos", icon: TicketPercent },
-  { key: "drive", icon: CarFront },
+  { key: "drive", icon: CarFront, to: "/drive" },
   { key: "support", icon: LifeBuoy },
   { key: "rateUs", icon: Star },
 ];

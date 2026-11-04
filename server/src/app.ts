@@ -13,6 +13,8 @@ import { healthRouter } from "./modules/health/health.routes.js";
 import { subAreasRouter } from "./modules/subareas/subareas.routes.js";
 import { adminUniversitiesRouter } from "./modules/universities/universities.admin.routes.js";
 import { universitiesRouter } from "./modules/universities/universities.routes.js";
+import { adminRiderApplicationsRouter, adminRidersRouter } from "./modules/riders/riders.admin.routes.js";
+import { riderRouter } from "./modules/riders/riders.routes.js";
 import { meRouter } from "./modules/users/me.routes.js";
 import { verificationRouter } from "./modules/verification/verification.routes.js";
 
@@ -28,10 +30,13 @@ app.use("/api/auth", authRouter);
 app.use("/api/universities", universitiesRouter);
 app.use("/api/me", meRouter);
 app.use("/api/sub-areas", subAreasRouter);
+app.use("/api/rider", riderRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/files", filesRouter);
 app.use("/api/admin/student-verifications", adminStudentVerificationsRouter);
 app.use("/api/admin/universities", adminUniversitiesRouter);
+app.use("/api/admin/rider-applications", adminRiderApplicationsRouter);
+app.use("/api/admin/riders", adminRidersRouter);
 app.use("/api/admin", adminRouter);
 
 app.use(notFound);

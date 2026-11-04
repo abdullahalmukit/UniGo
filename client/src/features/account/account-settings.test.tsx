@@ -20,7 +20,6 @@ vi.mock("../verification/verification-api", () => ({
 }));
 // Leaflet needs a real browser; the editor's map is tested by hand.
 vi.mock("../../components/MapPicker", () => ({
-  DEFAULT_CENTER: { lat: 23.81, lng: 90.41 },
   MapPicker: ({ onMove }: { onMove: (point: { lat: number; lng: number }) => void }) => (
     <button type="button" onClick={() => onMove({ lat: 23.75, lng: 90.38 })}>
       move map
@@ -66,6 +65,8 @@ const me: Me = {
   theme: "LIGHT",
   pushEnabled: false,
   emailNotificationsEnabled: true,
+  isVerifiedRider: false,
+  riderActive: false,
   hasPassword: true,
   hasGoogle: false,
   university: { id: "uni", name: "Alpha University", shortName: "AU" },
@@ -108,10 +109,11 @@ describe("Account & Settings", () => {
       ["My Sub-Areas", "/account/sub-areas"],
       ["Notifications", "/account/notifications"],
       ["Blocked Users", "/account/blocked"],
+      ["Drive with UniGo", "/drive"],
     ]) {
       expect(menu.getByRole("link", { name })).toHaveAttribute("href", href);
     }
-    for (const name of ["Drive with UniGo", "Payment Methods", "Promos", "Support Request", "Policy", "Rate Us"]) {
+    for (const name of ["Payment Methods", "Promos", "Support Request", "Policy", "Rate Us"]) {
       const item = screen.getByText(name).closest("li")!;
       expect(within(item).getByText("Coming soon")).toBeInTheDocument();
       expect(within(item).queryByRole("link")).toBeNull();

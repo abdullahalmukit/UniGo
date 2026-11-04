@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import type { RouteObject } from "react-router";
 import { AccountPage } from "../features/account/AccountPage";
 import { AddressEditorPage } from "../features/account/AddressEditorPage";
@@ -5,14 +6,6 @@ import { BlockedUsersPage } from "../features/account/BlockedUsersPage";
 import { MySubAreasPage } from "../features/account/MySubAreasPage";
 import { NotificationSettingsPage } from "../features/account/NotificationSettingsPage";
 import { SavedAddressesPage } from "../features/account/SavedAddressesPage";
-import { AdminAuditLogPage } from "../features/admin/AdminAuditLogPage";
-import { AdminDashboardPage } from "../features/admin/AdminDashboardPage";
-import { AdminLayout, RequireSuperAdmin } from "../features/admin/AdminLayout";
-import { AdminSubAreasPage } from "../features/admin/AdminSubAreasPage";
-import { AdminUniversitiesPage } from "../features/admin/AdminUniversitiesPage";
-import { AdminUserPage } from "../features/admin/AdminUserPage";
-import { AdminUsersPage } from "../features/admin/AdminUsersPage";
-import { AdminVerificationsPage } from "../features/admin/AdminVerificationsPage";
 import { ActivityPage } from "../features/activity/ActivityPage";
 import { AllServicesPage } from "../features/all-services/AllServicesPage";
 import { AuthLayout } from "../features/auth/AuthLayout";
@@ -30,6 +23,12 @@ import { VerifyStudentPage } from "../features/verification/VerifyStudentPage";
 import { AppLayout } from "./layout/AppLayout";
 import { NotFoundPage } from "./NotFoundPage";
 import { RequireAuth } from "./RequireAuth";
+
+// Loads a page only when its route is opened (B1): the admin area and Drive
+// with UniGo stay out of the first download, which every visitor makes.
+function page<T>(load: () => Promise<T>, pick: (module: T) => ComponentType) {
+  return async () => ({ Component: pick(await load()) });
+}
 
 // Home and All Services are public; the rest need a login (A5a decision).
 // Auth pages use their own simple layout without navbar or tabs (A5b decision).
@@ -55,6 +54,8 @@ export const routes: RouteObject[] = [
           { path: "account/sub-areas", element: <MySubAreasPage /> },
           { path: "account/notifications", element: <NotificationSettingsPage /> },
           { path: "account/blocked", element: <BlockedUsersPage /> },
+          // Drive with UniGo (B1)
+          { path: "drive", lazy: page(() => import("../features/rider/DrivePage"), (m) => m.DrivePage) },
         ],
       },
       { path: "*", element: <NotFoundPage /> },
@@ -63,21 +64,23 @@ export const routes: RouteObject[] = [
   // The admin area (A8): its own layout, Moderators and Super Admins only.
   {
     path: "admin",
-    element: <AdminLayout />,
+    lazy: page(() => import("../features/admin/AdminLayout"), (m) => m.AdminLayout),
     children: [
-      { index: true, element: <AdminDashboardPage /> },
-      { path: "verifications", element: <AdminVerificationsPage /> },
-      { path: "users", element: <AdminUsersPage /> },
-      { path: "users/:id", element: <AdminUserPage /> },
+      { index: true, lazy: page(() => import("../features/admin/AdminDashboardPage"), (m) => m.AdminDashboardPage) },
+      { path: "verifications", lazy: page(() => import("../features/admin/AdminVerificationsPage"), (m) => m.AdminVerificationsPage) },
+      { path: "rider-requests", lazy: page(() => import("../features/admin/AdminRiderRequestsPage"), (m) => m.AdminRiderRequestsPage) },
+      { path: "rider-requests/:id", lazy: page(() => import("../features/admin/AdminRiderApplicationPage"), (m) => m.AdminRiderApplicationPage) },
+      { path: "users", lazy: page(() => import("../features/admin/AdminUsersPage"), (m) => m.AdminUsersPage) },
+      { path: "users/:id", lazy: page(() => import("../features/admin/AdminUserPage"), (m) => m.AdminUserPage) },
       {
-        element: <RequireSuperAdmin />,
+        lazy: page(() => import("../features/admin/AdminLayout"), (m) => m.RequireSuperAdmin),
         children: [
-          { path: "universities", element: <AdminUniversitiesPage /> },
-          { path: "sub-areas", element: <AdminSubAreasPage /> },
-          { path: "audit-log", element: <AdminAuditLogPage /> },
+          { path: "universities", lazy: page(() => import("../features/admin/AdminUniversitiesPage"), (m) => m.AdminUniversitiesPage) },
+          { path: "sub-areas", lazy: page(() => import("../features/admin/AdminSubAreasPage"), (m) => m.AdminSubAreasPage) },
+          { path: "audit-log", lazy: page(() => import("../features/admin/AdminAuditLogPage"), (m) => m.AdminAuditLogPage) },
         ],
       },
-      { path: "*", element: <AdminDashboardPage /> },
+      { path: "*", lazy: page(() => import("../features/admin/AdminDashboardPage"), (m) => m.AdminDashboardPage) },
     ],
   },
   {

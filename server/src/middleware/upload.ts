@@ -60,3 +60,53 @@ function singleUpload(field: string, allowed: readonly AllowedMimeType[], typeEr
     });
   };
 }
+
+// B1: several named files in one request (the rider application). Every file
+// gets the same checks as above, against the types allowed for its field.
+export type FileFieldSpec = { name: string; maxCount: number; allowed: readonly AllowedMimeType[] };
+
+export function multiFileUpload(fields: FileFieldSpec[]) {
+  const maxFiles = fields.reduce((total, field) => total + field.maxCount, 0);
+  const parse = multer({
+    storage: multer.memoryStorage(),
+    limits: { fileSize: rules.uploads.maxFileSizeBytes, files: maxFiles, fields: 5 },
+  }).fields(fields.map(({ name, maxCount }) => ({ name, maxCount })));
+
+  return (req: Request, res: Response, next: NextFunction) => {
+    parse(req, res, (error: unknown) => {
+      if (error instanceof multer.MulterError) {
+        next(
+          error.code === "LIMIT_FILE_SIZE"
+            ? new AppError(413, "FILE_TOO_LARGE", "Each file must be 5 MB or smaller")
+            : new AppError(400, "INVALID_UPLOAD", "Upload the files the form asks for"),
+        );
+        return;
+      }
+      if (error) {
+        next(error);
+        return;
+      }
+
+      const files = (req.files ?? {}) as Record<string, Express.Multer.File[]>;
+      for (const field of fields) {
+        for (const file of files[field.name] ?? []) {
+          const declared = file.mimetype;
+          const valid =
+            file.size > 0 &&
+            isAllowedMimeType(declared) &&
+            field.allowed.includes(declared) &&
+            detectFileType(file.buffer) === declared;
+          if (!valid) {
+            next(
+              new AppError(415, "FILE_TYPE_NOT_ALLOWED", `This file type is not allowed for ${field.name}`, {
+                fields: { [field.name]: ["This file type is not allowed"] },
+              }),
+            );
+            return;
+          }
+        }
+      }
+      next();
+    });
+  };
+}

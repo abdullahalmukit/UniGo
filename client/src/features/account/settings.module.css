@@ -266,3 +266,17 @@
   margin-right: var(--space-3);
   color: var(--color-text-muted);
 }
+
+/* Shown while the map (Leaflet) loads (B1) */
+.mapPlaceholder {
+  display: block;
+  height: 280px;
+  border-radius: var(--radius-card);
+  background: var(--color-surface-muted);
+}
+
+@media (min-width: 768px) {
+  .mapPlaceholder {
+    height: 360px;
+  }
+}

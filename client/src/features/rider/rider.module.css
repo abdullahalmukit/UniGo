@@ -1,0 +1,186 @@
+/* Drive with UniGo and the rider application (B1). */
+
+.cardTitle {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.bigIcon {
+  width: 36px;
+  height: 36px;
+  color: var(--color-accent);
+}
+
+.requirements {
+  display: grid;
+  gap: var(--space-2);
+  margin: 0;
+  padding-left: var(--space-5);
+}
+
+.notice {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--status-amber-fg);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: var(--space-1);
+  padding: var(--space-1) var(--space-3);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}
+
+.vehicleHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.vehicleTitle {
+  font-size: var(--text-body);
+}
+
+.typeChoice {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-1);
+  padding: var(--space-1);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.typeChoice > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.twoColumns {
+  display: grid;
+  gap: var(--space-3);
+}
+
+.fileButton {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 48px;
+  padding: 0 var(--space-3);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.fileButton:hover {
+  border-color: var(--color-accent);
+}
+
+.fileInvalid {
+  border-color: var(--status-red-fg);
+}
+
+.addButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+  min-height: var(--tap-target);
+  border: 1px dashed var(--color-accent);
+  border-radius: var(--radius-control);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.formButtons {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.cancel {
+  min-height: var(--tap-target);
+  padding: 0 var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-text-muted);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+}
+
+.vehiclePhoto {
+  flex: none;
+  width: 56px;
+  height: 42px;
+  object-fit: cover;
+  border-radius: 8px;
+  background: var(--color-surface-muted);
+}
+
+.counters {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: var(--space-2);
+  margin: 0 0 var(--space-2);
+  padding: 0;
+  list-style: none;
+}
+
+.counter {
+  display: grid;
+  gap: 2px;
+  padding: var(--space-3);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+}
+
+.counterValue {
+  font-size: var(--text-title);
+  font-weight: var(--weight-bold);
+}
+
+@media (min-width: 768px) {
+  .twoColumns {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .counters {
+    grid-template-columns: repeat(5, 1fr);
+  }
+}
+
+/* The real file input: hidden from sight, still focusable */
+.fileInput {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  opacity: 0;
+  overflow: hidden;
+}
+
+.fileInput:focus-visible + .fileButton {
+  outline: 2px solid var(--color-focus);
+  outline-offset: 2px;
+}
+
+.fileField {
+  position: relative;
+}

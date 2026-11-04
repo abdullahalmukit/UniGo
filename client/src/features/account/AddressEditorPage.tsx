@@ -1,9 +1,9 @@
 import { MapPin, Search } from "lucide-react";
-import { useCallback, useEffect, useRef, useState, type FormEvent } from "react";
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { FormAlert, SubmitButton, TextField } from "../../components/form";
-import { DEFAULT_CENTER, MapPicker, type LatLng } from "../../components/MapPicker";
+import { DEFAULT_CENTER, type LatLng } from "../../components/map-types";
 import { useToast } from "../../components/toast";
 import { checkRequired, formErrors, type FormErrors } from "../../lib/errors";
 import { geocoder, type Place } from "../../lib/nominatim";
@@ -12,6 +12,9 @@ import { createAddress, listAddresses, updateAddress, type AddressLabel, type Sa
 import { SEARCH_DEBOUNCE_MS } from "./rules";
 import styles from "./settings.module.css";
 import { SkeletonList, SubPageHeader } from "./SubPage";
+
+// Leaflet is large, so the map is loaded only when this page opens (B1).
+const MapPicker = lazy(() => import("../../components/MapPicker").then((module) => ({ default: module.MapPicker })));
 
 const LABELS: AddressLabel[] = ["HOME", "HALL", "WORK", "CUSTOM"];
 const noErrors: FormErrors = { fields: {} };
@@ -190,7 +193,9 @@ function AddressForm({
 
         <PlaceSearch language={language} onChoose={choosePlace} />
 
-        <MapPicker center={center} zoom={existing ? 17 : 13} onMove={onMove} />
+        <Suspense fallback={<span className={styles.mapPlaceholder} role="status" aria-label={t("app.loading")} />}>
+          <MapPicker center={center} zoom={existing ? 17 : 13} onMove={onMove} />
+        </Suspense>
         <p className={styles.caption}>{errors.fields.map ?? t("addresses.mapHint")}</p>
 
         <TextField

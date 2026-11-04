@@ -84,6 +84,8 @@ export async function getUserForAdmin(userId: string) {
       verifiedUniversityEmail: true,
       isVerifiedRider: true,
       riderActive: true,
+      riderSuspended: true,
+      riderSuspendedUntil: true,
       language: true,
       createdAt: true,
       lastLoginAt: true,

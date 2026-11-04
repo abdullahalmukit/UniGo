@@ -112,6 +112,20 @@ export const rules = {
     searchResults: 50,
   },
 
+  // B1: rider and vehicle verification (proposal section 6, B1 decisions)
+  rider: {
+    // Vehicles in one application, and active (pending or approved) vehicles per rider
+    maxVehiclesPerApplication: 5,
+    maxActiveVehicles: 5,
+    // The licence expiry date must be after today (Asia/Dhaka) and at most this far ahead
+    licenceMaxYearsAhead: 10,
+    registrationNumber: { minLength: 5, maxLength: 30 },
+    vehicleText: { brandMaxLength: 50, modelMaxLength: 50, colourMaxLength: 30 },
+    // Vehicle photos are re-encoded to a JPEG at most this many pixels on the longest side
+    vehiclePhoto: { allowedMimeTypes: ["image/jpeg", "image/png"], maxSidePx: 1280, jpegQuality: 82 },
+    applicationsPerUser: { window: HOUR, max: 5 },
+  },
+
   admin: {
     pageSize: 20,
     // Every warning, restriction, suspension, ban, unban and reactivation

@@ -1,4 +1,4 @@
-import { ChevronRight, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
+import { BadgeCheck, ChevronRight, LayoutDashboard, LogOut, ShieldCheck } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
@@ -21,7 +21,7 @@ import styles from "./AccountPage.module.css";
 const menu: { key: string; to?: string }[] = [
   { key: "profile", to: "/account/profile" },
   { key: "verification", to: "/verify-student?next=%2Faccount" },
-  { key: "drive" },
+  { key: "drive", to: "/drive" },
   { key: "savedAddresses", to: "/account/addresses" },
   { key: "subAreas", to: "/account/sub-areas" },
   { key: "paymentMethods" },
@@ -79,6 +79,12 @@ export function AccountPage() {
           <span className={styles.profileText}>
             <span className={styles.profileName}>{name}</span>
             <span className={styles.profileMeta}>{me.university?.shortName ?? me.university?.name}</span>
+            {me.isVerifiedRider && (
+              <span className={styles.riderBadge}>
+                <BadgeCheck aria-hidden size={14} />
+                {t("rider.badge")}
+              </span>
+            )}
           </span>
           <ChevronRight aria-hidden size={18} />
         </Link>

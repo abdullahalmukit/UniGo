@@ -179,3 +179,13 @@
   color: var(--status-grey-fg);
   font-size: var(--text-caption);
 }
+
+.riderBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-self: start;
+  gap: 4px;
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}

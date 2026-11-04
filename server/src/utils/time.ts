@@ -19,3 +19,19 @@ export function formatDhakaDateTime(value: Date, language: "BN" | "EN") {
     minute: "2-digit",
   }).format(value);
 }
+
+// Today's date in Asia/Dhaka as "YYYY-MM-DD".
+export function dhakaDateString(now = new Date()) {
+  return new Date(now.getTime() + DHAKA_OFFSET).toISOString().slice(0, 10);
+}
+
+// A "YYYY-MM-DD" date as stored in a DATE column (midnight UTC), and back.
+export const dateOnly = (value: string) => new Date(`${value}T00:00:00.000Z`);
+export const dateOnlyString = (value: Date) => value.toISOString().slice(0, 10);
+
+// "YYYY-MM-DD" plus whole years (29 February becomes 1 March).
+export function addYearsToDateString(value: string, years: number) {
+  const date = dateOnly(value);
+  date.setUTCFullYear(date.getUTCFullYear() + years);
+  return dateOnlyString(date);
+}
