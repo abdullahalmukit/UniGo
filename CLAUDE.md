@@ -7,7 +7,9 @@ These rules are permanent and take priority over every other instruction in this
 * Never change the configured Git identity.
 * Never use Claude, Anthropic or any AI tool as author or committer.
 * Never add Co-authored-by trailers or any AI attribution to commit messages, README, docs or project metadata.
-* Do not commit or push unless I explicitly ask.
+* Do not commit unless I explicitly ask.
+* Never push to GitHub. Mukit reviews the commits and pushes manually.
+* Work directly in D:\UniGo on the main branch. Do not create worktrees or new branches.
 * Never force-push or rewrite Git history without my explicit permission.
 * Preserve existing project instructions and third-party copyright notices.
 * Keep Mukit identified as the project owner in documentation.

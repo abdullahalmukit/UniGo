@@ -21,4 +21,7 @@ Thumbs.db
 
 # Claude Code app worktrees
 .claude/worktrees/
-.claude/
+.claude/*
+!.claude/
+!.claude/settings.json
+.claude/settings.local.json
