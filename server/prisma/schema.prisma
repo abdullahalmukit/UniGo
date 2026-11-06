@@ -699,6 +699,10 @@ model Activity {
   closureReason           ClosureReason?     @map("closure_reason")
   // Soft delete of an OPEN item by its creator, so daily limits still count it.
   deletedAt               DateTime?          @map("deleted_at")
+  // Parent post shared by several activities (ride offer id for ride bookings,
+  // carpool post id for carpool sessions). Activities of the same group never
+  // conflict with each other in the 90-minute check (B2a decision 2).
+  conflictGroupId         String?            @map("conflict_group_id") @db.Char(36)
   createdAt               DateTime           @default(now()) @map("created_at")
   updatedAt               DateTime           @updatedAt @map("updated_at")
 
@@ -731,6 +735,7 @@ model Activity {
   @@index([creatorId, createdAt])
   @@index([completionRequestedById])
   @@index([cancelledById])
+  @@index([conflictGroupId])
   @@map("activities")
 }
 

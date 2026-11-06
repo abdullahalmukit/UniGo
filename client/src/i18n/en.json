@@ -290,7 +290,22 @@
     "LICENCE_EXPIRED": "Your licence has expired. Re-verify with your renewed licence.",
     "APPLICATION_NOT_FOUND": "This application no longer exists.",
     "DOCUMENT_NOT_FOUND": "This document no longer exists.",
-    "RIDER_NOT_FOUND": "This rider does not exist."
+    "RIDER_NOT_FOUND": "This rider does not exist.",
+    "INVALID_TRANSITION": "This action is not available right now. Refresh and try again.",
+    "NOT_PARTICIPANT": "You are not part of this activity.",
+    "ACTION_NOT_ALLOWED": "You cannot do this on this activity.",
+    "ACTIVITY_NOT_FOUND": "This activity was not found.",
+    "ALREADY_TAKEN": "Already taken.",
+    "TIME_CONFLICT": "You or the other person already has an activity within 90 minutes of this time.",
+    "START_TIME_PASSED": "This item's start time has passed.",
+    "OWN_ITEM": "You cannot accept your own post.",
+    "NOT_AVAILABLE": "This item is not available.",
+    "OPEN_LIMIT_REACHED": "You already have the most open requests allowed.",
+    "DAILY_LIMIT_REACHED": "You have created the most requests allowed today. Try again tomorrow.",
+    "NOT_ENOUGH_SEATS": "Not enough seats are left.",
+    "START_TOO_SOON": "Choose a time at least 15 minutes from now.",
+    "START_TOO_LATE": "This time is too far ahead.",
+    "REASON_REQUIRED": "Give a reason."
   },
   "verification": {
     "title": "Verify your student status",

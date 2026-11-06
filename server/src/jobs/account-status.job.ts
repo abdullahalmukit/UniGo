@@ -1,5 +1,5 @@
-import { rules } from "../config/rules.js";
 import { prisma } from "../lib/prisma.js";
+import { afterActivityCommit } from "../modules/activities/engine.js";
 import { onAccountLocked } from "../modules/admin/account-hooks.js";
 import { accountStatusEmail } from "../modules/email/account-status-templates.js";
 import { sendEmailInBackground } from "../modules/email/email.service.js";
@@ -13,9 +13,12 @@ import { validLicenceFilter } from "../modules/riders/rider-status.js";
 // - sets riders with an expired licence Inactive (B1);
 // - lifts rider suspensions at their end date and emails the rider (B1).
 // Idempotent: every change is conditional on the state it was found in, so a
-// second run (or two servers) changes nothing twice. Runs in the API process
-// every minute until BullMQ arrives in B2. Not an admin action, so no Audit Log
-// row; the original suspend or restrict entry already holds the end date.
+// second run (or two servers) changes nothing twice. Not an admin action, so
+// no Audit Log row; the original suspend or restrict entry holds the end date.
+//
+// Since B2a it runs as a repeating BullMQ job every
+// rules.jobs.accountStatusInterval (jobs/worker.ts), which also covers the
+// licence-expiry auto-Inactive check below.
 
 const BATCH = 100;
 
@@ -37,14 +40,14 @@ async function startBookedSuspensions(now: Date) {
   const users = await prisma.user.findMany({ where, select: { id: true }, take: BATCH });
   let count = 0;
   for (const { id } of users) {
-    const changed = await prisma.$transaction(async (tx) => {
+    const { changed, locked } = await prisma.$transaction(async (tx) => {
       const result = await tx.user.updateMany({
         where: { ...where, id },
         data: { accountStatus: "SUSPENDED", restrictedUntil: null },
       });
-      if (result.count === 1) await onAccountLocked(tx, id);
-      return result.count;
+      return { changed: result.count, locked: result.count === 1 ? await onAccountLocked(tx, id, { type: "SYSTEM" }, now) : null };
     });
+    if (locked) await afterActivityCommit(locked.outcomes);
     count += changed;
   }
   return count;
@@ -127,23 +130,4 @@ async function endEachRider(where: Record<string, unknown>) {
     });
   }
   return count;
-}
-
-// Starts the every-minute run. Never started in tests; they call the job directly.
-export function startAccountStatusJob() {
-  let running = false;
-  const tick = async () => {
-    if (running) return;
-    running = true;
-    try {
-      await runAccountStatusJob();
-    } catch (error) {
-      console.error(`Account status job failed: ${error instanceof Error ? error.message : String(error)}`);
-    } finally {
-      running = false;
-    }
-  };
-  const timer = setInterval(() => void tick(), rules.jobs.accountStatusInterval);
-  void tick();
-  return () => clearInterval(timer);
 }

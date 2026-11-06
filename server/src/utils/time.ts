@@ -35,3 +35,8 @@ export function addYearsToDateString(value: string, years: number) {
   date.setUTCFullYear(date.getUTCFullYear() + years);
   return dateOnlyString(date);
 }
+
+// A wall-clock time on a "YYYY-MM-DD" date in Asia/Dhaka, as a UTC instant.
+export function dhakaWallTime(date: string, hour: number, minute: number) {
+  return new Date(dateOnly(date).getTime() + (hour * 60 + minute) * 60 * 1000 - DHAKA_OFFSET);
+}

@@ -1,18 +1,19 @@
 import { app } from "./app.js";
 import { env } from "./config/env.js";
-import { startAccountStatusJob } from "./jobs/account-status.job.js";
+import { startJobs } from "./jobs/worker.js";
 import { prisma } from "./lib/prisma.js";
 
 const server = app.listen(env.PORT, () => {
   console.log(`UniGo API listening on http://localhost:${env.PORT}`);
 });
 
-// Ends suspensions and restrictions on time (A8). Moves to BullMQ in B2.
-const stopAccountStatusJob = startAccountStatusJob();
+// BullMQ background jobs (B2a): activity timers, the sweeper and the account
+// status job. Needs Redis at REDIS_URL.
+const stopJobs = startJobs();
 
 async function shutDown(signal: string) {
   console.log(`${signal} received, shutting down`);
-  stopAccountStatusJob();
+  await stopJobs();
   server.close();
   await prisma.$disconnect();
   process.exit(0);

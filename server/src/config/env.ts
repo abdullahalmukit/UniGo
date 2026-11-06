@@ -38,6 +38,9 @@ const envSchema = z
     SMTP_USER: optionalText,
     SMTP_PASSWORD: optionalText,
     MAIL_FROM: optionalText,
+    // B2a: Redis for BullMQ background jobs (Memurai on Windows). Tests never
+    // connect; they use the in-memory job scheduler.
+    REDIS_URL: z.string().trim().regex(/^rediss?:\/\//, "REDIS_URL must start with redis:// or rediss://").default("redis://localhost:6379"),
   })
   .superRefine((value, ctx) => {
     if (value.JWT_ACCESS_SECRET === value.JWT_REFRESH_SECRET) {
@@ -55,7 +58,12 @@ const envSchema = z
       }
     }
   })
-  .transform((value) => ({ ...value, emailTransport: emailTransportFor(value) }));
+  .transform((value) => ({
+    ...value,
+    emailTransport: emailTransportFor(value),
+    // Tests record scheduled jobs in memory; everywhere else BullMQ runs them.
+    jobsDriver: value.NODE_ENV === "test" ? ("memory" as const) : ("bullmq" as const),
+  }));
 
 function emailTransportFor(value: { NODE_ENV: string; EMAIL_TRANSPORT?: "console" | "smtp" }) {
   if (value.NODE_ENV === "test") return "memory" as const;

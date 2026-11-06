@@ -6,6 +6,7 @@ import { AppError } from "../../utils/app-error.js";
 import { accountStatusSelect, effectiveAccountStatus } from "../auth/account-status.js";
 import { accountStatusEmail, type AccountEmailKind } from "../email/account-status-templates.js";
 import { sendEmailInBackground } from "../email/email.service.js";
+import { afterActivityCommit } from "../activities/engine.js";
 import { onAccountLocked } from "./account-hooks.js";
 import { recordAudit } from "./audit-log.js";
 
@@ -123,12 +124,12 @@ export async function applyAccountAction(
 
     // Restrict, ban and a suspension that has started close the user's OPEN posts.
     const locks = action === "restrict" || action === "ban" || (action === "suspend" && effectiveAccountStatus(after, now) === "SUSPENDED");
-    if (locks) {
-      await onAccountLocked(tx, userId);
-    }
+    const locked = locks ? await onAccountLocked(tx, userId, { type: "ADMIN", id: adminId }, now) : null;
 
-    return { user, period, newStatus };
+    return { user, period, newStatus, locked };
   });
+
+  if (result.locked) await afterActivityCommit(result.locked.outcomes);
 
   sendEmailInBackground(`account ${action}`, {
     to: result.user.email,

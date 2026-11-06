@@ -237,7 +237,7 @@ A dispute needs a reason; evidence images are optional. The admin decides the fi
 - Every accepted activity blocks a 90-minute window: start_time to start_time + 90 minutes. No end_time field is needed.
 - Before an accept or a booking, the system checks both participants across Ride, Carpool sessions, Food and Service.
 - Only ACCEPTED and IN_PROGRESS activities create conflicts.
-- A new activity is rejected if its window overlaps an existing active window.
+- A new activity is rejected if its window overlaps an existing active window: starts less than 90 minutes apart conflict, exactly 90 minutes apart is allowed. Bookings on the same ride offer (or sessions of the same carpool post) never conflict with each other for the rider.
 - The check runs inside the same database transaction as the accept, so two simultaneous bookings cannot both pass.
 - A service request with only a preferred date (no time) is excluded from the conflict check. For expiry, NOT_MARKED and Upcoming ordering, its effective start is the end of the preferred date (23:59, Asia/Dhaka).
 
@@ -257,6 +257,7 @@ Pickers disable invalid times, and the server repeats every check. An OPEN item 
 - Before acceptance the creator can edit, upgrade (raise the offered amount) or delete. After acceptance details are locked; only cancellation is allowed.
 - Nobody can accept or book their own post.
 - Every accept/book uses an atomic update that succeeds only if the item is still OPEN (or a seat is still free). If not, the user sees "Already taken".
+- An item whose start time has passed can never be accepted or booked, even before the system has marked it EXPIRED.
 - Deleting a request is a soft delete: the record is kept for limits and auditing but hidden from users.
 
 ## 8. Ride Sharing
@@ -286,7 +287,7 @@ Route, date and time, amount, seats left, and a mini profile: name, photo, unive
 - BIKE: exactly 1 passenger seat. CAR: 1–4 passenger seats (initial system limit). The rider is not counted.
 - The system validates seats against the selected vehicle type and that vehicle's verified capacity.
 - Each booking reserves 1 seat by default; a passenger may reserve extra seats for companions up to the seats left.
-- Each booking has its own status, chat, completion and review. The offer becomes FULL when no seats are left and returns to OPEN if a booking is cancelled.
+- Each booking has its own status, chat, completion and review. The offer becomes FULL when no seats are left and returns to OPEN if a booking is cancelled before the departure time. At the departure time an OPEN or FULL offer is CLOSED and never reopens; bookings already made carry on.
 
 ### 8.5 Who can accept what
 
@@ -516,7 +517,7 @@ Average rating, total completed, completion rate (completed ÷ accepted, excludi
 ### 15.4 Complaints and disputes
 
 1. Either participant can file a complaint about an activity with a reason, description and optional evidence images.
-2. The activity becomes DISPUTED and auto-completion stops.
+2. An ACCEPTED or IN_PROGRESS activity becomes DISPUTED and auto-completion stops. A complaint about a finished (terminal) activity is recorded but does not change its status.
 3. The admin reviews the case, and can call both users or collect other information.
 4. The admin records a decision: final activity status, and any action (warning, temporary suspension or permanent ban).
 5. Both users are notified of the decision. Complaint history and resolution are stored.
@@ -525,7 +526,7 @@ Average rating, total completed, completion rate (completed ÷ accepted, excludi
 
 | Limit | Rule |
 | --- | --- |
-| Open requests | Max 3 OPEN items per user at a time: passenger requests, ride offers, food and service requests. Deleted items do not count. Carpool posts are excluded (max 12 schedules). |
+| Open requests | Max 3 OPEN items per user at a time: passenger requests, ride offers, food and service requests. Deleted items and FULL ride offers do not count. Carpool posts are excluded (max 12 schedules). |
 | Daily creation | Max 4 new passenger requests, ride offers, food and service requests per user per day (resets at midnight, Asia/Dhaka). Deleted items still count. Carpool posts and bookings are excluded. |
 | Chat | Max 10 messages per minute; sending is paused briefly when exceeded |
 | Block | Blocked users never appear in each other's matching, sub-area notifications or new messages |
@@ -660,6 +661,8 @@ IDs are time-ordered UUIDs (v7), so they cannot be guessed in URLs.
 | Reminders | 30 minutes before start; carpool on ride day |
 | Publish blind reviews | When both submit, or 7 days after completion |
 | Licence expiry reminders (Phase 4) | Before expiry date |
+| Close ride offers | At departure time |
+| Safety-net sweep | Every minute: catches any expiry, NOT_MARKED, auto-complete or ride offer closing a delayed job missed |
 
 ### 19.3 Non-functional requirements
 

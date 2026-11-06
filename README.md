@@ -19,6 +19,7 @@ University-only, peer-to-peer PWA for verified students: Ride Sharing, Carpool, 
 
 - Node.js 22 or newer
 - MySQL 8 running locally
+- Redis running locally for background jobs (BullMQ). On Windows use [Memurai](https://www.memurai.com/), which runs as a service on port 6379. Set `REDIS_URL` in `server/.env` (default `redis://localhost:6379`). Tests do not need Redis.
 
 ## First-time setup
 
@@ -76,6 +77,7 @@ npm run dev
 
 - API: http://localhost:4000 (health check: http://localhost:4000/api/health)
 - Client: http://localhost:5173 (calls the API through the Vite proxy at `/api`)
+- Background jobs run inside the API process: activity expiry, NOT_MARKED, auto-complete, ride offer closing, a safety-net sweep every minute and the account-status job. Without Redis the API still serves requests, but no job runs until Redis is back.
 
 ## Other scripts
 

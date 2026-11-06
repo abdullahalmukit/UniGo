@@ -23,6 +23,14 @@ export const rules = {
     notMarkedAfterStart: 6 * HOUR,
     lateCancellationBeforeStart: 60 * MINUTE,
     reminderBeforeStart: 30 * MINUTE,
+    // B2a: a service request with only a preferred date starts at this time
+    // (Asia/Dhaka) for expiry, NOT_MARKED and Upcoming ordering (A2 decision 8)
+    dateOnlyServiceStart: { hour: 23, minute: 59 },
+    // Every cancellation after acceptance needs a reason (proposal section 15.3)
+    cancelReason: { minLength: 3, maxLength: 500 },
+    // Accept and booking transactions are retried this many times after a
+    // deadlock or lock wait timeout
+    transactionAttempts: 3,
   },
 
   limits: {
@@ -137,6 +145,15 @@ export const rules = {
   jobs: {
     // How often the account-status job ends suspensions and restrictions (A8)
     accountStatusInterval: MINUTE,
+    // B2a: the safety-net sweeper catches overdue expiry, NOT_MARKED,
+    // auto-complete and ride offer closing if a delayed job was lost
+    sweepInterval: MINUTE,
+    // Items handled per kind in one sweep; the next sweep takes the rest
+    sweepBatch: 100,
+    // A failed job is tried this many times in total, then removed (the sweeper
+    // catches anything it left)
+    attempts: 3,
+    workerConcurrency: 5,
   },
 
   passwordReset: {

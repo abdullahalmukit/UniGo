@@ -1,13 +1,14 @@
 import { afterAll, beforeEach } from "vitest";
 import { prisma } from "../../src/lib/prisma.js";
+import { scheduledJobs } from "../../src/jobs/scheduler.js";
 import { resetRateLimits } from "../../src/middleware/rate-limit.js";
 import { sentEmails } from "../../src/modules/email/email.service.js";
 import { settleBackgroundTasks } from "../../src/utils/background.js";
 
 let tables: string[] | undefined;
 
-// Every test starts with an empty database, empty rate-limit counters and an
-// empty email outbox, after any background work from the previous test ends.
+// Every test starts with an empty database, empty rate-limit counters, an
+// empty email outbox and no scheduled jobs, after any background work from the previous test ends.
 beforeEach(async () => {
   await settleBackgroundTasks();
 
@@ -26,6 +27,7 @@ beforeEach(async () => {
 
   resetRateLimits();
   sentEmails.length = 0;
+  scheduledJobs.clear();
 });
 
 afterAll(async () => {
