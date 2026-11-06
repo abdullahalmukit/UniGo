@@ -36,8 +36,12 @@ export async function verifyAccessToken(token: string) {
       audience: ACCESS_AUDIENCE,
       algorithms: ["HS256"],
     });
-    if (!payload.sub || typeof payload.iat !== "number") throw new Error("Missing claims");
-    return { userId: payload.sub, issuedAt: new Date(Math.round(payload.iat * 1000)) };
+    if (!payload.sub || typeof payload.iat !== "number" || typeof payload.exp !== "number") throw new Error("Missing claims");
+    return {
+      userId: payload.sub,
+      issuedAt: new Date(Math.round(payload.iat * 1000)),
+      expiresAt: new Date(payload.exp * 1000),
+    };
   } catch (error) {
     if (error instanceof errors.JWTExpired) {
       throw new AppError(401, "TOKEN_EXPIRED", "Your session has expired");

@@ -6,8 +6,7 @@ import { AppError } from "../../utils/app-error.js";
 import { accountStatusSelect, effectiveAccountStatus } from "../auth/account-status.js";
 import { accountStatusEmail, type AccountEmailKind } from "../email/account-status-templates.js";
 import { sendEmailInBackground } from "../email/email.service.js";
-import { afterActivityCommit } from "../activities/engine.js";
-import { onAccountLocked } from "./account-hooks.js";
+import { afterAccountLocked, onAccountLocked } from "./account-hooks.js";
 import { recordAudit } from "./audit-log.js";
 
 // User Account Management actions (proposal section 17.1, A8 decisions). Super
@@ -129,7 +128,7 @@ export async function applyAccountAction(
     return { user, period, newStatus, locked };
   });
 
-  if (result.locked) await afterActivityCommit(result.locked.outcomes);
+  if (result.locked) await afterAccountLocked(userId, result.locked, result.newStatus);
 
   sendEmailInBackground(`account ${action}`, {
     to: result.user.email,

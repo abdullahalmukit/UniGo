@@ -5,7 +5,7 @@ import { passwordSetupLinkRateLimit } from "../../middleware/rate-limit.js";
 import { singleImageUpload } from "../../middleware/upload.js";
 import { parseInput, validateBody } from "../../middleware/validate.js";
 import { getMySubAreas, setMySubAreas } from "../subareas/subareas.service.js";
-import { listBlockedUsers, unblockUser } from "./blocks.service.js";
+import { blockImpact, blockUser, listBlockedUsers, unblockUser } from "./blocks.service.js";
 import {
   removeProfilePhoto,
   requestPasswordSetupLink,
@@ -82,6 +82,16 @@ meRouter.put("/sub-areas", validateBody(setSubAreasSchema), async (req, res) => 
 
 meRouter.get("/blocks", async (req, res) => {
   res.json({ users: await listBlockedUsers(authUser(req).id) });
+});
+
+// Block from a profile (B2b decision 8); from a chat see /api/chats/:id/block.
+meRouter.get("/blocks/:userId/impact", async (req, res) => {
+  const { userId } = parseInput(userIdParamSchema, req.params);
+  res.json(await blockImpact(authUser(req).id, userId));
+});
+
+meRouter.post("/blocks", validateBody(userIdParamSchema), async (req, res) => {
+  res.json(await blockUser(authUser(req).id, (req.body as { userId: string }).userId));
 });
 
 meRouter.delete("/blocks/:userId", async (req, res) => {

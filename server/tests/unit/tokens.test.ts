@@ -20,7 +20,12 @@ describe("access tokens", () => {
     const { token, expiresAt } = await signAccessToken(USER_ID);
     const claims = await verifyAccessToken(token);
 
-    expect(claims).toEqual({ userId: USER_ID, issuedAt: new Date("2026-11-03T10:00:00.123Z") });
+    // `exp` is whole seconds; sockets use it to disconnect an expired token (B2b)
+    expect(claims).toEqual({
+      userId: USER_ID,
+      issuedAt: new Date("2026-11-03T10:00:00.123Z"),
+      expiresAt: new Date("2026-11-03T10:15:00.000Z"),
+    });
     expect(expiresAt).toEqual(new Date("2026-11-03T10:15:00.123Z"));
   });
 

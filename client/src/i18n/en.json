@@ -89,7 +89,9 @@
   },
   "inbox": {
     "title": "Inbox",
-    "empty": "A chat opens when a request is accepted."
+    "empty": "A chat opens when a request is accepted.",
+    "loadFailed": "Could not load your chats.",
+    "more": "Show older chats"
   },
   "notifications": {
     "title": "Notifications",
@@ -305,7 +307,16 @@
     "NOT_ENOUGH_SEATS": "Not enough seats are left.",
     "START_TOO_SOON": "Choose a time at least 15 minutes from now.",
     "START_TOO_LATE": "This time is too far ahead.",
-    "REASON_REQUIRED": "Give a reason."
+    "REASON_REQUIRED": "Give a reason.",
+    "CHAT_NOT_FOUND": "This chat was not found.",
+    "CHAT_READ_ONLY": "This chat is read-only because the activity has ended.",
+    "CHAT_BLOCKED": "You cannot send messages in this chat.",
+    "CHAT_IMAGES_NOT_ALLOWED": "Photos can be sent only in food delivery chats.",
+    "MESSAGE_EMPTY": "Write a message.",
+    "MESSAGE_TOO_LONG": "A message can have at most 1000 characters.",
+    "CANNOT_BLOCK_SELF": "You cannot block yourself.",
+    "BLOCK_CARPOOL_CONTRACT": "You share a carpool contract with this user. Ask to end it early or report the problem.",
+    "CANNOT_REPORT_SELF": "You cannot report yourself."
   },
   "verification": {
     "title": "Verify your student status",
@@ -855,6 +866,120 @@
       "vehicles": "Add at least one vehicle.",
       "vehiclePhotos": "Add one photo for each vehicle.",
       "data": "Something in the form is not right. Check it and try again."
+    }
+  },
+  "chat": {
+    "someone": "UniGo user",
+    "type": {
+      "RIDE_REQUEST": "Ride",
+      "RIDE_BOOKING": "Ride",
+      "CARPOOL_BOOKING": "Carpool",
+      "CARPOOL_SESSION": "Carpool",
+      "FOOD": "Food delivery",
+      "SERVICE": "Uni Service"
+    },
+    "photo": "Photo",
+    "youSaid": "You: {{text}}",
+    "backToInbox": "Back to Inbox",
+    "call": "Call {{phone}}",
+    "menu": "More options",
+    "older": "Show older messages",
+    "readOnlyFinished": "This activity has ended, so the chat is read-only.",
+    "readOnlyBlockedByMe": "You blocked this user. Unblock them in Blocked Users to send messages again.",
+    "readOnlyBlocked": "Messages are turned off in this chat.",
+    "addPhoto": "Add a receipt photo",
+    "placeholder": "Write a message",
+    "send": "Send",
+    "report": "Report",
+    "manageBlocked": "Blocked Users",
+    "block": "Block",
+    "reported": "Thanks. Your report was sent to the UniGo team.",
+    "blocked": "{{name}} is blocked.",
+    "reason": "Reason: {{reason}}",
+    "photoExpired": "This photo link has expired.",
+    "reportTitle": "Report {{name}}",
+    "reportReason": "Reason",
+    "reportPickReason": "Choose a reason.",
+    "reasons": {
+      "HARASSMENT": "Harassment",
+      "INAPPROPRIATE_CONTENT": "Inappropriate content",
+      "SPAM": "Spam",
+      "SCAM_OR_FRAUD": "Scam or fraud",
+      "SAFETY_CONCERN": "Safety concern",
+      "FAKE_PROFILE": "Fake profile or identity",
+      "OTHER": "Other"
+    },
+    "reportDescribe": "Tell us more (optional)",
+    "reportDescribeRequired": "Tell us what happened",
+    "reportSend": "Send report",
+    "blockTitle": "Block {{name}}?",
+    "blockText": "You will not be able to message each other, and you will not see each other's posts.",
+    "blockCancels_one": "This also cancels the activity you share:",
+    "blockCancels_other": "This also cancels the {{count}} activities you share:",
+    "blockLateNote": "It counts as a cancellation by you, and as a late cancellation if it starts within 60 minutes. If something went wrong, report it too.",
+    "blockCarpool": "You share a carpool contract with this user, so you cannot block them now. Ask to end the contract early, or report the problem.",
+    "blockConfirm": "Block",
+    "system": {
+      "ACCEPTED": {
+        "you": "You accepted. Plan the details here.",
+        "other": "Accepted. Plan the details here.",
+        "system": "Accepted. Plan the details here."
+      },
+      "STARTED": {
+        "you": "You started the activity.",
+        "other": "The other user started the activity.",
+        "system": "The activity has started."
+      },
+      "FOOD_COLLECTED": {
+        "you": "You collected the food. On the way!",
+        "other": "The food has been collected and is on the way.",
+        "system": "The food has been collected."
+      },
+      "COMPLETION_REQUESTED": {
+        "you": "You marked it completed. Waiting for the other user to confirm.",
+        "other": "The other user marked it completed. Confirm it or raise a dispute within 24 hours.",
+        "system": "Completion was requested."
+      },
+      "COMPLETED": {
+        "you": "You confirmed completion.",
+        "other": "The other user confirmed completion.",
+        "system": "Completed."
+      },
+      "CANCELLED": {
+        "you": "You cancelled the activity.",
+        "other": "Cancelled by the other user.",
+        "system": "The activity was cancelled."
+      },
+      "DISPUTED": {
+        "you": "You raised a dispute. The UniGo team will review it.",
+        "other": "The other user raised a dispute. The UniGo team will review it.",
+        "system": "Under review by the UniGo team."
+      },
+      "NOT_MARKED": {
+        "you": "Closed: nobody marked it started within 6 hours.",
+        "other": "Closed: nobody marked it started within 6 hours.",
+        "system": "Closed: nobody marked it started within 6 hours."
+      },
+      "SESSION_COMPLETED": {
+        "you": "You marked today's ride completed.",
+        "other": "The other user marked today's ride completed.",
+        "system": "Today's ride was completed."
+      },
+      "SESSION_CANCELLED": {
+        "you": "You cancelled today's ride.",
+        "other": "The other user cancelled today's ride.",
+        "system": "Today's ride was cancelled."
+      },
+      "SESSION_DISPUTED": {
+        "you": "You raised a complaint about a ride.",
+        "other": "The other user raised a complaint about a ride.",
+        "system": "A ride is under review."
+      },
+      "SESSION_NOT_MARKED": {
+        "you": "A ride was not marked.",
+        "other": "A ride was not marked.",
+        "system": "A ride was not marked."
+      }
     }
   }
 }

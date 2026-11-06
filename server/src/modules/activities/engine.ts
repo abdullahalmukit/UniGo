@@ -2,6 +2,8 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { effectiveAccountStatus } from "../auth/account-status.js";
+import { publishChatEvents, type ChatEvent } from "../chat/chat-events.js";
+import { postTransitionMessage } from "../chat/chat-system.js";
 import { assertNoTimeConflict } from "./conflict.js";
 import { emitActivityTransitions, type ActivityTransitionEvent } from "./events.js";
 import { releaseCarpoolSeat, releaseRideOfferSeats } from "./seats.js";
@@ -41,6 +43,8 @@ export type TransitionOutcome = {
   before: EngineActivity;
   activity: EngineActivity;
   events: ActivityTransitionEvent[];
+  // System messages written in the transaction, pushed to sockets after commit
+  chatEvents: ChatEvent[];
 };
 
 export type TransitionOptions = {
@@ -52,6 +56,10 @@ export type TransitionOptions = {
   where?: Prisma.ActivityWhereInput;
   // For jobs: return null instead of throwing when the change does not apply
   quiet?: boolean;
+  // Keep the reason in activity_status_history only: it is not stored on the
+  // activity and not shown in the chat (cancelling because of a block, B2b
+  // decision 8). The other user sees only "Cancelled by the other user".
+  hideReason?: boolean;
 };
 
 // Applies one action from the transition table inside the caller's
@@ -88,7 +96,7 @@ export async function applyTransition(
   if (status === "CANCELLED") {
     data.cancelledAt = now;
     data.cancelledById = actorId;
-    data.cancellationReason = reason ?? null;
+    data.cancellationReason = options.hideReason ? null : (reason ?? null);
     // Late cancellation applies only after acceptance (CLAUDE.md 5.8)
     if (actor.type === "USER" && activity.status !== "OPEN") data.isLateCancellation = isLateCancellation(activity.startTime, now);
   }
@@ -131,6 +139,16 @@ export async function applyTransition(
   // A cancelled booking gives its seat back (B2a decision 7).
   if (status === "CANCELLED") await releaseHeldSeat(tx, activity, now);
 
+  // The chat's system message, in the same transaction (B2b decision 4).
+  const chatEvent = await postTransitionMessage(
+    tx,
+    activity,
+    { status: activity.status, subStatus: activity.subStatus },
+    { status, subStatus },
+    // Only a cancellation shows its reason in the chat; a dispute's reason is for the admin.
+    { senderId: actor.type === "USER" ? actor.id : null, body: status === "CANCELLED" && !options.hideReason ? (reason ?? null) : null },
+  );
+
   const after: EngineActivity = {
     ...activity,
     status,
@@ -138,7 +156,12 @@ export async function applyTransition(
     ...(data.completionRequestedAt instanceof Date && { completionRequestedAt: now, completionRequestedById: actorId }),
     ...(action === "DELETE" && { deletedAt: now }),
   };
-  return { before: activity, activity: after, events: [transitionEvent(activity, after, action, actor, now)] };
+  return {
+    before: activity,
+    activity: after,
+    events: [transitionEvent(activity, after, action, actor, now)],
+    chatEvents: chatEvent ? [chatEvent] : [],
+  };
 }
 
 async function releaseHeldSeat(tx: Tx, activity: EngineActivity, now: Date) {
@@ -178,6 +201,7 @@ export async function afterActivityCommit(outcomes: readonly (TransitionOutcome 
   const done = outcomes.filter((outcome): outcome is TransitionOutcome => outcome !== null);
   for (const outcome of done) await replaceActivityTimers(outcome.before, outcome.activity);
   emitActivityTransitions(done.flatMap((outcome) => outcome.events));
+  publishChatEvents(done.flatMap((outcome) => outcome.chatEvents));
 }
 
 export function activityNotFound() {
@@ -263,7 +287,20 @@ export async function acceptActivity(activityId: string, accepterId: string, opt
         actorId: accepterId,
       },
     });
-    return { before: activity, activity: after, events: [transitionEvent(activity, after, "ACCEPT", actor, now)] };
+    // The chat opens with the accept, in the same transaction (B2b decision 3).
+    const chatEvent = await postTransitionMessage(
+      tx,
+      after,
+      { status: activity.status, subStatus: activity.subStatus },
+      { status: after.status, subStatus: after.subStatus },
+      { senderId: accepterId, body: null },
+    );
+    return {
+      before: activity,
+      activity: after,
+      events: [transitionEvent(activity, after, "ACCEPT", actor, now)],
+      chatEvents: chatEvent ? [chatEvent] : [],
+    };
   });
 
   await afterActivityCommit([outcome]);
@@ -296,7 +333,8 @@ async function assertNotBlocked(tx: Tx, a: string, b: string) {
 }
 
 // Records the first status of an activity created directly in a later state
-// (a ride booking is created ACCEPTED). For B3 and later.
+// (a ride booking is created ACCEPTED). For B3 and later; B3 also opens the
+// booking's chat here with postTransitionMessage (OPEN -> ACCEPTED).
 export async function recordCreation(tx: Tx, activity: EngineActivity, actor: ActorRef) {
   await tx.activityStatusHistory.create({
     data: {

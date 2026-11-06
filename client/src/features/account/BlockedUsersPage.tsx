@@ -11,7 +11,7 @@ import styles from "./settings.module.css";
 import { SkeletonList, SubPageHeader } from "./SubPage";
 
 // Blocked Users (proposal section 5): see whom you blocked and unblock them.
-// Blocking itself arrives with chat in B2.
+// Users are blocked from a chat (B2b) or, from B3 on, from a profile.
 export function BlockedUsersPage() {
   const { t } = useTranslation();
   const toast = useToast();

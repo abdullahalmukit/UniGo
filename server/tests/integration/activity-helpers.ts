@@ -103,3 +103,14 @@ export async function outcomeCode(promise: Promise<unknown>) {
     return (error as { code?: string }).code ?? String(error);
   }
 }
+
+// Two verified users and an activity accepted through the engine, so its chat
+// was opened in the accept transaction like in the app.
+export async function acceptedWithChat(type: "FOOD" | "SERVICE" | "RIDE_REQUEST" = "FOOD", startTime = fromNow(2 * HOUR)) {
+  const { acceptActivity } = await import("../../src/modules/activities/engine.js");
+  const [creator, accepter] = await Promise.all([verifiedUser(), verifiedUser()]);
+  const activity = await createActivity({ type, creatorId: creator.id, startTime });
+  await acceptActivity(activity.id, accepter.id);
+  const chat = await prisma.chat.findUniqueOrThrow({ where: { activityId: activity.id } });
+  return { creator, accepter, activity, chatId: chat.id };
+}

@@ -6,7 +6,8 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      "/api": "http://localhost:4000",
+      // ws: Socket.IO for chat (B2b) runs under /api/socket on the API server
+      "/api": { target: "http://localhost:4000", ws: true },
     },
   },
 });

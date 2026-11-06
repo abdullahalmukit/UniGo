@@ -15,6 +15,7 @@ import { LoginPage } from "../features/auth/LoginPage";
 import { RegisterPage } from "../features/auth/RegisterPage";
 import { ResetPasswordPage } from "../features/auth/ResetPasswordPage";
 import { HomePage } from "../features/home/HomePage";
+import { ChatPage } from "../features/inbox/ChatPage";
 import { InboxPage } from "../features/inbox/InboxPage";
 import { NotificationsPage } from "../features/notifications/NotificationsPage";
 import { ProfilePage } from "../features/profile/ProfilePage";
@@ -44,6 +45,7 @@ export const routes: RouteObject[] = [
           { path: "activity", element: <ActivityPage /> },
           { path: "upcoming", element: <UpcomingPage /> },
           { path: "inbox", element: <InboxPage /> },
+          { path: "inbox/:chatId", element: <ChatPage /> },
           { path: "notifications", element: <NotificationsPage /> },
           { path: "account", element: <AccountPage /> },
           // Account & Settings sub-pages (A7)

@@ -345,6 +345,7 @@ model User {
   completionRequests           Activity[]              @relation("ActivityCompletionRequester")
   cancelledActivities          Activity[]              @relation("ActivityCanceller")
   activityStatusChanges        ActivityStatusHistory[]
+  chatReads                    ChatRead[]
   rideOffers                   RideOffer[]
   carpoolPosts                 CarpoolPost[]
   carpoolTerminationRequests   CarpoolContract[]
@@ -1124,8 +1125,9 @@ model Chat {
   createdAt     DateTime  @default(now()) @map("created_at")
   updatedAt     DateTime  @updatedAt @map("updated_at")
 
-  activity Activity  @relation(fields: [activityId], references: [id])
+  activity Activity   @relation(fields: [activityId], references: [id])
   messages Message[]
+  reads    ChatRead[]
 
   @@index([lastMessageAt])
   @@map("chats")
@@ -1142,7 +1144,6 @@ model Message {
   systemCode         String?     @map("system_code") @db.VarChar(50)
   attachmentKey      String?     @map("attachment_key") @db.VarChar(512)
   attachmentMimeType String?     @map("attachment_mime_type") @db.VarChar(50)
-  readAt             DateTime?   @map("read_at")
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
 
@@ -1151,9 +1152,26 @@ model Message {
   reports Report[]
 
   @@index([chatId, createdAt])
-  @@index([chatId, readAt])
   @@index([senderId, createdAt])
   @@map("messages")
+}
+
+// How far each participant has read a chat (B2b decision 2). A message is
+// unread for a user when it is newer than their lastReadAt and they did not
+// send it; system messages count for both participants.
+model ChatRead {
+  chatId     String   @map("chat_id") @db.Char(36)
+  userId     String   @map("user_id") @db.Char(36)
+  lastReadAt DateTime @map("last_read_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  updatedAt  DateTime @updatedAt @map("updated_at")
+
+  chat Chat @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([chatId, userId])
+  @@index([userId])
+  @@map("chat_reads")
 }
 
 // One row per user per channel per event. dedupeKey identifies the event

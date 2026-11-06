@@ -34,8 +34,8 @@ export const defaultJobOptions = {
 // For tests: every timer job queued, by id.
 export const scheduledJobs = new Map<string, TimerJob>();
 
-export function createRedisConnection(options: { failFast?: boolean } = {}) {
-  return new Redis(env.REDIS_URL, {
+export function createRedisConnection(options: { failFast?: boolean; url?: string } = {}) {
+  return new Redis(options.url ?? env.REDIS_URL, {
     // Required by BullMQ for blocking connections
     maxRetriesPerRequest: null,
     // Fail at once while Redis is down instead of holding up a request
@@ -43,50 +43,106 @@ export function createRedisConnection(options: { failFast?: boolean } = {}) {
   });
 }
 
-let timerQueue: Queue | undefined;
+// The queue used inside requests (after a commit). While Redis is down a
+// request must never wait for it (B2b decision 1): once the connection has
+// reported an error, every queue call is skipped at once until it is back,
+// and any single call gives up after rules.jobs.queueTimeout. The change in
+// the database is already committed; the sweeper does the job's work later.
+let driver: "memory" | "bullmq" = env.jobsDriver;
+let redisUrl = env.REDIS_URL;
+let timerQueue: { queue: Queue; connection: Redis } | undefined;
+let redisDown = false;
 
 function getTimerQueue() {
-  timerQueue ??= new Queue(QUEUE_NAME, { connection: createRedisConnection({ failFast: true }), defaultJobOptions });
-  return timerQueue;
+  if (!timerQueue) {
+    const connection = createRedisConnection({ failFast: true, url: redisUrl });
+    connection.on("ready", () => {
+      redisDown = false;
+    });
+    // Logged once per outage, not on every reconnect attempt.
+    connection.on("error", (error: Error) => {
+      if (!redisDown) console.error(`Redis for background jobs is unreachable; jobs are skipped and the sweeper catches up: ${message(error)}`);
+      redisDown = true;
+    });
+    const queue = new Queue(QUEUE_NAME, { connection, defaultJobOptions });
+    // Connection errors are reported by the handler above.
+    queue.on("error", () => undefined);
+    timerQueue = { queue, connection };
+  }
+  return timerQueue.queue;
+}
+
+async function onTimerQueue(label: string, operation: (queue: Queue) => Promise<unknown>) {
+  const queue = getTimerQueue();
+  if (redisDown) return false;
+  const pending = operation(queue);
+  // The call may still finish (or fail) after the timeout; nobody waits for it.
+  pending.catch(() => undefined);
+  let timer: NodeJS.Timeout | undefined;
+  try {
+    await Promise.race([
+      pending,
+      new Promise((_, reject) => {
+        timer = setTimeout(() => reject(new Error(`timed out after ${rules.jobs.queueTimeout} ms`)), rules.jobs.queueTimeout);
+      }),
+    ]);
+    return true;
+  } catch (error) {
+    console.error(`Could not ${label}; the sweeper will handle it: ${message(error)}`);
+    return false;
+  } finally {
+    clearTimeout(timer);
+  }
 }
 
 // Queues the jobs. Called only after the database transaction has committed,
-// so a rolled-back change never leaves a job behind. A job that cannot be
-// queued (Redis down) is logged; the sweeper does its work later.
+// so a rolled-back change never leaves a job behind. Never throws.
 export async function scheduleTimerJobs(jobs: readonly TimerJob[]) {
   for (const job of jobs) {
-    if (env.jobsDriver === "memory") {
+    if (driver === "memory") {
       scheduledJobs.set(job.jobId, job);
       continue;
     }
-    try {
-      await getTimerQueue().add(job.name, job.data, { jobId: job.jobId, delay: Math.max(0, job.runAt.getTime() - Date.now()) });
-    } catch (error) {
-      console.error(`Could not queue job ${job.name}; the sweeper will handle it: ${message(error)}`);
-    }
+    await onTimerQueue(`queue job ${job.name}`, (queue) =>
+      queue.add(job.name, job.data, { jobId: job.jobId, delay: Math.max(0, job.runAt.getTime() - Date.now()) }),
+    );
   }
 }
 
 // Removes jobs that are no longer needed. Best effort: a job that still runs
-// re-reads the database and changes nothing.
+// re-reads the database and changes nothing. Never throws.
 export async function removeTimerJobs(jobIds: readonly string[]) {
   for (const jobId of jobIds) {
-    if (env.jobsDriver === "memory") {
+    if (driver === "memory") {
       scheduledJobs.delete(jobId);
       continue;
     }
-    try {
-      await getTimerQueue().remove(jobId);
-    } catch (error) {
-      console.error(`Could not remove job ${jobId}: ${message(error)}`);
-    }
+    await onTimerQueue(`remove job ${jobId}`, (queue) => queue.remove(jobId));
   }
 }
 
 export async function closeTimerQueue() {
-  const queue = timerQueue;
+  const current = timerQueue;
   timerQueue = undefined;
-  await queue?.close();
+  redisDown = false;
+  if (!current) return;
+  // close() can wait for a connection that never comes; give it a moment, then drop it.
+  await Promise.race([current.queue.close().catch(() => undefined), new Promise((resolve) => setTimeout(resolve, 500))]);
+  current.connection.disconnect();
+}
+
+// For tests: send jobs to a real BullMQ queue at this URL (e.g. one nobody
+// listens on, to test a Redis outage), then switch back.
+export async function useBullmqSchedulerForTests(url: string) {
+  await closeTimerQueue();
+  driver = "bullmq";
+  redisUrl = url;
+}
+
+export async function resetSchedulerForTests() {
+  await closeTimerQueue();
+  driver = env.jobsDriver;
+  redisUrl = env.REDIS_URL;
 }
 
 function message(error: unknown) {

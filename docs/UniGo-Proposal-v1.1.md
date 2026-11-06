@@ -456,11 +456,13 @@ Activity uses the common status system. Filter chips: All, Ride Sharing, Carpool
 
 - A chat is created automatically when a request is accepted, a ride seat is booked or a carpool booking is accepted. One chat per activity (per booking for seat-based posts).
 - The list shows the other person, activity type, last message and unread count. Messages are real-time.
-- Phone number and a Call button appear only after acceptance. Email is never shown.
-- System messages appear for key events: accepted, started, completion requested, completed, cancelled, disputed.
-- Food chats support image upload for receipts and bills.
+- Phone number and a Call button appear only after acceptance, while the activity runs, and never once either user has blocked the other. Email is never shown.
+- System messages appear for key events: accepted, started, completion requested, completed, cancelled, disputed, and closed as not marked. Only a cancellation shows its reason.
+- Food chats support image upload for receipts and bills (JPG or PNG up to 5 MB, location data removed, opened through short-lived links by the two participants only).
 - When the activity reaches a terminal status, the chat becomes read-only.
-- Report and Block are available inside the chat. Blocked users cannot send new messages to each other.
+- Report and Block are available inside the chat. Blocked users cannot send new messages to each other; their chats stay visible, read-only for both.
+- Blocking cancels the activities the two users share that have not started finishing (the blocker is recorded as the canceller, late cancellation applies as usual, and the other user sees only that it was cancelled). It is refused while they share an active carpool contract: that ends by early termination or a complaint.
+- Reports from chat take a reason (harassment, inappropriate content, spam, scam or fraud, safety concern, fake profile or identity, other) and optional text, and go to the admin.
 - Rate limit: 10 messages per user per minute.
 
 ## 14. Notifications

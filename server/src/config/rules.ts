@@ -134,6 +134,42 @@ export const rules = {
     applicationsPerUser: { window: HOUR, max: 5 },
   },
 
+  // B2b: chat (proposal section 13, B2b decisions)
+  chat: {
+    // rules.limits.maxChatMessagesPerMinute messages in this window, REST and socket together
+    rateWindow: MINUTE,
+    messageMaxLength: 1000,
+    messagesPageSize: 30,
+    inboxPageSize: 30,
+    // Inbox preview of the last message
+    previewLength: 120,
+    // Food chats only: receipt and bill photos
+    image: {
+      allowedMimeTypes: ["image/jpeg", "image/png"],
+      maxSidePx: 1600,
+      jpegQuality: 82,
+      signedUrlLifetime: 10 * MINUTE,
+    },
+    // Kept in activity_status_history only, never shown to the other user
+    blockCancellationReason: "Blocked",
+  },
+
+  // B2b: reports from chat (admin review in B7)
+  reports: {
+    reasons: ["HARASSMENT", "INAPPROPRIATE_CONTENT", "SPAM", "SCAM_OR_FRAUD", "SAFETY_CONCERN", "FAKE_PROFILE", "OTHER"],
+    descriptionMaxLength: 1000,
+    perUser: { window: HOUR, max: 5 },
+  },
+
+  // B2b: Socket.IO
+  socket: {
+    // Served under /api so the same proxy and origin as the REST API work
+    path: "/api/socket",
+    // A socket whose access token expired without auth:refresh is disconnected
+    // this long after the expiry
+    expiryGrace: 5 * 1000,
+  },
+
   admin: {
     pageSize: 20,
     // Every warning, restriction, suspension, ban, unban and reactivation
@@ -154,6 +190,9 @@ export const rules = {
     // catches anything it left)
     attempts: 3,
     workerConcurrency: 5,
+    // B2b decision 1: a request never waits longer than this for Redis when
+    // it queues or removes a job after its commit
+    queueTimeout: 2000,
   },
 
   passwordReset: {

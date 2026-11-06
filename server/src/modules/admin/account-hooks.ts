@@ -1,5 +1,6 @@
-import type { Prisma } from "../../generated/prisma/client.js";
-import { applyTransition, engineActivitySelect, type TransitionOutcome } from "../activities/engine.js";
+import type { AccountStatus, Prisma } from "../../generated/prisma/client.js";
+import { disconnectUserSockets } from "../../sockets/registry.js";
+import { afterActivityCommit, applyTransition, engineActivitySelect, type TransitionOutcome } from "../activities/engine.js";
 import type { ActorRef } from "../activities/transitions.js";
 
 export type AccountLockResult = {
@@ -55,4 +56,12 @@ export async function onAccountLocked(
   });
 
   return { outcomes, acceptedActivityIds: accepted.map((a) => a.id) };
+}
+
+// After the transaction has committed: queue the jobs and push the system
+// messages of the closed items, and disconnect every socket of a suspended or
+// banned account at once (B2b decision 5). A restricted user keeps chatting.
+export async function afterAccountLocked(userId: string, result: AccountLockResult, status: AccountStatus) {
+  await afterActivityCommit(result.outcomes);
+  if (status === "SUSPENDED" || status === "BANNED") disconnectUserSockets(userId);
 }

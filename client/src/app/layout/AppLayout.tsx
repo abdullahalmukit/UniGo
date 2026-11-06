@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet } from "react-router";
+import { useUnreadTotal } from "../../features/inbox/unread";
 import { IconLink } from "./IconLink";
 import { Logo } from "./Logo";
 import { accountLink, bottomTabs, desktopLinks, notificationsLink } from "./nav-items";
@@ -10,8 +11,8 @@ import styles from "./layout.module.css";
 // page; CSS shows the one that fits.
 export function AppLayout() {
   const { t } = useTranslation();
-  // Real counts arrive with chat and notifications (B2).
-  const unread = { messages: 0, notifications: 0 };
+  // Unread chat messages (B2b); notifications arrive in B2c.
+  const unread = { messages: useUnreadTotal(), notifications: 0 };
 
   return (
     <div className={styles.shell}>
@@ -30,6 +31,12 @@ export function AppLayout() {
             {desktopLinks.map(({ to, labelKey, end }) => (
               <NavLink key={to} to={to} end={end} className={({ isActive }) => linkClass(styles.desktopLink, isActive)}>
                 {t(labelKey)}
+                {to === "/inbox" && unread.messages > 0 && (
+                  <span className={styles.inlineBadge}>
+                    {unread.messages}
+                    <span className="visually-hidden"> {t("nav.unread", { count: unread.messages })}</span>
+                  </span>
+                )}
               </NavLink>
             ))}
             <span className={styles.divider} aria-hidden />

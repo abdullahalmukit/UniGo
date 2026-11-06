@@ -38,6 +38,7 @@ const REPEATING = [
 export function startJobs() {
   // This connection waits for Redis, so the schedulers are set as soon as it is up.
   const queue = new Queue(QUEUE_NAME, { connection: createRedisConnection(), defaultJobOptions });
+  queue.on("error", (error) => console.error(`Job queue error: ${error.message}`));
   void Promise.all(
     REPEATING.map(({ id, every }) => queue.upsertJobScheduler(id, { every }, { name: id, opts: defaultJobOptions })),
   ).catch((error: unknown) => {

@@ -3,7 +3,8 @@ import { ipKeyGenerator, MemoryStore, rateLimit } from "express-rate-limit";
 import { rules } from "../config/rules.js";
 import { AppError } from "../utils/app-error.js";
 
-// In-memory counters for now; they move to Redis with the job system in B2.
+// In-memory counters (B2b decision 7): one API process, so they need no Redis.
+// They start again from zero when the server restarts; revisit in B10.
 const stores: MemoryStore[] = [];
 
 function limiter(window: number, max: number, keyGenerator?: (req: Request) => string) {
@@ -64,7 +65,27 @@ export const riderApplicationRateLimit = limiter(
   userKey,
 );
 
+// B2b: reports, per account.
+export const reportRateLimit = limiter(rules.reports.perUser.window, rules.reports.perUser.max, userKey);
+
+// B2b: chat messages, per user, shared by REST and Socket.IO (so it is not an
+// express middleware). A sliding window: at most `max` sends in any `window`.
+const chatSends = new Map<string, number[]>();
+
+export function consumeChatSend(userId: string, now = Date.now()) {
+  const { maxChatMessagesPerMinute: max } = rules.limits;
+  const window = rules.chat.rateWindow;
+  const recent = (chatSends.get(userId) ?? []).filter((at) => at > now - window);
+  if (recent.length >= max) {
+    chatSends.set(userId, recent);
+    throw new AppError(429, "RATE_LIMITED", "You are sending messages too fast. Wait a moment.");
+  }
+  recent.push(now);
+  chatSends.set(userId, recent);
+}
+
 // Lets each test start with empty counters.
 export function resetRateLimits() {
   for (const store of stores) store.resetAll();
+  chatSends.clear();
 }

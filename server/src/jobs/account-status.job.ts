@@ -1,6 +1,5 @@
 import { prisma } from "../lib/prisma.js";
-import { afterActivityCommit } from "../modules/activities/engine.js";
-import { onAccountLocked } from "../modules/admin/account-hooks.js";
+import { afterAccountLocked, onAccountLocked } from "../modules/admin/account-hooks.js";
 import { accountStatusEmail } from "../modules/email/account-status-templates.js";
 import { sendEmailInBackground } from "../modules/email/email.service.js";
 import { riderEmail } from "../modules/email/rider-templates.js";
@@ -47,7 +46,7 @@ async function startBookedSuspensions(now: Date) {
       });
       return { changed: result.count, locked: result.count === 1 ? await onAccountLocked(tx, id, { type: "SYSTEM" }, now) : null };
     });
-    if (locked) await afterActivityCommit(locked.outcomes);
+    if (locked) await afterAccountLocked(id, locked, "SUSPENDED");
     count += changed;
   }
   return count;

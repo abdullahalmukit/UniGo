@@ -22,7 +22,13 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const token = header?.startsWith("Bearer ") ? header.slice("Bearer ".length) : undefined;
   if (!token) throw unauthenticated();
 
-  const { userId, issuedAt } = await verifyAccessToken(token);
+  req.user = (await userFromAccessToken(token)).user;
+  next();
+}
+
+// The same checks for any access token (also used by Socket.IO, B2b).
+export async function userFromAccessToken(token: string) {
+  const { userId, issuedAt, expiresAt } = await verifyAccessToken(token);
   const user = await prisma.user.findUnique({ where: { id: userId }, select: authUserSelect });
   if (!user) throw unauthenticated();
 
@@ -34,15 +40,17 @@ export async function authenticate(req: Request, _res: Response, next: NextFunct
   const accountStatus = effectiveAccountStatus(user);
   assertCanAccess(accountStatus);
 
-  req.user = {
-    id: user.id,
-    role: user.role,
-    accountStatus,
-    studentVerificationStatus: user.studentVerificationStatus,
-    isVerifiedRider: user.isVerifiedRider,
-    riderActive: user.riderActive,
+  return {
+    user: {
+      id: user.id,
+      role: user.role,
+      accountStatus,
+      studentVerificationStatus: user.studentVerificationStatus,
+      isVerifiedRider: user.isVerifiedRider,
+      riderActive: user.riderActive,
+    },
+    expiresAt,
   };
-  next();
 }
 
 export type AuthUser = NonNullable<Request["user"]>;

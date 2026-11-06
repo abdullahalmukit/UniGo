@@ -77,6 +77,7 @@ npm run dev
 
 - API: http://localhost:4000 (health check: http://localhost:4000/api/health)
 - Client: http://localhost:5173 (calls the API through the Vite proxy at `/api`)
+- Real-time chat uses Socket.IO on the API port under `/api/socket`; the Vite proxy forwards it (WebSocket) like the REST API.
 - Background jobs run inside the API process: activity expiry, NOT_MARKED, auto-complete, ride offer closing, a safety-net sweep every minute and the account-status job. Without Redis the API still serves requests, but no job runs until Redis is back.
 
 ## Other scripts
@@ -91,6 +92,7 @@ npm run dev
 | `npm run typecheck -w server` / `-w client` | Type-check one app |
 | `npm run db:migrate -w server` | Create and apply migrations to the dev database |
 | `npm run db:seed -w server` | Add the dev-only placeholder universities and, if `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` are set, a Super Admin account |
+| `npm run db:seed:dev-chat -w server` | Development only (refuses unless `NODE_ENV=development`): two verified demo students with an active food delivery chat and a finished Uni Service chat, to try Inbox and chat by hand. Set `DEV_DEMO_PASSWORD` in `server/.env` first; run `db:seed` before it |
 | `npm run db:generate -w server` | Regenerate the Prisma client after editing the schema |
 
 ## Client
