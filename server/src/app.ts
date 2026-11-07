@@ -23,6 +23,7 @@ import { adminUniversitiesRouter } from "./modules/universities/universities.adm
 import { universitiesRouter } from "./modules/universities/universities.routes.js";
 import { adminRiderApplicationsRouter, adminRidersRouter } from "./modules/riders/riders.admin.routes.js";
 import { riderRouter } from "./modules/riders/riders.routes.js";
+import { carpoolRouter } from "./modules/carpool/carpool.routes.js";
 import { foodRouter } from "./modules/food/food.routes.js";
 import { rideRouter } from "./modules/ride/ride.routes.js";
 import { meRouter } from "./modules/users/me.routes.js";
@@ -49,6 +50,7 @@ app.use("/api/activities", activitiesRouter);
 app.use("/api/activities", activityExtrasRouter);
 app.use("/api/rides", rideRouter);
 app.use("/api/food", foodRouter);
+app.use("/api/carpool", carpoolRouter);
 app.use("/api/activity", activityFeedRouter);
 app.use("/api/upcoming", upcomingRouter);
 app.use("/api/users", usersRouter);

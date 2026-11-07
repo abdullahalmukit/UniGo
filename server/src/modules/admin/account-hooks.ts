@@ -46,7 +46,7 @@ export async function onAccountLocked(
   }
 
   await db.rideOffer.updateMany({ where: { riderId: userId, status: { in: ["OPEN", "FULL"] } }, data: { status: "CLOSED", closedAt: now, closeReason: "ACCOUNT_MODERATED" } });
-  await db.carpoolPost.updateMany({ where: { riderId: userId, status: { in: ["OPEN", "FULL"] } }, data: { status: "CLOSED", closedAt: now } });
+  await db.carpoolPost.updateMany({ where: { riderId: userId, status: { in: ["OPEN", "FULL"] } }, data: { status: "CLOSED", closedAt: now, closeReason: "ACCOUNT_MODERATED" } });
 
   const accepted = await db.activity.findMany({
     where: {

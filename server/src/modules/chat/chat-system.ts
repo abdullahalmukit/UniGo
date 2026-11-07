@@ -21,16 +21,21 @@ export type SystemCode =
   | "DISPUTED"
   | "NOT_MARKED"
   // B4: food order details confirmed by both (ACCEPTED -> ORDER_CONFIRMED)
-  | "ORDER_CONFIRMED";
+  | "ORDER_CONFIRMED"
+  // B6a: both pressed Agree on a held carpool seat (-> CONTRACT_ACTIVE)
+  | "CONTRACT_ACTIVE";
 
 // B4: food messages written by the food module, not by a status change
 export type FoodSystemCode = "ORDER_UPDATED" | "BUDGET_APPROVED" | "BUDGET_REJECTED" | "RECEIPT_UPLOADED";
+// B6a: one participant pressed Agree; the other still has to
+export type CarpoolSystemCode = "CONTRACT_AGREED";
 
 // The key events of proposal section 13, plus NOT_MARKED (B2b decision 4), so
 // a chat never turns read-only without saying why.
 export function systemCodeFor(before: State, after: State): SystemCode | null {
   if (after.status === "ACCEPTED" && before.status === "OPEN") return "ACCEPTED";
   if (after.status === "ACCEPTED" && after.subStatus === "ORDER_CONFIRMED" && before.subStatus !== "ORDER_CONFIRMED") return "ORDER_CONFIRMED";
+  if (after.status === "ACCEPTED" && after.subStatus === "CONTRACT_ACTIVE" && before.subStatus !== "CONTRACT_ACTIVE") return "CONTRACT_ACTIVE";
   if (after.status === "IN_PROGRESS" && before.status === "ACCEPTED") return "STARTED";
   if (after.status === "IN_PROGRESS" && after.subStatus === "COMPLETION_REQUESTED" && before.subStatus !== "COMPLETION_REQUESTED") {
     return "COMPLETION_REQUESTED";
@@ -96,12 +101,13 @@ export async function postTransitionMessage(
 // B4: a message in a food chat that is not a status change: a system line
 // (order details saved, approval decided), an approval card (kind APPROVAL,
 // refId = the approval) or the receipt photo (kind IMAGE). Inside the
-// caller's transaction; the event is published after commit.
+// caller's transaction; the event is published after commit. B6a uses the
+// system line for a carpool Agree (CONTRACT_AGREED).
 export async function postFoodMessage(
   tx: Tx,
   activity: ChatSubject,
   message:
-    | { kind: "SYSTEM"; code: FoodSystemCode; senderId: string | null; body?: string | null }
+    | { kind: "SYSTEM"; code: FoodSystemCode | CarpoolSystemCode; senderId: string | null; body?: string | null }
     | { kind: "APPROVAL"; senderId: string; refId: string }
     | { kind: "IMAGE"; senderId: string; attachmentKey: string },
 ): Promise<ChatEvent | null> {

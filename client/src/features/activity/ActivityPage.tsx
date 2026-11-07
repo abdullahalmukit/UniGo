@@ -46,7 +46,7 @@ export function ActivityPage() {
   }, [load]);
   useFeedRefresh(useCallback(() => void load(1), [load]));
 
-  const comingLater = feature === "carpool" || feature === "service";
+  const comingLater = feature === "service";
 
   return (
     <div className={styles.page}>

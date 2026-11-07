@@ -86,6 +86,18 @@ export const routes: RouteObject[] = [
               { path: "requests/:id/edit", lazy: page(() => import("../features/food/FoodForm"), (m) => m.FoodFormPage) },
             ],
           },
+          // Carpool (B6a): verified students only, loaded per route
+          {
+            path: "carpool",
+            lazy: page(() => import("../features/carpool/CarpoolGate"), (m) => m.CarpoolGate),
+            children: [
+              { index: true, lazy: page(() => import("../features/carpool/CarpoolPage"), (m) => m.CarpoolPage) },
+              { path: "posts/new", lazy: page(() => import("../features/carpool/CarpoolForm"), (m) => m.CarpoolFormPage) },
+              { path: "posts/:id", lazy: page(() => import("../features/carpool/CarpoolDetails"), (m) => m.PostDetailPage) },
+              { path: "posts/:id/edit", lazy: page(() => import("../features/carpool/CarpoolForm"), (m) => m.CarpoolFormPage) },
+              { path: "bookings/:id", lazy: page(() => import("../features/carpool/CarpoolDetails"), (m) => m.CarpoolBookingPage) },
+            ],
+          },
         ],
       },
       { path: "*", element: <NotFoundPage /> },

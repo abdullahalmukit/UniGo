@@ -2,7 +2,7 @@ import { rules } from "../../config/rules.js";
 import type { ActivityStatus, ActivitySubStatus, ActivityType } from "../../generated/prisma/client.js";
 import { removeTimerJobs, scheduleTimerJobs, type TimerJob, type TimerJobName } from "../../jobs/scheduler.js";
 import { dhakaDateString, dhakaWallTime } from "../../utils/time.js";
-import { NOT_MARKED_TYPES, OPEN_REQUEST_TYPES } from "./transitions.js";
+import { EXPIRING_TYPES, NOT_MARKED_TYPES } from "./transitions.js";
 
 // Which delayed jobs an activity needs in its current state (CLAUDE.md
 // section 8). The jobs carry only the id; each handler re-reads the database.
@@ -49,7 +49,7 @@ const job = (name: TimerJobName, id: string, runAt: Date): TimerJob => ({
 
 export function timerJobsFor(activity: TimerSubject, now = new Date()): TimerJob[] {
   const jobs: TimerJob[] = [];
-  if (activity.status === "OPEN" && includes(OPEN_REQUEST_TYPES, activity.type)) {
+  if (activity.status === "OPEN" && includes(EXPIRING_TYPES, activity.type)) {
     jobs.push(job("activity-expire", activity.id, activity.startTime));
   }
   if (activity.status === "ACCEPTED" && includes(NOT_MARKED_TYPES, activity.type) && activity.subStatus !== "COMPLETION_REQUESTED") {

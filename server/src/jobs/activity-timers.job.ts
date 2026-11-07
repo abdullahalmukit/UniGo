@@ -1,10 +1,11 @@
 import { rules } from "../config/rules.js";
 import { prisma } from "../lib/prisma.js";
 import { transitionActivity } from "../modules/activities/engine.js";
-import { NOT_COMPLETION_REQUESTED, NOT_MARKED_TYPES, OPEN_REQUEST_TYPES } from "../modules/activities/transitions.js";
+import { EXPIRING_TYPES, NOT_COMPLETION_REQUESTED, NOT_MARKED_TYPES } from "../modules/activities/transitions.js";
 import { deliverNotification } from "../modules/notifications/notify.service.js";
 import { publishOverdueReviews } from "../modules/reviews/reviews.service.js";
 import { sendMissedReminders } from "./reminders.job.js";
+import { runCarpoolSweep } from "../modules/carpool/carpool.jobs.js";
 
 // Handlers of the delayed activity jobs and the safety-net sweeper
 // (CLAUDE.md section 8, B2a decisions 10 and 11). Each handler re-reads the
@@ -62,7 +63,7 @@ export async function runActivitySweep(now = new Date()) {
   const ids = (rows: { id: string }[]) => rows.map((row) => row.id);
 
   const toExpire = await prisma.activity.findMany({
-    where: { type: { in: [...OPEN_REQUEST_TYPES] }, status: "OPEN", deletedAt: null, startTime: { lte: now } },
+    where: { type: { in: [...EXPIRING_TYPES] }, status: "OPEN", deletedAt: null, startTime: { lte: now } },
     select: { id: true },
     take,
   });
@@ -106,8 +107,10 @@ export async function runActivitySweep(now = new Date()) {
   const notificationsDelivered = await deliverStaleNotifications(now);
   // B3b-2: blind reviews whose 7 days ended but whose job was lost
   const reviewsPublished = await publishOverdueReviews(now);
+  // B6a: seat holds, contract ends and post ends whose job was lost
+  const carpool = await runCarpoolSweep(now);
 
-  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count, remindersSent, notificationsDelivered, reviewsPublished };
+  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count, remindersSent, notificationsDelivered, reviewsPublished, ...carpool };
 }
 
 // A row still PENDING this long after it was written lost its job (Redis

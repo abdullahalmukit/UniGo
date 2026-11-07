@@ -33,10 +33,10 @@ export function AllServicesPage() {
                     {t("services.browse")}
                   </Link>
                 </>
-              ) : key === "ride" || key === "food" ? (
-                // Ride Sharing is open since B3a, Food Delivery since B4
+              ) : key === "ride" || key === "food" || key === "carpool" ? (
+                // Ride Sharing is open since B3a, Food Delivery since B4, Carpool since B6a
                 <>
-                  <Link to={`/${key}/requests/new`} className={buttonStyles.primary}>
+                  <Link to={key === "carpool" ? "/carpool/posts/new" : `/${key}/requests/new`} className={buttonStyles.primary}>
                     {t("services.create")}
                   </Link>
                   <Link to={`/${key}`} className={buttonStyles.secondary}>
@@ -54,7 +54,7 @@ export function AllServicesPage() {
                 </>
               )}
             </div>
-            {!isGuest && key !== "ride" && key !== "food" && <p className={styles.soon}>{t("services.comingSoon")}</p>}
+            {!isGuest && key === "service" && <p className={styles.soon}>{t("services.comingSoon")}</p>}
           </article>
         ))}
       </div>

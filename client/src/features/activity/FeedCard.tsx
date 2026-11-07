@@ -5,6 +5,7 @@ import { StatusChip, ToneChip, type ActivityStatus } from "../../components/Stat
 import { buttonStyles } from "../../components/ui";
 import { formatRideTime } from "../../lib/dates";
 import { FoodActions, FoodAmount } from "../food/food-shared";
+import { ScheduleLine, showDate } from "../carpool/carpool-shared";
 import { RideActions } from "../ride/RideActions";
 import { PersonRow, Route, taka } from "../ride/RideCard";
 import { itemPath, type FeedItem } from "./feed-api";
@@ -15,7 +16,12 @@ const RUNNING = ["ACCEPTED", "IN_PROGRESS", "DISPUTED"];
 
 export function ItemStatus({ item }: { item: FeedItem }) {
   const { t } = useTranslation();
-  if (item.kind !== "RIDE_OFFER") return <StatusChip status={item.status as ActivityStatus} />;
+  // B6a: a held carpool seat and a contract are both ACCEPTED
+  if (item.kind === "CARPOOL_BOOKING" && item.status === "ACCEPTED") {
+    return item.subStatus === "CONTRACT_ACTIVE" ? <ToneChip tone="indigo" label={t("carpool.contractActive")} /> : <ToneChip tone="amber" label={t("carpool.seatHeld")} />;
+  }
+  if (item.kind === "CARPOOL_POST" && item.carpool?.paused && item.status !== "CLOSED") return <ToneChip tone="grey" label={t("carpool.paused")} />;
+  if (item.kind !== "RIDE_OFFER" && item.kind !== "CARPOOL_POST") return <StatusChip status={item.status as ActivityStatus} />;
   // A ride offer has its own post status (CLAUDE.md 5.1)
   const tone = item.status === "OPEN" ? "amber" : item.status === "FULL" ? "indigo" : "grey";
   return <ToneChip tone={tone} label={t(`ride.postStatus.${item.status}`)} />;
@@ -23,6 +29,9 @@ export function ItemStatus({ item }: { item: FeedItem }) {
 
 function kindLabel(item: FeedItem, t: (key: string) => string) {
   if (item.kind === "FOOD") return item.food?.restaurantName ?? t("food.detailTitle");
+  if (item.kind === "CARPOOL_POST") return t("carpool.kind.post");
+  if (item.kind === "CARPOOL_BOOKING") return t("carpool.kind.booking");
+  if (item.kind === "CARPOOL_SESSION") return t("carpool.kind.session");
   if (item.kind === "RIDE_OFFER") return t("ride.kind.offer");
   if (item.kind === "RIDE_BOOKING") return t("activity.kind.booking");
   return t("ride.kind.request");
@@ -43,14 +52,21 @@ export function FeedCard({
   const { t, i18n } = useTranslation();
   const isOffer = item.kind === "RIDE_OFFER";
   const isFood = item.kind === "FOOD";
-  const amount = isOffer ? t("ride.perSeat", { amount: taka(item.amount, i18n.language) }) : t("ride.total", { amount: taka(item.amount, i18n.language) });
+  const isCarpool = item.feature === "CARPOOL";
+  const amount = isCarpool
+    ? t(item.kind === "CARPOOL_POST" ? "carpool.priceFrom" : "carpool.perMonth", { amount: taka(item.amount, i18n.language) })
+    : isOffer
+      ? t("ride.perSeat", { amount: taka(item.amount, i18n.language) })
+      : t("ride.total", { amount: taka(item.amount, i18n.language) });
+  const featureLabel = isFood ? "activity.filters.food" : isCarpool ? "activity.filters.carpool" : "activity.filters.ride";
+  const listsBookings = (isOffer && mode === "activity") || (item.kind === "CARPOOL_POST" && mode === "activity") || (item.kind === "CARPOOL_SESSION" && item.role === "REQUESTED");
 
   return (
     <article className={styles.card}>
       <Link to={itemPath(item)} className={styles.cardLink}>
         <span className={styles.top}>
           <span className={styles.kind}>
-            {t(isFood ? "activity.filters.food" : "activity.filters.ride")} · {kindLabel(item, t)}
+            {t(featureLabel)} · {kindLabel(item, t)}
           </span>
           <ItemStatus item={item} />
         </span>
@@ -58,6 +74,7 @@ export function FeedCard({
           {formatRideTime(item.time, i18n.language)}
           {countdown && <span className={styles.countdown}>{countdown}</span>}
         </span>
+        {isCarpool && item.carpool && <ScheduleLine daysOfWeek={item.carpool.daysOfWeek} departureMinute={item.carpool.departureMinute} />}
         <Route pickup={item.pickup} destination={item.destination} />
         <span className={styles.meta}>
           {isFood && item.food ? <FoodAmount foodPrice={item.food.foodPrice} deliveryCharge={item.food.deliveryCharge} /> : <span className={styles.amount}>{amount}</span>}
@@ -65,6 +82,12 @@ export function FeedCard({
           {item.kind === "RIDE_REQUEST" && item.seats !== null && <span>{t("ride.passengers", { count: item.seats })}</span>}
           {item.kind === "RIDE_BOOKING" && item.seats !== null && <span>{t("ride.seatsCount", { count: item.seats })}</span>}
           {isOffer && <span>{t("activity.passengersBooked", { count: item.activeBookings })}</span>}
+          {item.kind === "CARPOOL_POST" && <span>{t("activity.passengersBooked", { count: item.activeBookings })}</span>}
+          {item.kind === "CARPOOL_POST" && (item.carpool?.pendingRequests ?? 0) > 0 && <span>{t("carpool.requests.title", { count: item.carpool!.pendingRequests })}</span>}
+          {item.kind === "CARPOOL_BOOKING" && item.carpool?.startDate && item.carpool.endDate && (
+            <span>{t("carpool.contractLine", { from: showDate(item.carpool.startDate, i18n.language), until: showDate(item.carpool.endDate, i18n.language) })}</span>
+          )}
+          {item.kind === "CARPOOL_BOOKING" && item.carpool?.holdExpiresAt && <span>{t("carpool.holdUntil", { time: formatRideTime(item.carpool.holdExpiresAt, i18n.language) })}</span>}
           <span>{item.role === "REQUESTED" ? t("activity.roles.requested") : t("activity.roles.accepted")}</span>
         </span>
       </Link>
@@ -75,7 +98,7 @@ export function FeedCard({
           caption={
             isFood
               ? t(item.role === "REQUESTED" ? "food.role.accepter" : "food.role.requester")
-              : item.kind === "RIDE_BOOKING" || item.role === "REQUESTED"
+              : item.kind === "RIDE_BOOKING" || isCarpool || item.role === "REQUESTED"
                 ? t("ride.role.rider")
                 : t("ride.role.passenger")
           }
@@ -89,16 +112,18 @@ export function FeedCard({
         </span>
       )}
 
-      {isOffer && mode === "activity" && item.bookings.length > 0 && (
+      {listsBookings && item.bookings.length > 0 && (
         <ul className={styles.bookings} aria-label={t("ride.bookings.title", { count: item.bookings.length })}>
           {item.bookings.map((booking) => (
             <li key={booking.activityId} className={styles.booking}>
               <div className={styles.bookingTop}>
-                {booking.passenger && <PersonRow person={booking.passenger} caption={t("ride.seatsCount", { count: booking.seatsBooked })} />}
+                {booking.passenger && (
+                  <PersonRow person={booking.passenger} caption={isCarpool ? t("ride.role.passenger") : t("ride.seatsCount", { count: booking.seatsBooked })} />
+                )}
                 <StatusChip status={booking.status} />
               </div>
               <ContactRow phone={booking.phone} name={booking.passenger?.name} />
-              <Link to={`/ride/bookings/${booking.activityId}`} className={styles.textLink}>
+              <Link to={isCarpool ? `/carpool/bookings/${booking.activityId}` : `/ride/bookings/${booking.activityId}`} className={styles.textLink}>
                 {t("ride.bookings.openOne")}
               </Link>
             </li>
@@ -115,6 +140,32 @@ export function FeedCard({
 function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void }) {
   const { t } = useTranslation();
   const open = <Link to={itemPath(item)} className={buttonStyles.secondary}>{t("activity.actions.details")}</Link>;
+
+  // B6a: carpool steps (accept, Agree, cancel a held seat) are on its pages
+  if (item.kind === "CARPOOL_POST") {
+    return (
+      <div className={styles.actions}>
+        {item.status !== "CLOSED" && (
+          <Link to={`/carpool/posts/${item.id}/edit`} className={buttonStyles.secondary}>
+            {item.activeBookings > 0 ? t("ride.actions.addSeats") : t("ride.actions.edit")}
+          </Link>
+        )}
+        {open}
+      </div>
+    );
+  }
+  if (item.feature === "CARPOOL") {
+    return (
+      <div className={styles.actions}>
+        {item.chatId && RUNNING.includes(item.status) && (
+          <Link to={`/inbox/${item.chatId}`} className={buttonStyles.secondary}>
+            {t("ride.actions.chat")}
+          </Link>
+        )}
+        {open}
+      </div>
+    );
+  }
 
   if (item.kind === "RIDE_OFFER") {
     const stillRunning = item.bookings.some((b) => RUNNING.includes(b.status));

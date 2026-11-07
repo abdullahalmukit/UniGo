@@ -50,7 +50,7 @@ export function HomePage() {
       <Section title={t("home.featuresTitle")}>
         <div className={styles.features}>
           {featureList.map(({ key, picture }) => (
-            <Link key={key} to={key === "ride" || key === "food" ? `/${key}` : "/services"} className={styles.featureCard}>
+            <Link key={key} to={key === "service" ? "/services" : `/${key}`} className={styles.featureCard}>
               <span className={styles.featureName}>{t(`features.${key}.name`)}</span>
               <span className={styles.featureHint}>{t(`features.${key}.hint`)}</span>
               <span className={styles.featureTag}>{t(`features.${key}.tag`)}</span>

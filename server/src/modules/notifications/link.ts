@@ -15,6 +15,8 @@ export function notificationLink(type: NotificationType, data: NotificationData 
     if (d.activityType === "RIDE_BOOKING") return `/ride/bookings/${encodeURIComponent(activityId)}`;
     // B4: food notifications open the food request's page
     if (d.activityType === "FOOD") return `/food/requests/${encodeURIComponent(activityId)}`;
+    // B6a: carpool booking notifications open the booking (request, hold, contract)
+    if (d.activityType === "CARPOOL_BOOKING") return `/carpool/bookings/${encodeURIComponent(activityId)}`;
   }
   switch (type) {
     case "NEW_CHAT_MESSAGE":

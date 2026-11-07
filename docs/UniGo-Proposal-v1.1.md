@@ -249,7 +249,7 @@ A dispute needs a reason; evidence images are optional. The admin decides the fi
 | Ride request / offer | 15 minutes from now | 48 hours from now |
 | Food request (expected delivery) | 15 minutes from now | 24 hours from now |
 | Service request (preferred date/time) | 15 minutes from now | 7 days from now |
-| Carpool booking start date | Tomorrow | Rider-defined, any date within the schedule |
+| Carpool booking start date | Tomorrow, on one of the post's ride days | Rider-defined, any date within the schedule; the contract may not end after the post's last day |
 
 Pickers disable invalid times, and the server repeats every check. An OPEN item that reaches its start time without an accepter becomes EXPIRED.
 
@@ -328,16 +328,18 @@ Carpool is for recurring weekly rides. Only Verified & Active Riders create sche
 - Fields: day(s) of the week, time, pickup, destination, vehicle (BIKE or CAR), passenger seats, notes, and a fixed monthly price for each offered duration (1, 2, 3 or 4 months).
 - BIKE allows exactly 1 seat; CAR allows 1–4 seats.
 - One schedule creates only one Carpool Post, whatever the number of seats.
-- A rider can have at most 12 independent schedules, each with its own day, time and route. A rider's own schedules must not overlap in time.
-- Each post has a start date and an optional end date. Without an end date, the post stays available until the rider closes it. A contract cannot end after the post's end date.
+- A rider can have at most 12 independent schedules, each with its own day, time and route. A rider's own schedules must not overlap in time: two of them overlap when they share a ride day, their departures are less than 90 minutes apart (also across midnight) and their date ranges meet. Paused schedules, and closed ones that still hold a seat, count for both rules.
+- Each post has a start date and an optional end date. Without an end date, the post stays available until the rider closes it. A contract cannot end after the post's end date. The start date is today or up to 60 days ahead; an end date must leave room for the shortest duration offered. A post closes at midnight after its end date.
+- Monthly prices are ৳100–৳10,000; at least one duration must be offered.
+- While nobody holds a seat or has a contract, the rider can edit everything; saving declines the pending seat requests (each passenger is told). After that, the rider can only add seats (up to the vehicle's capacity) or stop new bookings. "Stop new bookings" pauses the post: it is not listed and takes no new requests or accepts until the rider resumes it; held seats and contracts carry on. A post can be removed (closed for good) only while nobody holds a seat or has a contract.
 
 ### 9.3 Seat-based booking workflow
 
-1. Passenger picks a post, a duration (1–4 months) and a start date, and sends a booking request for one seat.
-2. Rider accepts or rejects each request independently.
-3. After the rider accepts, the seat is held for 24 hours (or until the start date, whichever is sooner) and a chat opens.
-4. Both press Agree. A contract is created for that passenger (sub-status CONTRACT_ACTIVE). If they do not agree within the hold, the seat returns to available.
-5. The system generates a ride session for every agreed day of the contract.
+1. Passenger picks a post, a duration (1–4 months) and a start date (from tomorrow, on one of the ride days), and sends a booking request for one seat. The rider is notified. A passenger has at most one request, held seat or contract per post, and can withdraw a request the rider has not answered. A request the rider never answers expires at its first ride.
+2. Rider accepts or rejects each request independently (a reason for rejecting is optional and shown to the passenger).
+3. After the rider accepts, the seat is held for 24 hours (or until the first ride, whichever is sooner) and a chat opens. Every ride day of the contract is checked against both people's activities (section 7.5); a clash is refused and the clashing dates are listed.
+4. Both press Agree. The first Agree tells the other person it is their turn and when the hold ends. The second creates a contract for that passenger (sub-status CONTRACT_ACTIVE), after checking every ride day again. If they do not agree within the hold, the seat returns to available. Either side can give up a held seat with a reason.
+5. The system generates a ride session for every agreed day of the contract. Contract months are counted from the start date (10 November – 9 December is month 1; a start on the 31st moves to the last day of a shorter month).
 6. On each ride day, either side can mark the session Completed or Cancelled (with a reason). The system records who cancelled.
 7. A monthly history shows completed, cancelled and not-marked sessions and who cancelled each one.
 8. When the contract ends, both can review each other and the passenger can request Renew.
@@ -345,7 +347,7 @@ Carpool is for recurring weekly rides. Only Verified & Active Riders create sche
 ### 9.4 Seat and post rules
 
 - Each successful booking reserves exactly one seat. Duration and monthly price are managed per passenger.
-- When all seats are booked, the post becomes FULL. When a passenger cancels or a contract ends, only that seat opens and the post returns to OPEN.
+- When every seat is held or under a contract, the post becomes FULL. When a hold ends, a passenger cancels or a contract ends, only that seat opens and the post returns to OPEN. A contract ends at midnight after its last day.
 - Duplicate bookings and overbooking are prevented with database transactions.
 - A passenger can hold several contracts, but not two whose sessions overlap (section 7.5).
 - A rider cannot book their own post but can book other riders' posts as a passenger.
@@ -461,7 +463,7 @@ A rider's ride offer appears under Requested by me with its bookings: in Active 
 
 - All future ACCEPTED activities from all four features in one list, nearest first.
 - Filters by feature and by type (Requested or Accepted).
-- Carpool shows only sessions in the next 7 days.
+- Carpool shows only sessions in the next 7 days. A rider sees one card per post and ride time, with that ride's passengers.
 - Each card shows type, time, route or title, other person, status chip, and a countdown for the nearest item (updated every minute).
 - A rider's ride offer is one card with its booked passengers while it has at least one accepted booking; an offer nobody has booked is not in Upcoming.
 - Home shows the next 3 upcoming items.
@@ -518,6 +520,7 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | Food order details to confirm (saved or changed by the other person) | Other participant | In-app, push |
 | Food over-budget approval requested | Requester | In-app, push |
 | Food over-budget approval approved or rejected | Accepter | In-app, push |
+| The other person agreed to a carpool contract (your turn; the seat hold ends at a given time) | Other participant | In-app, push |
 
 Rules for all notifications:
 

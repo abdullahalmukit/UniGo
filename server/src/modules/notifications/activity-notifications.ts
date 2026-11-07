@@ -69,7 +69,9 @@ export async function notifyTransition(event: ActivityTransitionEvent) {
       plans.push({ type: "DISPUTE_RESOLVED", to: participants, kind: event.action === "RESOLVE_CANCELLED" ? "CANCELLED" : "COMPLETED" });
       break;
     case "EXPIRE":
-      plans.push({ type: "REQUEST_EXPIRED", to: [creatorId] });
+      // B6a: a carpool booking request is the passenger's (the accepter);
+      // the rider never answered it.
+      plans.push({ type: "REQUEST_EXPIRED", to: event.type === "CARPOOL_BOOKING" && accepterId ? [accepterId] : [creatorId] });
       break;
     default:
       break;

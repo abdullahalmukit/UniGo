@@ -64,6 +64,10 @@ const RIDE = ["RIDE_REQUEST", "RIDE_BOOKING"] as const satisfies readonly Activi
 export const TWO_STEP_TYPES = ["RIDE_REQUEST", "RIDE_BOOKING", "FOOD", "SERVICE"] as const satisfies readonly ActivityType[];
 // Items a user creates as OPEN requests: they count toward the limits and expire
 export const OPEN_REQUEST_TYPES = ["RIDE_REQUEST", "FOOD", "SERVICE"] as const satisfies readonly ActivityType[];
+// B6a: OPEN items that expire at their start. A carpool booking request the
+// rider never answered expires at its first session (Q3); it is not in
+// OPEN_REQUEST_TYPES, so it never counts toward the open and daily limits.
+export const EXPIRING_TYPES = [...OPEN_REQUEST_TYPES, "CARPOOL_BOOKING"] as const satisfies readonly ActivityType[];
 // Items closed as NOT_MARKED 6 hours after start if still ACCEPTED. Carpool
 // bookings are left out: their contract has its own end (B6).
 export const NOT_MARKED_TYPES = [...TWO_STEP_TYPES, "CARPOOL_SESSION"] as const satisfies readonly ActivityType[];
@@ -166,7 +170,7 @@ export const TRANSITIONS: readonly TransitionRule[] = [
   { action: "END_CONTRACT", types: ["CARPOOL_BOOKING"], from: [{ status: "ACCEPTED", subStatus: ["CONTRACT_ACTIVE"] }], to: { status: "COMPLETED" }, by: ["SYSTEM"] },
 
   // --- System timers (CLAUDE.md section 8)
-  { action: "EXPIRE", types: OPEN_REQUEST_TYPES, from: [{ status: "OPEN" }], to: { status: "EXPIRED" }, by: ["SYSTEM"], closure: "EXPIRED_UNACCEPTED" },
+  { action: "EXPIRE", types: EXPIRING_TYPES, from: [{ status: "OPEN" }], to: { status: "EXPIRED" }, by: ["SYSTEM"], closure: "EXPIRED_UNACCEPTED" },
   {
     action: "MARK_NOT_MARKED",
     types: NOT_MARKED_TYPES,

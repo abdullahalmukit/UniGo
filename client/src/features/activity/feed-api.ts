@@ -19,8 +19,8 @@ export type FeedBooking = {
 };
 
 export type FeedItem = {
-  feature: "RIDE" | "FOOD";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD";
+  feature: "RIDE" | "FOOD" | "CARPOOL";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   status: ActivityStatus | PostStatus;
@@ -41,6 +41,20 @@ export type FeedItem = {
   activeBookings: number;
   // B4: food only (pickup = restaurant, destination = delivery location)
   food: { restaurantName: string; items: string; quantity: number; foodPrice: number; deliveryCharge: number; cancellableByMe: boolean } | null;
+  // B6a: carpool only
+  carpool?: {
+    postId: string;
+    bookingId: string | null;
+    daysOfWeek: number;
+    departureMinute: number;
+    paused: boolean;
+    pendingRequests: number;
+    durationMonths: number | null;
+    startDate: string | null;
+    endDate: string | null;
+    holdExpiresAt: string | null;
+    agreed: { me: boolean; other: boolean } | null;
+  };
 };
 
 function query(params: Record<string, string | number | undefined>) {
@@ -77,8 +91,15 @@ export function useFeedRefresh(reload: () => void) {
 }
 
 // The page an item opens
-export function itemPath(item: Pick<FeedItem, "kind" | "id">) {
+export function itemPath(item: Pick<FeedItem, "kind" | "id" | "carpool">) {
   const id = encodeURIComponent(item.id);
+  // B6a: a post, a booking, or a session (the passenger's booking, the rider's post)
+  if (item.kind === "CARPOOL_POST") return `/carpool/posts/${id}`;
+  if (item.kind === "CARPOOL_BOOKING") return `/carpool/bookings/${id}`;
+  if (item.kind === "CARPOOL_SESSION") {
+    const bookingId = item.carpool?.bookingId;
+    return bookingId ? `/carpool/bookings/${encodeURIComponent(bookingId)}` : `/carpool/posts/${encodeURIComponent(item.carpool?.postId ?? "")}`;
+  }
   if (item.kind === "RIDE_OFFER") return `/ride/offers/${id}`;
   if (item.kind === "RIDE_BOOKING") return `/ride/bookings/${id}`;
   if (item.kind === "FOOD") return `/food/requests/${id}`;

@@ -4,12 +4,13 @@ import { z } from "zod";
 import { rules } from "../../config/rules.js";
 import { authenticate, authUser } from "../../middleware/authenticate.js";
 import { parseInput } from "../../middleware/validate.js";
+import { carpoolActivity, carpoolUpcoming } from "../carpool/carpool.feed.js";
 import { foodActivity, foodUpcoming } from "../food/food.feed.js";
 import { rideActivity, rideUpcoming, type FeedItem } from "../ride/ride.feed.js";
 
 // Activity (proposal 12.2) and Upcoming (12.3) across every feature. Ride
-// Sharing (B3) and Food (B4) are built; Carpool and Service add their items
-// here in B5-B6. Every logged-in user sees only their own items.
+// Sharing (B3), Food (B4) and Carpool (B6a) are built; Service adds its items
+// here in B5. Every logged-in user sees only their own items.
 // Mounted at /api/activity and /api/upcoming (never on /api itself, so no
 // other route goes through this login check).
 export const activityFeedRouter = Router();
@@ -33,13 +34,14 @@ const upcomingQuery = z.object({
   limit: z.coerce.number().int().min(1).max(rules.feed.upcomingMax).default(rules.feed.upcomingMax),
 });
 
-type Loaders = { ride: () => Promise<FeedItem[]>; food: () => Promise<FeedItem[]> };
+type Loaders = { ride: () => Promise<FeedItem[]>; food: () => Promise<FeedItem[]>; carpool: () => Promise<FeedItem[]> };
 
-// The features that have items so far (Ride B3, Food B4), merged by time.
+// The features that have items so far (Ride B3, Food B4, Carpool B6a), merged by time.
 async function itemsFor(featureName: z.infer<typeof feature>, load: Loaders, newestFirst: boolean) {
   const parts = await Promise.all([
     featureName === "all" || featureName === "ride" ? load.ride() : [],
     featureName === "all" || featureName === "food" ? load.food() : [],
+    featureName === "all" || featureName === "carpool" ? load.carpool() : [],
   ]);
   return parts.flat().sort((a, b) => (newestFirst ? b.time.getTime() - a.time.getTime() : a.time.getTime() - b.time.getTime()));
 }
@@ -49,7 +51,11 @@ activityFeedRouter.get("/", async (req, res) => {
   const userId = authUser(req).id;
   const items = await itemsFor(
     q.feature,
-    { ride: () => rideActivity(userId, q.tab, q.role), food: () => foodActivity(userId, q.tab, q.role) },
+    {
+      ride: () => rideActivity(userId, q.tab, q.role),
+      food: () => foodActivity(userId, q.tab, q.role),
+      carpool: () => carpoolActivity(userId, q.tab, q.role),
+    },
     q.tab === "history",
   );
   const size = rules.feed.pageSize;
@@ -59,6 +65,10 @@ activityFeedRouter.get("/", async (req, res) => {
 upcomingRouter.get("/", async (req, res) => {
   const q = parseInput(upcomingQuery, req.query);
   const userId = authUser(req).id;
-  const items = await itemsFor(q.feature, { ride: () => rideUpcoming(userId, q.role), food: () => foodUpcoming(userId, q.role) }, false);
+  const items = await itemsFor(
+    q.feature,
+    { ride: () => rideUpcoming(userId, q.role), food: () => foodUpcoming(userId, q.role), carpool: () => carpoolUpcoming(userId, q.role) },
+    false,
+  );
   res.json(await fillPersonStats({ items: items.slice(0, q.limit) }));
 });
