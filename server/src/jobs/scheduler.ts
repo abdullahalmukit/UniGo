@@ -20,7 +20,11 @@ export type TimerJobName =
   | "sub-area-notify"
   | "notification-deliver"
   // B3b-2
-  | "review-publish";
+  | "review-publish"
+  // B6a
+  | "carpool-hold-release"
+  | "carpool-contract-end"
+  | "carpool-post-close";
 
 export type TimerJob = {
   name: TimerJobName;

@@ -49,6 +49,24 @@ export const rules = {
     seatHold: 24 * HOUR,
     durationMonths: [1, 2, 3, 4],
     upcomingSessionsWindow: 7 * DAY,
+    // B6a (Q8): fixed monthly price per offered duration, in taka
+    monthlyPrice: { min: 100, max: 10000 },
+    notesMaxLength: 500,
+    addressMaxLength: 255,
+    // A post's first valid day: today up to this many days ahead (Asia/Dhaka)
+    validFromMaxDaysAhead: 60,
+    // A rider's rejection reason (optional)
+    rejectReasonMaxLength: 500,
+    // Search: pickup and destination radius, and page size
+    searchRadiusKm: [1, 2, 5],
+    defaultSearchRadiusKm: 2,
+    pageSize: 30,
+    // A TIME_CONFLICT lists at most this many clashing dates
+    conflictDatesMax: 30,
+    // B6a: NOT_MARKED and ride-day reminder timers are queued only for
+    // sessions starting within this window; a daily job queues the next days
+    sessionTimerWindow: 7 * DAY,
+    sessionTimerInterval: DAY,
   },
 
   reviews: {

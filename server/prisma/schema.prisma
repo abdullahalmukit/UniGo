@@ -143,6 +143,10 @@ enum ClosureReason {
   ACCOUNT_MODERATED
   ADMIN_REMOVED
   DISPUTE_RESOLVED
+  // B6a: the rider changed or removed the carpool post; its pending booking
+  // requests were rejected
+  POST_CHANGED
+  POST_REMOVED
 }
 
 enum ActorType {
@@ -171,6 +175,18 @@ enum RideOfferCloseReason {
   // The rider's account was restricted, suspended or banned
   ACCOUNT_MODERATED
   // B3b-2: an admin cancelled it; its unfinished bookings were cancelled
+  ADMIN_REMOVED
+}
+
+// B6a: why a carpool post was CLOSED (final; pausing is carpool_posts.paused_at)
+enum CarpoolPostCloseReason {
+  // The rider removed it (no held seat or active contract)
+  REMOVED_BY_RIDER
+  // Its valid-until date has passed
+  ENDED
+  // The rider's account was restricted, suspended or banned
+  ACCOUNT_MODERATED
+  // An admin removed it (B6b)
   ADMIN_REMOVED
 }
 
@@ -249,6 +265,8 @@ enum NotificationType {
   FOOD_BUDGET_APPROVAL_REQUESTED
   // B4 (Q2): the requester approved or rejected it
   FOOD_BUDGET_APPROVAL_DECIDED
+  // B6a (Q11): the other person pressed Agree on a held carpool seat
+  CARPOOL_AGREE_REQUESTED
 }
 
 enum NotificationChannel {
@@ -902,29 +920,34 @@ model RideBooking {
 
 // One schedule = one post. Parent post, not an activity.
 model CarpoolPost {
-  id                 String     @id @default(uuid(7)) @db.Char(36)
-  riderId            String     @map("rider_id") @db.Char(36)
-  vehicleId          String     @map("vehicle_id") @db.Char(36)
+  id                 String                  @id @default(uuid(7)) @db.Char(36)
+  riderId            String                  @map("rider_id") @db.Char(36)
+  vehicleId          String                  @map("vehicle_id") @db.Char(36)
   // Bitmask of weekdays: bit 0 = Sunday ... bit 6 = Saturday.
-  daysOfWeek         Int        @map("days_of_week") @db.TinyInt
+  daysOfWeek         Int                     @map("days_of_week") @db.TinyInt
   // Minutes after midnight, Asia/Dhaka (a recurring wall-clock time, not an instant).
-  departureMinute    Int        @map("departure_minute") @db.SmallInt
-  pickupAddress      String     @map("pickup_address") @db.VarChar(255)
-  pickupLat          Decimal    @map("pickup_lat") @db.Decimal(9, 6)
-  pickupLng          Decimal    @map("pickup_lng") @db.Decimal(9, 6)
-  destinationAddress String     @map("destination_address") @db.VarChar(255)
-  destinationLat     Decimal    @map("destination_lat") @db.Decimal(9, 6)
-  destinationLng     Decimal    @map("destination_lng") @db.Decimal(9, 6)
-  totalSeats         Int        @map("total_seats") @db.TinyInt
-  seatsAvailable     Int        @map("seats_available") @db.TinyInt
-  notes              String?    @db.Text
+  departureMinute    Int                     @map("departure_minute") @db.SmallInt
+  pickupAddress      String                  @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal                 @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal                 @map("pickup_lng") @db.Decimal(9, 6)
+  destinationAddress String                  @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal                 @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal                 @map("destination_lng") @db.Decimal(9, 6)
+  totalSeats         Int                     @map("total_seats") @db.TinyInt
+  seatsAvailable     Int                     @map("seats_available") @db.TinyInt
+  notes              String?                 @db.Text
   // Range in which a booking may start (see open question on the schedule range).
-  validFrom          DateTime   @map("valid_from") @db.Date
-  validUntil         DateTime?  @map("valid_until") @db.Date
-  status             PostStatus @default(OPEN)
-  closedAt           DateTime?  @map("closed_at")
-  createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  validFrom          DateTime                @map("valid_from") @db.Date
+  validUntil         DateTime?               @map("valid_until") @db.Date
+  status             PostStatus              @default(OPEN)
+  closedAt           DateTime?               @map("closed_at")
+  // B6a: why it was CLOSED; CLOSED is final
+  closeReason        CarpoolPostCloseReason? @map("close_reason")
+  // B6a (Q6): "Stop new bookings" pauses the post without closing it; the
+  // status stays OPEN or FULL. Null while it takes new bookings.
+  pausedAt           DateTime?               @map("paused_at")
+  createdAt          DateTime                @default(now()) @map("created_at")
+  updatedAt          DateTime                @updatedAt @map("updated_at")
 
   rider    User             @relation(fields: [riderId], references: [id])
   vehicle  Vehicle          @relation(fields: [vehicleId], references: [id])

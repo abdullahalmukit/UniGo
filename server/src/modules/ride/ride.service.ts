@@ -43,7 +43,7 @@ const notFound = () => new AppError(404, "RIDE_NOT_FOUND", "This ride was not fo
 
 // "Verified & Active Rider" (proposal section 4): Active switch on, and still
 // able to be Active (verified, not restricted, no rider suspension, licence).
-async function assertActiveRider(tx: Tx, userId: string, now: Date) {
+export async function assertActiveRider(tx: Tx, userId: string, now: Date) {
   const user = await tx.user.findUnique({
     where: { id: userId },
     select: { isVerifiedRider: true, riderActive: true, studentVerificationStatus: true, accountStatus: true, riderSuspended: true, riderSuspendedUntil: true },
@@ -58,7 +58,7 @@ async function assertActiveRider(tx: Tx, userId: string, now: Date) {
 }
 
 // The rider's own vehicle, approved and in use, with enough seats.
-async function usableVehicle(tx: Tx, riderId: string, vehicleId: string, seats: number) {
+export async function usableVehicle(tx: Tx, riderId: string, vehicleId: string, seats: number) {
   const vehicle = await tx.vehicle.findFirst({
     where: { id: vehicleId, ownerId: riderId, status: "APPROVED", isActive: true },
     select: { id: true, type: true, seatCapacity: true },

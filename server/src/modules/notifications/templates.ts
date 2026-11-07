@@ -22,7 +22,7 @@ import { CATALOGUE, type NotificationData } from "./catalogue.js";
 
 export type Text = { title: string; body: string };
 type Template = (d: NotificationData, f: Format) => Text;
-type Format = { activity: string; time: string; name: string; count: string; days: string; date: string };
+type Format = { activity: string; time: string; name: string; count: string; days: string; date: string; until: string };
 
 const ACTIVITY_LABELS: Record<Language, Record<ActivityType, string>> = {
   EN: {
@@ -113,6 +113,10 @@ const EN: Record<OwnTemplates, Template> = {
     body: `Your driving licence expires on ${f.date} (in ${f.days} days). Send a re-verification with your renewed licence from Drive with UniGo to keep driving.`,
   }),
   REVIEW_PUBLISHED: (_d, f) => ({ title: "You have a new review", body: `${f.name} reviewed your ${f.activity}. See it on your profile.` }),
+  CARPOOL_AGREE_REQUESTED: (_d, f) => ({
+    title: "Your turn to agree",
+    body: `${f.name} agreed to the carpool contract. Your turn: the seat hold ends at ${f.until}.`,
+  }),
   FOOD_ORDER_TO_CONFIRM: (_d, f) => ({ title: "Confirm the order details", body: `${f.name} saved the order details of your food delivery. Check and confirm them.` }),
   FOOD_BUDGET_APPROVAL_REQUESTED: (_d, f) => ({
     title: "Approval needed",
@@ -194,6 +198,10 @@ const BN: Record<OwnTemplates, Template> = {
     body: `আপনার ড্রাইভিং লাইসেন্সের মেয়াদ ${f.date} তারিখে শেষ হবে (${f.days} দিন বাকি)। চালানো চালিয়ে যেতে Drive with UniGo থেকে নবায়ন করা লাইসেন্স দিয়ে পুনঃযাচাই পাঠান।`,
   }),
   REVIEW_PUBLISHED: (_d, f) => ({ title: "আপনি একটি নতুন রিভিউ পেয়েছেন", body: `${f.name} আপনার ${f.activity} নিয়ে রিভিউ দিয়েছেন। আপনার প্রোফাইলে দেখুন।` }),
+  CARPOOL_AGREE_REQUESTED: (_d, f) => ({
+    title: "এবার আপনার সম্মতি দেওয়ার পালা",
+    body: `${f.name} কারপুল চুক্তিতে সম্মতি দিয়েছেন। এবার আপনার পালা: সিট ধরে রাখার সময় শেষ হবে ${f.until}-এ।`,
+  }),
   FOOD_ORDER_TO_CONFIRM: (_d, f) => ({ title: "অর্ডারের বিবরণ নিশ্চিত করুন", body: `${f.name} আপনার ফুড ডেলিভারির অর্ডারের বিবরণ সংরক্ষণ করেছেন। দেখে নিশ্চিত করুন।` }),
   FOOD_BUDGET_APPROVAL_REQUESTED: (_d, f) => ({
     title: "অনুমোদন প্রয়োজন",
@@ -228,6 +236,8 @@ function format(language: Language, d: NotificationData): Format {
     count: numbers[language].format(d.count ?? 1),
     days: numbers[language].format(d.days ?? 0),
     date: d.expiresOn ? formatDhakaDate(d.expiresOn, language) : "",
+    // B6a: when a carpool seat hold ends
+    until: d.endsAt ? formatDhakaDateTime(new Date(d.endsAt), language) : "",
   };
 }
 

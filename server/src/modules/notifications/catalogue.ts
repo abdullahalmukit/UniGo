@@ -69,6 +69,8 @@ export const CATALOGUE: Record<NotificationType, CatalogueEntry> = {
   FOOD_ORDER_TO_CONFIRM: { recipients: "Other participant", channels: IN_APP_PUSH },
   FOOD_BUDGET_APPROVAL_REQUESTED: { recipients: "Requester", channels: IN_APP_PUSH },
   FOOD_BUDGET_APPROVAL_DECIDED: { recipients: "Accepter", channels: IN_APP_PUSH },
+  // B6a (Q11): the other person pressed Agree on a held carpool seat
+  CARPOOL_AGREE_REQUESTED: { recipients: "Other participant", channels: IN_APP_PUSH },
 };
 
 // Values stored with a notification to build its text in the recipient's

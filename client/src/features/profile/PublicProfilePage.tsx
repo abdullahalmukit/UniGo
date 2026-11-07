@@ -1,3 +1,5 @@
+import type { CarpoolPost } from "../carpool/carpool-api";
+import { CarpoolCard } from "../carpool/carpool-shared";
 import { BadgeCheck, Star } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
@@ -38,6 +40,8 @@ export type PublicProfile = {
   reviews: Review[];
   moreReviews: boolean;
   openRides: RideItem[];
+  // B6a: open carpool posts
+  openCarpools?: CarpoolPost[];
   isMe: boolean;
 };
 
@@ -168,6 +172,19 @@ export function PublicProfilePage() {
           </ul>
         )}
       </section>
+
+      {(profile.openCarpools ?? []).length > 0 && (
+        <section className={styles.section}>
+          <h2 className={styles.title}>{t("profile.openCarpools")}</h2>
+          <ul className={styles.list}>
+            {profile.openCarpools!.map((post) => (
+              <li key={post.id}>
+                <CarpoolCard post={post} />
+              </li>
+            ))}
+          </ul>
+        </section>
+      )}
     </div>
   );
 }

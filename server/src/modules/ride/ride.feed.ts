@@ -26,9 +26,9 @@ export const CANDIDATES = 300;
 const place = (address: string, lat: Prisma.Decimal, lng: Prisma.Decimal) => ({ address, lat: Number(lat), lng: Number(lng) });
 
 export type FeedItem = {
-  // B4: food requests join the feed (food.feed.ts)
-  feature: "RIDE" | "FOOD";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD";
+  // B4: food requests join the feed (food.feed.ts); B6a: carpool (carpool.feed.ts)
+  feature: "RIDE" | "FOOD" | "CARPOOL";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   // An activity status, or a post status (OPEN, FULL, CLOSED) for an offer
@@ -60,6 +60,25 @@ export type FeedItem = {
   activeBookings: number;
   // B4: food only (pickup = restaurant, destination = delivery location)
   food: { restaurantName: string; items: string; quantity: number; foodPrice: number; deliveryCharge: number; cancellableByMe: boolean } | null;
+  // B6a: carpool only
+  carpool?: CarpoolFeedDetails;
+};
+
+export type CarpoolFeedDetails = {
+  postId: string;
+  // The booking a session or booking item opens (null for a post)
+  bookingId: string | null;
+  daysOfWeek: number;
+  departureMinute: number;
+  paused: boolean;
+  // Posts: requests waiting for the rider's answer
+  pendingRequests: number;
+  // Bookings: the request and its contract
+  durationMonths: number | null;
+  startDate: string | null;
+  endDate: string | null;
+  holdExpiresAt: Date | null;
+  agreed: { me: boolean; other: boolean } | null;
 };
 
 const requestFeedSelect = {

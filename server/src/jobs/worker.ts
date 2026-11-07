@@ -6,6 +6,12 @@ import { deliverNotification } from "../modules/notifications/notify.service.js"
 import { runSubAreaNotifyJob } from "../modules/notifications/sub-area.service.js";
 import { publishReviews } from "../modules/reviews/reviews.service.js";
 import { runLicenceReminderJob } from "./licence-reminder.job.js";
+import {
+  runCarpoolContractEndJob,
+  runCarpoolHoldReleaseJob,
+  runCarpoolPostCloseJob,
+  runCarpoolSessionTimersJob,
+} from "../modules/carpool/carpool.jobs.js";
 import { runReminderJob } from "./reminders.job.js";
 import { closeTimerQueue, createRedisConnection, defaultJobOptions, QUEUE_NAME } from "./scheduler.js";
 
@@ -40,6 +46,15 @@ export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> 
     // B3b-2
     case "review-publish":
       return publishReviews(id);
+    // B6a
+    case "carpool-hold-release":
+      return runCarpoolHoldReleaseJob(id);
+    case "carpool-contract-end":
+      return runCarpoolContractEndJob(id);
+    case "carpool-post-close":
+      return runCarpoolPostCloseJob(id);
+    case "carpool-session-timers":
+      return runCarpoolSessionTimersJob();
     case "notification-deliver": {
       // Retried with backoff; the last attempt records FAILED on the row.
       const attempts = job.opts.attempts ?? 1;
@@ -55,6 +70,8 @@ const REPEATING = [
   { id: "account-status", every: rules.jobs.accountStatusInterval },
   { id: "activity-sweep", every: rules.jobs.sweepInterval },
   { id: "licence-reminder", every: rules.notifications.licenceReminderInterval },
+  // B6a: timers of carpool sessions that have come within 7 days
+  { id: "carpool-session-timers", every: rules.carpool.sessionTimerInterval },
 ] as const;
 
 export function startJobs() {

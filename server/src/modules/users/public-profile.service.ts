@@ -1,6 +1,9 @@
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { offerSelect, offerView, requestSelect, requestView } from "../ride/ride.views.js";
+import { postViews } from "../carpool/carpool.service.js";
+import { postSelect } from "../carpool/carpool.views.js";
+import { dateOnly, dhakaDateString } from "../../utils/time.js";
 import { toPublicVehicle } from "../vehicles/vehicles.js";
 import { listUserReviews } from "../reviews/reviews.service.js";
 import { isBlockedBetween } from "./blocks.service.js";
@@ -54,6 +57,16 @@ export async function getPublicProfile(viewerId: string, userId: string, now = n
         })
       : Promise.resolve([]),
   ]);
+  // B6a: open carpool posts (proposal 8.3: "open rides and carpool posts"),
+  // as in Search: not paused, still valid, of an Active rider
+  const carpools = user.riderActive
+    ? await prisma.carpoolPost.findMany({
+        where: { riderId: userId, status: "OPEN", pausedAt: null, OR: [{ validUntil: null }, { validUntil: { gte: dateOnly(dhakaDateString(now)) } }] },
+        orderBy: { departureMinute: "asc" },
+        take: 20,
+        select: postSelect,
+      })
+    : [];
 
   const [stats, reviews] = await Promise.all([userStats(userId), listUserReviews(userId, 1)]);
 
@@ -82,6 +95,7 @@ export async function getPublicProfile(viewerId: string, userId: string, now = n
       ...(await Promise.all(requests.map((row) => requestView(row, viewerId)))),
       ...(await Promise.all(offers.map((row) => offerView(row, viewerId)))),
     ],
+    openCarpools: await postViews(carpools, viewerId, now),
     isMe: viewerId === userId,
   };
 }

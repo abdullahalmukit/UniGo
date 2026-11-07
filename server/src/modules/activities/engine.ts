@@ -146,8 +146,9 @@ export async function applyTransition(
     previous = step;
   }
 
-  // A cancelled booking gives its seat back (B2a decision 7).
-  if (status === "CANCELLED") await releaseHeldSeat(tx, activity, now);
+  // A cancelled booking gives its seat back (B2a decision 7), and so does an
+  // ended carpool contract (B6a: only that seat reopens).
+  if (status === "CANCELLED" || (status === "COMPLETED" && activity.type === "CARPOOL_BOOKING")) await releaseHeldSeat(tx, activity, now);
 
   // The chat's system message, in the same transaction (B2b decision 4).
   const chatEvent = await postTransitionMessage(
@@ -186,7 +187,7 @@ async function releaseHeldSeat(tx: Tx, activity: EngineActivity, now: Date) {
   }
 }
 
-function transitionEvent(
+export function transitionEvent(
   before: EngineActivity,
   after: EngineActivity,
   action: ActivityAction,
@@ -328,7 +329,7 @@ export function alreadyTaken() {
 
 // RESTRICTED (or locked) accounts cannot accept (CLAUDE.md section 4). Read
 // after the lock, so a restriction made a moment ago applies.
-async function assertCanAccept(tx: Tx, userId: string, now: Date) {
+export async function assertCanAccept(tx: Tx, userId: string, now: Date) {
   const user = await tx.user.findUnique({
     where: { id: userId },
     select: { accountStatus: true, suspendedFrom: true, suspendedUntil: true, restrictedUntil: true },
@@ -339,7 +340,7 @@ async function assertCanAccept(tx: Tx, userId: string, now: Date) {
 }
 
 // Blocked users never see each other in matching (CLAUDE.md 6.10).
-async function assertNotBlocked(tx: Tx, a: string, b: string) {
+export async function assertNotBlocked(tx: Tx, a: string, b: string) {
   const block = await tx.block.findFirst({
     where: { OR: [{ blockerId: a, blockedId: b }, { blockerId: b, blockedId: a }] },
     select: { blockerId: true },

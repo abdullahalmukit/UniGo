@@ -1,5 +1,6 @@
-// The page that shows an activity, by its type (B3b-1, Food B4). Carpool and
-// Service add theirs when their pages arrive; until then Activity is used.
+// The page that shows an activity, by its type (B3b-1, Food B4, Carpool
+// bookings B6a). Service adds its own when its pages arrive; until then
+// Activity is used.
 export function activityPath(type: string, id: string) {
   const e = encodeURIComponent(id);
   switch (type) {
@@ -11,6 +12,8 @@ export function activityPath(type: string, id: string) {
       return `/ride/offers/${e}`;
     case "FOOD":
       return `/food/requests/${e}`;
+    case "CARPOOL_BOOKING":
+      return `/carpool/bookings/${e}`;
     default:
       return "/activity";
   }

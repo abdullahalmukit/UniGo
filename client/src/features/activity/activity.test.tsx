@@ -114,10 +114,13 @@ describe("Activity (proposal 12.2)", () => {
     await waitFor(() => expect(feedApi.listActivity).toHaveBeenLastCalledWith({ feature: "ride", role: "accepted", tab: "history", page: 1 }));
     expect(await screen.findByText("Finished activities will show here.")).toBeInTheDocument();
 
-    // B4: Food has items now; Carpool is still coming
+    // B4: Food has items; B6a: Carpool too; Uni Service is still coming
     await userEvent.click(screen.getByRole("button", { name: "Food Delivery" }));
     await waitFor(() => expect(feedApi.listActivity).toHaveBeenLastCalledWith({ feature: "food", role: "accepted", tab: "history", page: 1 }));
     await userEvent.click(screen.getByRole("button", { name: "Carpool" }));
+    await waitFor(() => expect(feedApi.listActivity).toHaveBeenLastCalledWith({ feature: "carpool", role: "accepted", tab: "history", page: 1 }));
+    expect(await screen.findByText("Finished activities will show here.")).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Uni Service" }));
     expect(await screen.findByText("This service is coming soon.")).toBeInTheDocument();
   });
 

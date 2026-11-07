@@ -277,7 +277,14 @@
       "label": "Choose the type of place.",
       "lat": "Choose the place on the map.",
       "lng": "Choose the place on the map.",
-      "subAreaIds": "Choose at most 20 sub-areas."
+      "subAreaIds": "Choose at most 20 sub-areas.",
+      "daysOfWeek": "Choose at least one day.",
+      "departureMinute": "Choose a time.",
+      "prices": "Check the monthly prices.",
+      "validFrom": "Check the first day.",
+      "validUntil": "Check the last day.",
+      "startDate": "Check the start date.",
+      "durationMonths": "Choose a duration."
     },
     "EMAIL_DOMAIN_NOT_ALLOWED": "Use the email address your university gave you. Ask UniGo support if your university's domain is missing.",
     "UNIVERSITY_EMAIL_TAKEN": "This university email has already verified another UniGo account.",
@@ -387,7 +394,27 @@
     "APPROVAL_NOT_FOUND": "This approval request was not found.",
     "APPROVAL_DECIDED": "This request was already answered or withdrawn.",
     "OVER_BUDGET_APPROVAL_REQUIRED": "The cost is above the confirmed price. Ask the requester to approve it first.",
-    "USE_ORDER_DETAILS": "For food delivery, choose the payment method in the order details."
+    "USE_ORDER_DETAILS": "For food delivery, choose the payment method in the order details.",
+    "SCHEDULE_LIMIT_REACHED": "You already have the most carpool schedules allowed.",
+    "SCHEDULE_OVERLAP": "This schedule is within 90 minutes of another of your carpool schedules on a shared day.",
+    "POST_LOCKED": "Someone holds a seat or has a contract: you can only add seats or stop new bookings.",
+    "POST_HAS_CONTRACTS": "Someone holds a seat or has a contract on this carpool, so it cannot be removed.",
+    "POST_PAUSED": "This carpool is not taking new bookings right now.",
+    "POST_FULL": "Every seat on this carpool is taken.",
+    "POST_CLOSED": "This carpool is closed.",
+    "SEATS_NOT_HIGHER": "Choose more seats than now.",
+    "VALID_FROM_IN_PAST": "Choose today or a later date.",
+    "VALID_FROM_TOO_LATE": "Choose a first day within the next 60 days.",
+    "VALID_UNTIL_BEFORE_FROM": "The last day must be on or after the first day.",
+    "VALIDITY_TOO_SHORT": "The schedule must stay open for at least the shortest duration you offer.",
+    "START_DATE_TOO_SOON": "Choose tomorrow or a later date.",
+    "START_DATE_OUTSIDE_POST": "Choose a date inside this carpool's dates.",
+    "START_DATE_NOT_A_RIDE_DAY": "Choose one of this carpool's ride days.",
+    "CONTRACT_PAST_POST_END": "This duration would end after the carpool's last day.",
+    "DURATION_NOT_OFFERED": "Choose a duration this carpool offers.",
+    "HOLD_EXPIRED": "The seat hold has ended.",
+    "ALREADY_AGREED": "You have already agreed. Waiting for the other person.",
+    "CARPOOL_NOT_FOUND": "This carpool is not available."
   },
   "verification": {
     "title": "Verify your student status",
@@ -848,7 +875,8 @@
     "openRides": "Open rides",
     "noOpenRides": "No open ride requests or offers.",
     "lateWarning": "This person has cancelled late several times.",
-    "moreReviews": "Show more reviews"
+    "moreReviews": "Show more reviews",
+    "openCarpools": "Open carpool schedules"
   },
   "addresses": {
     "title": "Saved Addresses",
@@ -1179,6 +1207,16 @@
         "you": "You did not approve the higher food price.",
         "other": "The higher food price was not approved.",
         "system": "The higher food price was not approved."
+      },
+      "CONTRACT_AGREED": {
+        "you": "You agreed to the contract. Waiting for the other person.",
+        "other": "The other person agreed to the contract. Your turn to agree.",
+        "system": "One person agreed to the contract."
+      },
+      "CONTRACT_ACTIVE": {
+        "you": "Both agreed. The carpool contract is active.",
+        "other": "Both agreed. The carpool contract is active.",
+        "system": "The carpool contract is active."
       }
     },
     "viewDetails": "View details"
@@ -1522,6 +1560,156 @@
       "overBudget": "The cost is above the confirmed price. Ask the requester to approve it first.",
       "alt": "Receipt photo",
       "cost": "Cost ৳{{amount}}"
+    }
+  },
+  "carpool": {
+    "title": "Carpool",
+    "verifyFirst": "Verify your student status to use Carpool.",
+    "newPost": "Create schedule",
+    "tabs": {
+      "search": "Search",
+      "posts": "My carpool posts",
+      "bookings": "My bookings"
+    },
+    "searchHint": "Weekly rides you can book a seat on.",
+    "loadFailed": "Could not load carpools.",
+    "empty": "No carpools to book right now.",
+    "emptyFiltered": "No carpools match these filters.",
+    "notFound": "This carpool is not available.",
+    "filters": {
+      "title": "Filters",
+      "day": "Day",
+      "anyDay": "Any day"
+    },
+    "days": {
+      "everyDay": "Every day",
+      "short": {
+        "0": "Sun",
+        "1": "Mon",
+        "2": "Tue",
+        "3": "Wed",
+        "4": "Thu",
+        "5": "Fri",
+        "6": "Sat"
+      },
+      "long": {
+        "0": "Sunday",
+        "1": "Monday",
+        "2": "Tuesday",
+        "3": "Wednesday",
+        "4": "Thursday",
+        "5": "Friday",
+        "6": "Saturday"
+      }
+    },
+    "dates": {
+      "range": "{{from}} to {{until}}",
+      "from": "From {{from}}, no end date"
+    },
+    "priceFrom": "From ৳{{amount}}/month",
+    "perMonth": "৳{{amount}}/month",
+    "months_one": "{{count}} month",
+    "months_other": "{{count}} months",
+    "kind": {
+      "post": "Carpool schedule",
+      "booking": "Carpool seat",
+      "session": "Carpool ride"
+    },
+    "sessionCancellations_one": "Rider cancelled {{count}} ride",
+    "sessionCancellations_other": "Rider cancelled {{count}} rides",
+    "nextRide": "Next ride {{time}}",
+    "paused": "Paused",
+    "pausedHint": "New bookings are stopped. Seats held and contracts carry on.",
+    "fullHint": "Every seat is taken. Check back later.",
+    "closedHint": "This carpool is closed.",
+    "contractActive": "Contract active",
+    "seatHeld": "Seat held",
+    "holdUntil": "Held until {{time}}",
+    "contractLine": "{{from}} to {{until}}",
+    "firstRide": "First ride {{time}}",
+    "requestLine_one": "{{count}} month from {{date}}",
+    "requestLine_other": "{{count}} months from {{date}}",
+    "yourBooking_one": "Your booking: {{count}} month from {{date}}",
+    "yourBooking_other": "Your booking: {{count}} months from {{date}}",
+    "requestTitle": "Request a seat",
+    "duration": "Duration",
+    "startDate": "Start date",
+    "startDateHint": "From tomorrow, on one of the ride days.",
+    "quote_one": "Until {{until}} · {{count}} ride · ৳{{total}} in all",
+    "quote_other": "Until {{until}} · {{count}} rides · ৳{{total}} in all",
+    "conflictDates": "You or the other person already has an activity within 90 minutes on: {{dates}}",
+    "requests": {
+      "title_one": "{{count}} seat request",
+      "title_other": "{{count}} seat requests",
+      "none": "No seat requests waiting."
+    },
+    "passengers": {
+      "title_one": "{{count}} passenger",
+      "title_other": "{{count}} passengers",
+      "none": "No passengers yet.",
+      "past": "Earlier requests"
+    },
+    "sessions": {
+      "title_one": "{{count}} ride",
+      "title_other": "{{count}} rides"
+    },
+    "actions": {
+      "resume": "Take bookings again",
+      "remove": "Remove schedule",
+      "removeTitle": "Remove this schedule?",
+      "removeHint": "Pending seat requests are declined. This cannot be undone.",
+      "removed": "Schedule removed.",
+      "accept": "Accept",
+      "accepted": "Accepted. The seat is held and a chat is open.",
+      "reject": "Decline",
+      "rejectTitle": "Decline this request?",
+      "rejectHint": "A reason is optional; the passenger sees it.",
+      "rejected": "Request declined.",
+      "request": "Send request",
+      "requested": "Request sent to the rider.",
+      "withdraw": "Withdraw request",
+      "withdrawn": "Request withdrawn.",
+      "agree": "Agree",
+      "agreed": "You agreed.",
+      "cancelSeat": "Give up the seat",
+      "cancelSeatTitle": "Give up this seat?"
+    },
+    "note": {
+      "openRider": "This passenger asks for a seat. Accept to hold the seat and open a chat.",
+      "openPassenger": "Waiting for the rider to accept or decline.",
+      "held": "Seat held until {{until}}. Both press Agree to start the contract.",
+      "waitingOther": "You agreed. Waiting for the other person until {{until}}.",
+      "otherAgreed": "The other person agreed. Your turn: the seat is held until {{until}}.",
+      "contract": "The contract is active. Your rides are listed below.",
+      "rejected": "The rider declined this request.",
+      "rejectedWith": "The rider declined this request: {{reason}}",
+      "POST_CHANGED": "The rider changed this carpool, so the request was declined. You can ask again.",
+      "POST_REMOVED": "The rider removed this carpool.",
+      "SEAT_HOLD_EXPIRED": "The seat hold ended before both agreed.",
+      "cancelled": "Cancelled.",
+      "cancelledWith": "Cancelled: {{reason}}",
+      "expired": "The rider did not answer before the first ride.",
+      "ended": "The contract has ended."
+    },
+    "form": {
+      "days": "Ride days",
+      "chooseDay": "Choose at least one day",
+      "time": "Departure time",
+      "prices": "Monthly price",
+      "pricesHint": "Fill in the durations you offer, ৳{{min}} to ৳{{max}} a month.",
+      "pricesHintShort": "Fill in the durations you offer.",
+      "notOffered": "Not offered",
+      "choosePrice": "Offer at least one duration",
+      "validFrom": "First day",
+      "validUntil": "Last day (optional)",
+      "validUntilHint": "Leave empty to keep it open until you close it.",
+      "notActiveRider": "Only Active riders can create carpool schedules. Open Drive with UniGo to become a rider or switch to Active.",
+      "created": "Your carpool schedule is posted.",
+      "edit": "Edit schedule",
+      "post": "Post schedule",
+      "lockedHint": "Someone holds a seat or has a contract, so the schedule is locked. You can still add seats.",
+      "pendingHint_one": "Saving declines {{count}} pending seat request.",
+      "pendingHint_other": "Saving declines {{count}} pending seat requests."
     }
   }
 }
