@@ -1,3 +1,4 @@
+import { ApprovalCard } from "../food/ApprovalCard";
 import { ArrowLeft, ImagePlus, MoreVertical, Phone, SendHorizontal } from "lucide-react";
 import { activityPath, profilePath } from "../../lib/activity-links";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
@@ -90,8 +91,12 @@ export function ChatPage() {
       chatSocket.on("message:new", (message: ChatMessage) => {
         if (message.chatId !== chatId) return;
         setMessages((current) => mergeMessages(current ?? [], [message]));
-        // A system message may change the status (read-only, phone)
-        if (message.kind === "SYSTEM") void loadChat();
+        // A system message may change the status (read-only, phone); a
+        // decided approval also changes its card (B4)
+        if (message.kind === "SYSTEM") {
+          void loadChat();
+          void loadLatest().catch(() => undefined);
+        }
       }),
       chatSocket.on("chat:changed", (change: { chatId: string }) => {
         if (change.chatId === chatId) void loadChat();
@@ -252,6 +257,7 @@ export function ChatPage() {
             chat={chat}
             language={i18n.language}
             onImageExpired={refreshLinks}
+            onApprovalDecided={() => void loadLatest().catch(() => undefined)}
           />
         ))}
         <div ref={bottom} />
@@ -360,14 +366,19 @@ function MessageBubble({
   chat,
   language,
   onImageExpired,
+  onApprovalDecided,
 }: {
   message: ChatMessage;
   myId: string;
   chat: ChatDetails | null;
   language: string;
   onImageExpired: () => Promise<boolean>;
+  onApprovalDecided: () => void;
 }) {
   const { t } = useTranslation();
+  if (message.kind === "APPROVAL" && message.approval && chat) {
+    return <ApprovalCard approval={message.approval} activityId={chat.activity.id} canDecide={chat.activity.role === "CREATOR" && !chat.readOnly} onDecided={onApprovalDecided} />;
+  }
   if (message.kind === "SYSTEM") {
     const { key, fallbackKey } = systemMessageKey(message, myId, chat?.activity.type ?? "FOOD");
     const detail = systemMessageDetail(message);

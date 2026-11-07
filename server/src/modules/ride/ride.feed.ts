@@ -21,13 +21,14 @@ export const TAB_STATUSES: Record<FeedTab, readonly ActivityStatus[]> = {
 const RUNNING: readonly ActivityStatus[] = ["ACCEPTED", "IN_PROGRESS", "DISPUTED"];
 
 // How many rows of each kind are read before merging and paging
-const CANDIDATES = 300;
+export const CANDIDATES = 300;
 
 const place = (address: string, lat: Prisma.Decimal, lng: Prisma.Decimal) => ({ address, lat: Number(lat), lng: Number(lng) });
 
 export type FeedItem = {
-  feature: "RIDE";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING";
+  // B4: food requests join the feed (food.feed.ts)
+  feature: "RIDE" | "FOOD";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   // An activity status, or a post status (OPEN, FULL, CLOSED) for an offer
@@ -57,6 +58,8 @@ export type FeedItem = {
     phone: string | null;
   }[];
   activeBookings: number;
+  // B4: food only (pickup = restaurant, destination = delivery location)
+  food: { restaurantName: string; items: string; quantity: number; foodPrice: number; deliveryCharge: number; cancellableByMe: boolean } | null;
 };
 
 const requestFeedSelect = {
@@ -150,7 +153,7 @@ export function offerTab(offer: { status: PostStatus; departureTime: Date; booki
   return tabs;
 }
 
-function requestWhere(userId: string, role: FeedRole): Prisma.ActivityWhereInput {
+export function requestWhere(userId: string, role: FeedRole): Prisma.ActivityWhereInput {
   if (role === "requested") return { creatorId: userId };
   if (role === "accepted") return { accepterId: userId };
   return { OR: [{ creatorId: userId }, { accepterId: userId }] };
@@ -194,6 +197,7 @@ async function offerItems(userId: string, rows: OfferRow[]): Promise<FeedItem[]>
         review: null,
         bookings,
         activeBookings: bookings.filter((b) => RUNNING.includes(b.status)).length,
+        food: null,
       };
     }),
   );
@@ -209,7 +213,7 @@ type Extras = {
   reviews: { reviewerId: string }[];
 };
 
-function extras(row: Extras, userId: string, now: Date) {
+export function extras(row: Extras, userId: string, now: Date) {
   const p = row.paymentRecord;
   const reviewed = row.reviews.some((r) => r.reviewerId === userId);
   const open = row.status === "COMPLETED" && row.completedAt !== null && now.getTime() < row.completedAt.getTime() + rules.reviews.window;
@@ -248,6 +252,7 @@ async function activityItems(userId: string, requests: RequestRow[], bookings: B
         ...extras(row, userId, now),
         bookings: [],
         activeBookings: 0,
+        food: null,
       };
     }),
   );
@@ -273,6 +278,7 @@ async function activityItems(userId: string, requests: RequestRow[], bookings: B
         ...extras(row, userId, now),
         bookings: [],
         activeBookings: 0,
+        food: null,
       };
     }),
   );

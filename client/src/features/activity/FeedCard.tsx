@@ -4,6 +4,7 @@ import { ContactRow } from "../../components/ContactRow";
 import { StatusChip, ToneChip, type ActivityStatus } from "../../components/StatusChip";
 import { buttonStyles } from "../../components/ui";
 import { formatRideTime } from "../../lib/dates";
+import { FoodActions, FoodAmount } from "../food/food-shared";
 import { RideActions } from "../ride/RideActions";
 import { PersonRow, Route, taka } from "../ride/RideCard";
 import { itemPath, type FeedItem } from "./feed-api";
@@ -21,6 +22,7 @@ export function ItemStatus({ item }: { item: FeedItem }) {
 }
 
 function kindLabel(item: FeedItem, t: (key: string) => string) {
+  if (item.kind === "FOOD") return item.food?.restaurantName ?? t("food.detailTitle");
   if (item.kind === "RIDE_OFFER") return t("ride.kind.offer");
   if (item.kind === "RIDE_BOOKING") return t("activity.kind.booking");
   return t("ride.kind.request");
@@ -40,6 +42,7 @@ export function FeedCard({
 }) {
   const { t, i18n } = useTranslation();
   const isOffer = item.kind === "RIDE_OFFER";
+  const isFood = item.kind === "FOOD";
   const amount = isOffer ? t("ride.perSeat", { amount: taka(item.amount, i18n.language) }) : t("ride.total", { amount: taka(item.amount, i18n.language) });
 
   return (
@@ -47,7 +50,7 @@ export function FeedCard({
       <Link to={itemPath(item)} className={styles.cardLink}>
         <span className={styles.top}>
           <span className={styles.kind}>
-            {t("activity.filters.ride")} · {kindLabel(item, t)}
+            {t(isFood ? "activity.filters.food" : "activity.filters.ride")} · {kindLabel(item, t)}
           </span>
           <ItemStatus item={item} />
         </span>
@@ -57,7 +60,8 @@ export function FeedCard({
         </span>
         <Route pickup={item.pickup} destination={item.destination} />
         <span className={styles.meta}>
-          <span className={styles.amount}>{amount}</span>
+          {isFood && item.food ? <FoodAmount foodPrice={item.food.foodPrice} deliveryCharge={item.food.deliveryCharge} /> : <span className={styles.amount}>{amount}</span>}
+          {isFood && item.food && <span>{t("food.itemsLine", { items: item.food.items, count: item.food.quantity })}</span>}
           {item.kind === "RIDE_REQUEST" && item.seats !== null && <span>{t("ride.passengers", { count: item.seats })}</span>}
           {item.kind === "RIDE_BOOKING" && item.seats !== null && <span>{t("ride.seatsCount", { count: item.seats })}</span>}
           {isOffer && <span>{t("activity.passengersBooked", { count: item.activeBookings })}</span>}
@@ -66,7 +70,16 @@ export function FeedCard({
       </Link>
 
       {item.otherPerson && (
-        <PersonRow person={item.otherPerson} caption={item.kind === "RIDE_BOOKING" || item.role === "REQUESTED" ? t("ride.role.rider") : t("ride.role.passenger")} />
+        <PersonRow
+          person={item.otherPerson}
+          caption={
+            isFood
+              ? t(item.role === "REQUESTED" ? "food.role.accepter" : "food.role.requester")
+              : item.kind === "RIDE_BOOKING" || item.role === "REQUESTED"
+                ? t("ride.role.rider")
+                : t("ride.role.passenger")
+          }
+        />
       )}
       <ContactRow phone={item.phone} name={item.otherPerson?.name} />
       {item.payment && (
@@ -127,7 +140,7 @@ function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void })
     return (
       <div className={styles.actions}>
         {item.role === "REQUESTED" && (
-          <Link to={`/ride/requests/${item.id}/edit`} className={buttonStyles.secondary}>
+          <Link to={`${itemPath(item)}/edit`} className={buttonStyles.secondary}>
             {t("ride.actions.edit")}
           </Link>
         )}
@@ -155,11 +168,30 @@ function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void })
         )}
         {item.review === "REVIEWED" && <p className={styles.note}>{t("review.done")}</p>}
         {open}
-        {item.kind === "RIDE_REQUEST" && item.role === "REQUESTED" && (
-          <Link to={`/ride/requests/new?from=${item.id}`} className={buttonStyles.secondary}>
+        {(item.kind === "RIDE_REQUEST" || item.kind === "FOOD") && item.role === "REQUESTED" && (
+          <Link to={`/${item.kind === "FOOD" ? "food" : "ride"}/requests/new?from=${item.id}`} className={buttonStyles.secondary}>
             {t("activity.actions.createAgain")}
           </Link>
         )}
+      </div>
+    );
+  }
+
+  // Food: the order, approval and receipt steps are on the request page
+  if (item.kind === "FOOD") {
+    return (
+      <div className={styles.actions}>
+        <FoodActions
+          activityId={item.id}
+          status={item.status as ActivityStatus}
+          subStatus={item.subStatus}
+          role={item.role === "REQUESTED" ? "REQUESTER" : "ACCEPTER"}
+          completionRequestedBy={item.completionRequestedBy}
+          chatId={item.chatId}
+          onChanged={onChanged}
+          sticky={false}
+        />
+        {open}
       </div>
     );
   }

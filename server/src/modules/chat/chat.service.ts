@@ -86,6 +86,7 @@ const messageSelect = {
   body: true,
   systemCode: true,
   attachmentKey: true,
+  refId: true,
   createdAt: true,
 } as const satisfies Prisma.MessageSelect;
 
@@ -104,7 +105,25 @@ export async function messageView(message: MessageRow) {
       message.kind === "IMAGE" && message.attachmentKey
         ? await signPrivateFileUrl(message.attachmentKey, Date.now(), rules.chat.image.signedUrlLifetime)
         : null,
+    // B4: an over-budget approval card, with its current state
+    approval: message.kind === "APPROVAL" && message.refId ? await approvalCard(message.refId) : null,
     createdAt: message.createdAt,
+  };
+}
+
+async function approvalCard(approvalId: string) {
+  const approval = await prisma.foodBudgetApproval.findUnique({
+    where: { id: approvalId },
+    select: { id: true, amount: true, previousAmount: true, status: true, decidedAt: true, requestedById: true },
+  });
+  if (!approval) return null;
+  return {
+    id: approval.id,
+    amount: Number(approval.amount),
+    previousAmount: Number(approval.previousAmount),
+    status: approval.status,
+    decidedAt: approval.decidedAt,
+    requestedById: approval.requestedById,
   };
 }
 
@@ -316,19 +335,7 @@ export async function sendImageMessage(userId: string, chatId: string, file: Uin
   // Fail early, before the image is processed; checked again in the transaction.
   await prisma.$transaction((tx) => assertChatOpen(tx, chat, userId));
 
-  const { maxSidePx, jpegQuality } = rules.chat.image;
-  let jpeg: Buffer;
-  try {
-    jpeg = await sharp(file, { failOn: "error", limitInputPixels: 50_000_000 })
-      .rotate()
-      .resize(maxSidePx, maxSidePx, { fit: "inside", withoutEnlargement: true })
-      .flatten({ background: "#ffffff" })
-      .jpeg({ quality: jpegQuality, mozjpeg: true })
-      .toBuffer();
-  } catch {
-    throw new AppError(415, "IMAGE_UNREADABLE", "This image could not be read. Try another photo");
-  }
-  const key = await putPrivateFile("chat-images", jpeg, "image/jpeg");
+  const key = await putPrivateFile("chat-images", await encodeChatImage(file), "image/jpeg");
 
   let message: MessageRow;
   try {
@@ -344,6 +351,22 @@ export async function sendImageMessage(userId: string, chatId: string, file: Uin
 
   publishChatEvents([{ kind: "message", chatId: chat.id, messageId: message.id, participantIds: participants(chat) }]);
   return messageView(message);
+}
+
+// Re-encodes a food chat photo (a chat image or a B4 receipt): at most
+// 1600 px, JPEG, no EXIF. Proves the file is an image.
+export async function encodeChatImage(file: Uint8Array) {
+  const { maxSidePx, jpegQuality } = rules.chat.image;
+  try {
+    return await sharp(file, { failOn: "error", limitInputPixels: 50_000_000 })
+      .rotate()
+      .resize(maxSidePx, maxSidePx, { fit: "inside", withoutEnlargement: true })
+      .flatten({ background: "#ffffff" })
+      .jpeg({ quality: jpegQuality, mozjpeg: true })
+      .toBuffer();
+  } catch {
+    throw new AppError(415, "IMAGE_UNREADABLE", "This image could not be read. Try another photo");
+  }
 }
 
 // --- Reading

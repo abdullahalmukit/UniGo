@@ -65,6 +65,10 @@ export const CATALOGUE: Record<NotificationType, CatalogueEntry> = {
   RIDER_ACCESS_CHANGED: { recipients: "Rider", channels: IN_APP_EMAIL, email: "ACCOUNT" },
   // B3b-2 (Q1): a review about the user was published
   REVIEW_PUBLISHED: { recipients: "Reviewee", channels: IN_APP },
+  // B4 (Q2): food order details to confirm, over-budget approval asked and decided
+  FOOD_ORDER_TO_CONFIRM: { recipients: "Other participant", channels: IN_APP_PUSH },
+  FOOD_BUDGET_APPROVAL_REQUESTED: { recipients: "Requester", channels: IN_APP_PUSH },
+  FOOD_BUDGET_APPROVAL_DECIDED: { recipients: "Accepter", channels: IN_APP_PUSH },
 };
 
 // Values stored with a notification to build its text in the recipient's

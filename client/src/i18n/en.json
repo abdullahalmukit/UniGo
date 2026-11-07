@@ -376,7 +376,18 @@
     "PAYMENT_ALREADY_PAID": "This payment is already marked paid.",
     "PAYMENT_NOT_DUE": "This payment cannot be marked paid now.",
     "NOT_PAYEE": "Only the person who receives the money can mark it paid.",
-    "REVIEW_ALREADY_HIDDEN": "This review is already hidden."
+    "REVIEW_ALREADY_HIDDEN": "This review is already hidden.",
+    "FOOD_NOT_FOUND": "This food request was not found.",
+    "ORDER_LOCKED": "The order details can no longer be changed.",
+    "ORDER_PAID": "This order is already marked paid, so its details cannot change.",
+    "ORDER_NOT_SET": "The order details have not been filled in yet.",
+    "ORDER_CHANGED": "The order details changed. Check them again before confirming.",
+    "ORDER_NOT_CONFIRMED": "Both of you confirm the order details first.",
+    "APPROVAL_PENDING": "Wait for the answer to your earlier request.",
+    "APPROVAL_NOT_FOUND": "This approval request was not found.",
+    "APPROVAL_DECIDED": "This request was already answered or withdrawn.",
+    "OVER_BUDGET_APPROVAL_REQUIRED": "The cost is above the confirmed price. Ask the requester to approve it first.",
+    "USE_ORDER_DETAILS": "For food delivery, choose the payment method in the order details."
   },
   "verification": {
     "title": "Verify your student status",
@@ -464,7 +475,8 @@
       "auditLog": "Audit Log",
       "riderRequests": "Rider Requests",
       "fareSettings": "Fare Settings",
-      "rides": "Ride Sharing"
+      "rides": "Ride Sharing",
+      "food": "Food"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -646,7 +658,8 @@
         "SUB_AREA_CREATED": "Sub-area added",
         "SUB_AREA_UPDATED": "Sub-area changed",
         "SUB_AREA_DELETED": "Sub-area deleted",
-        "SUB_AREA_DEACTIVATED": "Sub-area deactivated"
+        "SUB_AREA_DEACTIVATED": "Sub-area deactivated",
+        "FOOD_CANCELLED_BY_ADMIN": "Food request cancelled"
       }
     },
     "riders": {
@@ -759,6 +772,16 @@
         "ACCOUNT_MODERATED": "Account moderated",
         "ADMIN_REMOVED": "Cancelled by an admin"
       }
+    },
+    "food": {
+      "search": "Search a person or restaurant",
+      "empty": "No food requests match these filters.",
+      "count_one": "{{count}} food request",
+      "count_other": "{{count}} food requests",
+      "detailTitle": "Food request",
+      "back": "Back to Food",
+      "cancel": "Cancel order",
+      "openReceipt": "Open receipt"
     }
   },
   "common": {
@@ -1136,6 +1159,26 @@
         "you": "A ride was not marked.",
         "other": "A ride was not marked.",
         "system": "A ride was not marked."
+      },
+      "ORDER_UPDATED": {
+        "you": "You saved the order details. Waiting for the other person to confirm.",
+        "other": "The other person saved the order details. Check and confirm them.",
+        "system": "The order details changed."
+      },
+      "ORDER_CONFIRMED": {
+        "you": "Order details confirmed by both.",
+        "other": "Order details confirmed by both.",
+        "system": "Order details confirmed by both."
+      },
+      "BUDGET_APPROVED": {
+        "you": "You approved the higher food price.",
+        "other": "The higher food price was approved.",
+        "system": "The higher food price was approved."
+      },
+      "BUDGET_REJECTED": {
+        "you": "You did not approve the higher food price.",
+        "other": "The higher food price was not approved.",
+        "system": "The higher food price was not approved."
       }
     },
     "viewDetails": "View details"
@@ -1344,7 +1387,9 @@
     "noGateway": "UniGo does not take payments. Pay each other directly; this is only a record.",
     "confirmTitle": "Mark this payment as paid?",
     "confirmText": "Only mark it once you have received ৳{{amount}}. This cannot be undone.",
-    "marked": "Marked as paid."
+    "marked": "Marked as paid.",
+    "foodSplit": "Food ৳{{food}} + delivery ৳{{charge}}",
+    "foodMethodInOrder": "For food, the payment method is part of the order details."
   },
   "review": {
     "title": "Review",
@@ -1362,5 +1407,121 @@
     "yours": "Your review",
     "waiting": "The other person's review shows here once both have reviewed, or after 7 days.",
     "closed": "The time to leave a review has ended."
+  },
+  "food": {
+    "title": "Food Delivery",
+    "newRequest": "Request food",
+    "detailTitle": "Food request",
+    "verifyFirst": "Verify your student status to use Food Delivery.",
+    "tabs": {
+      "available": "All Available",
+      "mine": "My Orders",
+      "accepted": "Accepted Orders"
+    },
+    "availableHint": "Open requests you can accept",
+    "empty": "No open food requests right now.",
+    "emptyFiltered": "No food requests match these filters.",
+    "loadFailed": "Could not load food requests.",
+    "notFound": "This food request was not found.",
+    "amount": "৳{{food}}",
+    "amountWithCharge": "৳{{food}} + ৳{{charge}} delivery",
+    "itemsLine": "{{items}} × {{count}}",
+    "deliverBy": "Deliver by {{time}}",
+    "restaurantAt": "Restaurant: {{address}}",
+    "budgetLine": "Estimated food budget ৳{{amount}}",
+    "role": {
+      "requester": "Requester",
+      "accepter": "Brings the food"
+    },
+    "filters": {
+      "title": "Search food",
+      "restaurantNear": "Restaurant near",
+      "deliveryNear": "Delivery near"
+    },
+    "form": {
+      "editTitle": "Edit food request",
+      "restaurantName": "Restaurant name",
+      "restaurantLocation": "Restaurant location",
+      "items": "Food items",
+      "details": "Food details",
+      "quantity": "Quantity",
+      "budget": "Estimated food budget (৳)",
+      "budgetHint": "From ৳{{min}} to ৳{{max}}",
+      "pickup": "Pickup location",
+      "pickupHint": "Filled in from the restaurant. Change it if the food is collected elsewhere.",
+      "delivery": "Delivery location",
+      "deliveryTime": "Expected delivery time",
+      "timeHint": "From 15 minutes to 24 hours from now",
+      "deliveryCharge": "Delivery charge (৳, optional)",
+      "chargeHint": "Leave empty or 0 for none, otherwise ৳{{min}} to ৳{{max}}",
+      "post": "Post request",
+      "save": "Save",
+      "saved": "Saved.",
+      "created": "Food request posted."
+    },
+    "actions": {
+      "accept": "Accept request",
+      "acceptTitle": "Accept this food request?",
+      "acceptHint": "You buy the food and bring it. A chat opens with the requester.",
+      "accepted": "Request accepted. A chat is open.",
+      "upgrade": "Raise delivery charge",
+      "deleteTitle": "Delete this request?",
+      "delivered": "Delivered, mark completed",
+      "completed": "Delivery completed.",
+      "cancel": "Cancel order",
+      "cancelTitle": "Cancel this food order?",
+      "cancelled": "Order cancelled.",
+      "complainInstead": "The food has been bought, so only the person bringing it can cancel. If something is wrong, report it from the chat."
+    },
+    "order": {
+      "title": "Order details",
+      "empty": "Nobody has filled in the order yet. Agree on it in the chat, then fill it in here.",
+      "fill": "Fill in order",
+      "change": "Change order",
+      "confirm": "Confirm order",
+      "save": "Save and confirm",
+      "foodPrice": "Food price (৳)",
+      "confirmed": "Confirmed by both",
+      "waitingOther": "Waiting for the other person",
+      "needsYou": "Needs your confirmation",
+      "confirmedToast": "Order confirmed by both.",
+      "savedToast": "Order saved. The other person confirms it next.",
+      "changeHint": "Any change needs confirming again before the food is bought.",
+      "chooseMethod": "Choose a payment method.",
+      "sheetHint": "Saving counts as your confirmation. The other person confirms the same details."
+    },
+    "approval": {
+      "title": "Higher price approval",
+      "line": "৳{{from}} → ৳{{to}}",
+      "status": {
+        "PENDING": "Waiting for a decision",
+        "APPROVED": "Approved",
+        "REJECTED": "Not approved",
+        "WITHDRAWN": "Withdrawn"
+      },
+      "approve": "Approve",
+      "reject": "Reject",
+      "ask": "Ask for a higher price",
+      "askHint": "The confirmed food price is ৳{{amount}}. Ask before buying if it costs more.",
+      "newPrice": "New food price (৳)",
+      "send": "Send request",
+      "askedToast": "Approval request sent.",
+      "approvedToast": "Higher price approved.",
+      "rejectedToast": "Higher price rejected.",
+      "waiting": "Waiting for the requester to decide.",
+      "chatPreview": "Approval request"
+    },
+    "receipt": {
+      "title": "Receipt",
+      "hint": "Upload the receipt after buying. The cost can be at most ৳{{amount}} (the confirmed price).",
+      "actualCost": "Actual food cost (৳)",
+      "photo": "Receipt photo (JPG or PNG)",
+      "upload": "Upload receipt",
+      "uploaded": "Receipt uploaded. On the way!",
+      "needBoth": "Add the receipt photo and the cost.",
+      "overBudget": "The cost is above the confirmed price. Ask the requester to approve it first.",
+      "alt": "Receipt photo",
+      "cost": "Cost ৳{{amount}}"
+    }
   }
 }

@@ -75,6 +75,17 @@ export const routes: RouteObject[] = [
               { path: "bookings/:id", lazy: page(() => import("../features/ride/RideDetails"), (m) => m.BookingDetailPage) },
             ],
           },
+          // Food Delivery (B4): verified students only, loaded per route
+          {
+            path: "food",
+            lazy: page(() => import("../features/food/FoodCard"), (m) => m.FoodGate),
+            children: [
+              { index: true, lazy: page(() => import("../features/food/FoodPage"), (m) => m.FoodPage) },
+              { path: "requests/new", lazy: page(() => import("../features/food/FoodForm"), (m) => m.FoodFormPage) },
+              { path: "requests/:id", lazy: page(() => import("../features/food/FoodDetails"), (m) => m.FoodDetailPage) },
+              { path: "requests/:id/edit", lazy: page(() => import("../features/food/FoodForm"), (m) => m.FoodFormPage) },
+            ],
+          },
         ],
       },
       { path: "*", element: <NotFoundPage /> },
@@ -95,6 +106,9 @@ export const routes: RouteObject[] = [
       { path: "rides", lazy: page(() => import("../features/admin/AdminRidesPage"), (m) => m.AdminRidesPage) },
       { path: "rides/activities/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideActivityPage) },
       { path: "rides/offers/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideOfferPage) },
+      // Food (B4): Moderators and Super Admins
+      { path: "food", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodPage) },
+      { path: "food/:id", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodDetailPage) },
       {
         lazy: page(() => import("../features/admin/AdminLayout"), (m) => m.RequireSuperAdmin),
         children: [

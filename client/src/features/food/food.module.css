@@ -1,0 +1,121 @@
+/* Food Delivery panels (B4). Colours only from theme tokens. */
+
+.panel {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.title {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.ok,
+.waiting {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px var(--space-2);
+  border-radius: 999px;
+  font-size: var(--text-caption);
+}
+
+.ok {
+  background: var(--status-green-bg);
+  color: var(--status-green-fg);
+}
+
+.waiting {
+  background: var(--status-amber-bg);
+  color: var(--status-amber-fg);
+}
+
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: var(--space-1) var(--space-3);
+  margin: 0;
+}
+
+.facts dt {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.facts dd {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.method {
+  min-height: var(--tap-target);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.method[aria-checked="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-weight: var(--weight-bold);
+}
+
+.approvals {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+  padding-left: var(--space-4);
+}
+
+.receipt {
+  display: grid;
+  gap: var(--space-1);
+  margin: 0;
+}
+
+.receipt img {
+  max-width: 100%;
+  max-height: 320px;
+  border-radius: var(--radius-control);
+  object-fit: contain;
+  background: var(--color-bg);
+}
+
+.receipt figcaption {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+/* Over-budget approval card inside the chat */
+.card {
+  display: grid;
+  gap: var(--space-2);
+  max-width: 320px;
+  padding: var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.cardButtons {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-2);
+}

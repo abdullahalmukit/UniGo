@@ -19,8 +19,8 @@ export type FeedBooking = {
 };
 
 export type FeedItem = {
-  feature: "RIDE";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING";
+  feature: "RIDE" | "FOOD";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   status: ActivityStatus | PostStatus;
@@ -39,6 +39,8 @@ export type FeedItem = {
   review: "CAN_REVIEW" | "REVIEWED" | null;
   bookings: FeedBooking[];
   activeBookings: number;
+  // B4: food only (pickup = restaurant, destination = delivery location)
+  food: { restaurantName: string; items: string; quantity: number; foodPrice: number; deliveryCharge: number; cancellableByMe: boolean } | null;
 };
 
 function query(params: Record<string, string | number | undefined>) {
@@ -79,5 +81,6 @@ export function itemPath(item: Pick<FeedItem, "kind" | "id">) {
   const id = encodeURIComponent(item.id);
   if (item.kind === "RIDE_OFFER") return `/ride/offers/${id}`;
   if (item.kind === "RIDE_BOOKING") return `/ride/bookings/${id}`;
+  if (item.kind === "FOOD") return `/food/requests/${id}`;
   return `/ride/requests/${id}`;
 }

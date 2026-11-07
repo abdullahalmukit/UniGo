@@ -20,7 +20,8 @@ export async function notifyChatMessage(event: { chatId: string; messageId: stri
     where: { id: event.messageId },
     select: { senderId: true, kind: true, chat: { select: { activityId: true } } },
   });
-  if (!message || message.kind === "SYSTEM" || !message.senderId) return;
+  // System lines and B4 approval cards have their own notifications (or none)
+  if (!message || message.kind === "SYSTEM" || message.kind === "APPROVAL" || !message.senderId) return;
   const senderId = message.senderId;
   const sender = await prisma.profile.findUnique({ where: { userId: senderId }, select: { fullName: true } });
   const name = sender?.fullName ?? "";

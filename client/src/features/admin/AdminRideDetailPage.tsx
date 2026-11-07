@@ -9,7 +9,7 @@ import styles from "./admin.module.css";
 
 const RUNNING = ["OPEN", "ACCEPTED", "IN_PROGRESS", "DISPUTED"];
 
-function Person({ label, person }: { label: string; person: AdminPerson }) {
+export function Person({ label, person }: { label: string; person: AdminPerson }) {
   return (
     <>
       <dt>{label}</dt>
@@ -31,7 +31,7 @@ function Vehicle({ vehicle }: { vehicle: AdminVehicle | null }) {
   );
 }
 
-function History({ rows }: { rows: HistoryRow[] }) {
+export function History({ rows }: { rows: HistoryRow[] }) {
   const { t, i18n } = useTranslation();
   return (
     <Section title={t("admin.rides.history")}>
@@ -54,7 +54,7 @@ function History({ rows }: { rows: HistoryRow[] }) {
   );
 }
 
-function Reviews({ reviews, onChanged }: { reviews: AdminReview[]; onChanged: () => void }) {
+export function Reviews({ reviews, onChanged }: { reviews: AdminReview[]; onChanged: () => void }) {
   const { t } = useTranslation();
   const [hiding, setHiding] = useState<AdminReview | null>(null);
   const [reason, setReason] = useState("");
@@ -97,20 +97,20 @@ function Reviews({ reviews, onChanged }: { reviews: AdminReview[]; onChanged: ()
   );
 }
 
-function CancelButton({ onCancel }: { onCancel: (reason: string) => Promise<unknown> }) {
+export function CancelButton({ onCancel, label = "admin.rides.cancel" }: { onCancel: (reason: string) => Promise<unknown>; label?: string }) {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
   const [reason, setReason] = useState("");
   return (
     <>
       <button type="button" className={`${buttonStyles.secondary} ${styles.danger}`} onClick={() => setOpen(true)}>
-        {t("admin.rides.cancel")}
+        {t(label)}
       </button>
       <ConfirmSheet
         title={t("admin.rides.cancelTitle")}
         open={open}
         onClose={() => setOpen(false)}
-        confirmLabel={t("admin.rides.cancel")}
+        confirmLabel={t(label)}
         onConfirm={async () => {
           await onCancel(reason.trim());
           setOpen(false);
