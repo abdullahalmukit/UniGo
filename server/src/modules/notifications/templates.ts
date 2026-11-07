@@ -113,6 +113,15 @@ const EN: Record<OwnTemplates, Template> = {
     body: `Your driving licence expires on ${f.date} (in ${f.days} days). Send a re-verification with your renewed licence from Drive with UniGo to keep driving.`,
   }),
   REVIEW_PUBLISHED: (_d, f) => ({ title: "You have a new review", body: `${f.name} reviewed your ${f.activity}. See it on your profile.` }),
+  FOOD_ORDER_TO_CONFIRM: (_d, f) => ({ title: "Confirm the order details", body: `${f.name} saved the order details of your food delivery. Check and confirm them.` }),
+  FOOD_BUDGET_APPROVAL_REQUESTED: (_d, f) => ({
+    title: "Approval needed",
+    body: `${f.name} asks you to approve a higher food price before buying. Open the chat to decide.`,
+  }),
+  FOOD_BUDGET_APPROVAL_DECIDED: (d, f) =>
+    d.kind === "APPROVED"
+      ? { title: "Higher price approved", body: `${f.name} approved the higher food price. You can buy the food now.` }
+      : { title: "Higher price not approved", body: `${f.name} did not approve the higher food price.` },
   PARTICIPANT_ACCOUNT_LOCKED: (_d, f) => ({
     title: `Update on your ${f.activity}`,
     body: `${f.name}'s account is under a moderation action and may not be able to take part. The activity stays as it is; you can cancel it from its page if you need to.`,
@@ -185,6 +194,15 @@ const BN: Record<OwnTemplates, Template> = {
     body: `আপনার ড্রাইভিং লাইসেন্সের মেয়াদ ${f.date} তারিখে শেষ হবে (${f.days} দিন বাকি)। চালানো চালিয়ে যেতে Drive with UniGo থেকে নবায়ন করা লাইসেন্স দিয়ে পুনঃযাচাই পাঠান।`,
   }),
   REVIEW_PUBLISHED: (_d, f) => ({ title: "আপনি একটি নতুন রিভিউ পেয়েছেন", body: `${f.name} আপনার ${f.activity} নিয়ে রিভিউ দিয়েছেন। আপনার প্রোফাইলে দেখুন।` }),
+  FOOD_ORDER_TO_CONFIRM: (_d, f) => ({ title: "অর্ডারের বিবরণ নিশ্চিত করুন", body: `${f.name} আপনার ফুড ডেলিভারির অর্ডারের বিবরণ সংরক্ষণ করেছেন। দেখে নিশ্চিত করুন।` }),
+  FOOD_BUDGET_APPROVAL_REQUESTED: (_d, f) => ({
+    title: "অনুমোদন প্রয়োজন",
+    body: `কেনার আগে ${f.name} খাবারের বেশি দামের জন্য আপনার অনুমোদন চেয়েছেন। চ্যাটে গিয়ে সিদ্ধান্ত দিন।`,
+  }),
+  FOOD_BUDGET_APPROVAL_DECIDED: (d, f) =>
+    d.kind === "APPROVED"
+      ? { title: "বেশি দাম অনুমোদিত", body: `${f.name} খাবারের বেশি দাম অনুমোদন করেছেন। এখন খাবার কিনতে পারেন।` }
+      : { title: "বেশি দাম অনুমোদিত হয়নি", body: `${f.name} খাবারের বেশি দাম অনুমোদন করেননি।` },
   PARTICIPANT_ACCOUNT_LOCKED: (_d, f) => ({
     title: `আপনার ${f.activity} সম্পর্কে আপডেট`,
     body: `${f.name}-এর অ্যাকাউন্টের ওপর মডারেশন ব্যবস্থা চলছে, তাই তিনি হয়তো অংশ নিতে পারবেন না। অ্যাক্টিভিটিটি যেমন আছে তেমনই থাকবে; প্রয়োজনে এর পেজ থেকে বাতিল করতে পারেন।`,

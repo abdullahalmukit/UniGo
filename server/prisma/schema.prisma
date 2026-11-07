@@ -194,6 +194,17 @@ enum MessageKind {
   TEXT
   IMAGE
   SYSTEM
+  // B4: a card that asks the other participant to decide (food over-budget
+  // approval); messages.ref_id holds the approval's id
+  APPROVAL
+}
+
+// B4: over-budget approval of a food order (proposal 10.4)
+enum FoodApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+  WITHDRAWN
 }
 
 // Proposal section 14
@@ -232,6 +243,12 @@ enum NotificationType {
   RIDER_ACCESS_CHANGED
   // B3b-2: a review about the user was published (in-app only)
   REVIEW_PUBLISHED
+  // B4 (Q2): food order details wait for the other participant's confirmation
+  FOOD_ORDER_TO_CONFIRM
+  // B4 (Q2): the accepter asks the requester to approve a higher food price
+  FOOD_BUDGET_APPROVAL_REQUESTED
+  // B4 (Q2): the requester approved or rejected it
+  FOOD_BUDGET_APPROVAL_DECIDED
 }
 
 enum NotificationChannel {
@@ -373,6 +390,9 @@ model User {
   carpoolTerminationRequests   CarpoolContract[]
   carpoolPaymentsMarked        CarpoolMonthlyPayment[]
   foodReceipts                 FoodReceipt[]
+  foodOrdersUpdated            FoodRequest[]           @relation("FoodOrderUpdater")
+  foodApprovalsRequested       FoodBudgetApproval[]    @relation("FoodApprovalRequester")
+  foodApprovalsDecided         FoodBudgetApproval[]    @relation("FoodApprovalDecider")
   messages                     Message[]
   notifications                Notification[]
   pushSubscriptions            PushSubscription[]
@@ -1035,36 +1055,49 @@ model CarpoolMonthlyPayment {
 
 // Activity creator = requester, accepter = the student who buys and delivers.
 model FoodRequest {
-  id                    String    @id @default(uuid(7)) @db.Char(36)
-  activityId            String    @unique @map("activity_id") @db.Char(36)
-  restaurantName        String    @map("restaurant_name") @db.VarChar(150)
-  restaurantAddress     String    @map("restaurant_address") @db.VarChar(255)
-  restaurantLat         Decimal   @map("restaurant_lat") @db.Decimal(9, 6)
-  restaurantLng         Decimal   @map("restaurant_lng") @db.Decimal(9, 6)
-  items                 String    @db.Text
-  details               String    @db.Text
-  quantity              Int       @db.SmallInt
-  estimatedBudget       Decimal   @map("estimated_budget") @db.Decimal(10, 2)
-  pickupAddress         String    @map("pickup_address") @db.VarChar(255)
-  pickupLat             Decimal   @map("pickup_lat") @db.Decimal(9, 6)
-  pickupLng             Decimal   @map("pickup_lng") @db.Decimal(9, 6)
-  deliveryAddress       String    @map("delivery_address") @db.VarChar(255)
-  deliveryLat           Decimal   @map("delivery_lat") @db.Decimal(9, 6)
-  deliveryLng           Decimal   @map("delivery_lng") @db.Decimal(9, 6)
-  subAreaId             String    @map("sub_area_id") @db.Char(36)
-  deliveryServiceAmount Decimal?  @map("delivery_service_amount") @db.Decimal(10, 2)
-  // ORDER_CONFIRMED once both are set.
-  requesterConfirmedAt  DateTime? @map("requester_confirmed_at")
-  accepterConfirmedAt   DateTime? @map("accepter_confirmed_at")
-  createdAt             DateTime  @default(now()) @map("created_at")
-  updatedAt             DateTime  @updatedAt @map("updated_at")
+  id                    String         @id @default(uuid(7)) @db.Char(36)
+  activityId            String         @unique @map("activity_id") @db.Char(36)
+  restaurantName        String         @map("restaurant_name") @db.VarChar(150)
+  restaurantAddress     String         @map("restaurant_address") @db.VarChar(255)
+  restaurantLat         Decimal        @map("restaurant_lat") @db.Decimal(9, 6)
+  restaurantLng         Decimal        @map("restaurant_lng") @db.Decimal(9, 6)
+  items                 String         @db.Text
+  details               String         @db.Text
+  quantity              Int            @db.SmallInt
+  estimatedBudget       Decimal        @map("estimated_budget") @db.Decimal(10, 2)
+  pickupAddress         String         @map("pickup_address") @db.VarChar(255)
+  pickupLat             Decimal        @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng             Decimal        @map("pickup_lng") @db.Decimal(9, 6)
+  deliveryAddress       String         @map("delivery_address") @db.VarChar(255)
+  deliveryLat           Decimal        @map("delivery_lat") @db.Decimal(9, 6)
+  deliveryLng           Decimal        @map("delivery_lng") @db.Decimal(9, 6)
+  subAreaId             String         @map("sub_area_id") @db.Char(36)
+  deliveryServiceAmount Decimal?       @map("delivery_service_amount") @db.Decimal(10, 2)
+  // B4: the order details both participants confirm before buying (10.3 step 3).
+  // Saving them counts as the saver's confirmation and clears the other's;
+  // ORDER_CONFIRMED once both are set. order_version grows with every change,
+  // so a confirmation always names the version it confirms.
+  orderItems            String?        @map("order_items") @db.Text
+  orderFoodPrice        Decimal?       @map("order_food_price") @db.Decimal(10, 2)
+  orderDeliveryCharge   Decimal?       @map("order_delivery_charge") @db.Decimal(10, 2)
+  orderPaymentMethod    PaymentMethod? @map("order_payment_method")
+  orderVersion          Int            @default(0) @map("order_version")
+  orderUpdatedById      String?        @map("order_updated_by_id") @db.Char(36)
+  orderUpdatedAt        DateTime?      @map("order_updated_at")
+  requesterConfirmedAt  DateTime?      @map("requester_confirmed_at")
+  accepterConfirmedAt   DateTime?      @map("accepter_confirmed_at")
+  createdAt             DateTime       @default(now()) @map("created_at")
+  updatedAt             DateTime       @updatedAt @map("updated_at")
 
-  activity      Activity       @relation(fields: [activityId], references: [id], onDelete: Cascade)
-  subArea       SubArea        @relation(fields: [subAreaId], references: [id])
-  receipts      FoodReceipt[]
-  noShowReports NoShowReport[]
+  activity       Activity             @relation(fields: [activityId], references: [id], onDelete: Cascade)
+  subArea        SubArea              @relation(fields: [subAreaId], references: [id])
+  orderUpdatedBy User?                @relation("FoodOrderUpdater", fields: [orderUpdatedById], references: [id])
+  receipts       FoodReceipt[]
+  approvals      FoodBudgetApproval[]
+  noShowReports  NoShowReport[]
 
   @@index([subAreaId])
+  @@index([orderUpdatedById])
   @@map("food_requests")
 }
 
@@ -1085,6 +1118,32 @@ model FoodReceipt {
   @@index([foodRequestId])
   @@index([uploadedById])
   @@map("food_receipts")
+}
+
+// B4: the accepter asks the requester to approve a food price above the
+// confirmed one, before buying (proposal 10.4). Shown as a card in the chat.
+// One PENDING approval per food request at a time.
+model FoodBudgetApproval {
+  id             String             @id @default(uuid(7)) @db.Char(36)
+  foodRequestId  String             @map("food_request_id") @db.Char(36)
+  requestedById  String             @map("requested_by_id") @db.Char(36)
+  // The confirmed food price when it was asked, and the new one asked for
+  previousAmount Decimal            @map("previous_amount") @db.Decimal(10, 2)
+  amount         Decimal            @db.Decimal(10, 2)
+  status         FoodApprovalStatus @default(PENDING)
+  decidedById    String?            @map("decided_by_id") @db.Char(36)
+  decidedAt      DateTime?          @map("decided_at")
+  createdAt      DateTime           @default(now()) @map("created_at")
+  updatedAt      DateTime           @updatedAt @map("updated_at")
+
+  foodRequest FoodRequest @relation(fields: [foodRequestId], references: [id], onDelete: Cascade)
+  requestedBy User        @relation("FoodApprovalRequester", fields: [requestedById], references: [id])
+  decidedBy   User?       @relation("FoodApprovalDecider", fields: [decidedById], references: [id])
+
+  @@index([foodRequestId, status])
+  @@index([requestedById])
+  @@index([decidedById])
+  @@map("food_budget_approvals")
 }
 
 // ============================================================================
@@ -1173,6 +1232,8 @@ model Message {
   systemCode         String?     @map("system_code") @db.VarChar(50)
   attachmentKey      String?     @map("attachment_key") @db.VarChar(512)
   attachmentMimeType String?     @map("attachment_mime_type") @db.VarChar(50)
+  // B4: the record an APPROVAL card is about (a food_budget_approvals id)
+  refId              String?     @map("ref_id") @db.Char(36)
   createdAt          DateTime    @default(now()) @map("created_at")
   updatedAt          DateTime    @updatedAt @map("updated_at")
 

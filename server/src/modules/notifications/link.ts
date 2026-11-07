@@ -13,6 +13,8 @@ export function notificationLink(type: NotificationType, data: NotificationData 
   if (activityId && type !== "NEW_CHAT_MESSAGE") {
     if (d.activityType === "RIDE_REQUEST") return `/ride/requests/${encodeURIComponent(activityId)}`;
     if (d.activityType === "RIDE_BOOKING") return `/ride/bookings/${encodeURIComponent(activityId)}`;
+    // B4: food notifications open the food request's page
+    if (d.activityType === "FOOD") return `/food/requests/${encodeURIComponent(activityId)}`;
   }
   switch (type) {
     case "NEW_CHAT_MESSAGE":

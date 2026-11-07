@@ -14,6 +14,7 @@ export type ActivityAction =
   | "ACCEPT"
   | "START"
   | "CONFIRM_ORDER"
+  | "REOPEN_ORDER"
   | "COLLECT_FOOD"
   | "DELIVER_SERVICE"
   | "REQUEST_COMPLETION"
@@ -101,6 +102,8 @@ export const TRANSITIONS: readonly TransitionRule[] = [
   // --- Food steps. B4 calls CONFIRM_ORDER once both have confirmed the order
   // details, and COLLECT_FOOD with the accepter's receipt upload.
   { action: "CONFIRM_ORDER", types: ["FOOD"], from: [{ status: "ACCEPTED", subStatus: [null] }], to: { status: "ACCEPTED", subStatus: "ORDER_CONFIRMED" }, by: ["EITHER"] },
+  // B4: a change to confirmed order details needs confirming again.
+  { action: "REOPEN_ORDER", types: ["FOOD"], from: [{ status: "ACCEPTED", subStatus: ["ORDER_CONFIRMED"] }], to: { status: "ACCEPTED", subStatus: null }, by: ["EITHER"] },
   { action: "COLLECT_FOOD", types: ["FOOD"], from: [{ status: "ACCEPTED", subStatus: ["ORDER_CONFIRMED"] }], to: { status: "IN_PROGRESS", subStatus: "FOOD_COLLECTED" }, by: ["ACCEPTER"] },
 
   // --- Service: delivering is the accepter's completion request (11.3).
@@ -133,12 +136,17 @@ export const TRANSITIONS: readonly TransitionRule[] = [
   // is requested: the other user can only confirm or dispute (12.2).
   {
     action: "CANCEL",
-    types: TWO_STEP_TYPES,
+    types: ["RIDE_REQUEST", "RIDE_BOOKING", "SERVICE"],
     from: [{ status: "ACCEPTED" }, { status: "IN_PROGRESS", subStatus: NOT_COMPLETION_REQUESTED }],
     to: { status: "CANCELLED" },
     by: ["EITHER"],
     reasonRequired: true,
   },
+  // B4: food can be cancelled by either side until the receipt is uploaded.
+  // After it (FOOD_COLLECTED) only the accepter can; the requester raises a
+  // complaint instead (B7).
+  { action: "CANCEL", types: ["FOOD"], from: [{ status: "ACCEPTED" }], to: { status: "CANCELLED" }, by: ["EITHER"], reasonRequired: true },
+  { action: "CANCEL", types: ["FOOD"], from: [{ status: "IN_PROGRESS", subStatus: ["FOOD_COLLECTED"] }], to: { status: "CANCELLED" }, by: ["ACCEPTER"], reasonRequired: true },
   { action: "CANCEL", types: ["CARPOOL_SESSION"], from: [{ status: "ACCEPTED" }], to: { status: "CANCELLED" }, by: ["EITHER"], reasonRequired: true },
   // A held carpool seat before the contract; after it, see TERMINATE_CONTRACT.
   { action: "CANCEL", types: ["CARPOOL_BOOKING"], from: [{ status: "ACCEPTED", subStatus: [null] }], to: { status: "CANCELLED" }, by: ["EITHER"], reasonRequired: true },
@@ -191,8 +199,16 @@ export type TransitionSubject = {
   completionRequestedById: string | null;
 };
 
-export function findRule(type: ActivityType, action: ActivityAction) {
-  return TRANSITIONS.find((rule) => rule.action === action && rule.types.includes(type));
+// An action may have several rules for one type, each from different states
+// (B4: food CANCEL before and after the receipt). With the current state the
+// rule that starts there is chosen; otherwise the first one.
+export function findRule(type: ActivityType, action: ActivityAction, state?: { status: ActivityStatus; subStatus: Sub }) {
+  const rules = TRANSITIONS.filter((rule) => rule.action === action && rule.types.includes(type));
+  if (state) {
+    const matching = rules.find((rule) => matchesFrom(rule, state.status, state.subStatus));
+    if (matching) return matching;
+  }
+  return rules[0];
 }
 
 export function matchesFrom(rule: TransitionRule, status: ActivityStatus, subStatus: Sub) {
@@ -223,7 +239,7 @@ function performerAllows(performer: Performer, activity: TransitionSubject, acto
 // INVALID_TRANSITION (not available for this feature or in this state),
 // NOT_PARTICIPANT, or ACTION_NOT_ALLOWED (a participant, but not their step).
 export function checkTransition(activity: TransitionSubject, action: ActivityAction, actor: ActorRef): TransitionRule {
-  const rule = findRule(activity.type, action);
+  const rule = findRule(activity.type, action, activity);
   if (!rule) throw invalidTransition();
 
   if (actor.type === "USER" && !rule.by.includes("NON_CREATOR")) {

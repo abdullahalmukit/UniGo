@@ -39,6 +39,10 @@ const SECTION_14 = {
   RIDER_ACCESS_CHANGED: ["IN_APP", "EMAIL"],
   // B3b-2 (Q1)
   REVIEW_PUBLISHED: ["IN_APP"],
+  // B4 (Q2)
+  FOOD_ORDER_TO_CONFIRM: ["IN_APP", "PUSH"],
+  FOOD_BUDGET_APPROVAL_REQUESTED: ["IN_APP", "PUSH"],
+  FOOD_BUDGET_APPROVAL_DECIDED: ["IN_APP", "PUSH"],
 } as const;
 
 const ACCOUNT_EMAILS = [
@@ -120,5 +124,8 @@ describe("notification catalogue (proposal section 14)", () => {
     expect(notificationLink("NEW_CHAT_MESSAGE", { chatId: "c1" })).toBe("/inbox/c1");
     expect(notificationLink("REQUEST_ACCEPTED", { chatId: "c1" })).toBe("/inbox/c1");
     expect(notificationLink("RIDER_ACCESS_CHANGED", {})).toBe("/drive");
+    // B4: food notifications open the request's page
+    expect(notificationLink("FOOD_BUDGET_APPROVAL_REQUESTED", { activityType: "FOOD", chatId: "c1" }, "a1")).toBe("/food/requests/a1");
+    expect(notificationLink("SUB_AREA_NEW_REQUEST", { activityType: "FOOD" }, "a1")).toBe("/food/requests/a1");
   });
 });

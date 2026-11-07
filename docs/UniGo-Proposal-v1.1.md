@@ -370,7 +370,7 @@ A student asks another student to buy and bring food. UniGo matches and records;
 
 ### 10.1 Pages
 
-All Available, My Orders (created by me), Accepted Orders (accepted by me), Search (location, date, sub-area).
+All Available, My Orders (created by me), Accepted Orders (accepted by me), Search (location, date, sub-area). Search has two location filters, near the restaurant and near the delivery location, each within 1, 2 or 5 km (default 2); filters work alone or together, and no filter shows every open request. There is no map on these pages; a map opens only inside the place picker.
 
 ### 10.2 Create a request
 
@@ -378,22 +378,25 @@ All Available, My Orders (created by me), Accepted Orders (accepted by me), Sear
 | --- | --- |
 | Restaurant name, restaurant location, food items, food details, quantity, estimated food budget, pickup location (prefilled from the restaurant, editable), delivery location, sub-area, expected delivery time | Offered delivery service amount |
 
+Limits: estimated food budget ৳10–৳5,000; delivery charge 0 (none) or ৳10–৳1,000; quantity 1–20. The expected delivery time is the activity's start: 15 minutes to 24 hours from now (section 7.6). An OPEN request that reaches it without an accepter expires. "Upgrade" before acceptance means raising the offered delivery charge.
+
 ### 10.3 Workflow
 
 OPEN → ACCEPTED (ORDER_CONFIRMED → FOOD_COLLECTED) → IN_PROGRESS → COMPLETED.
 
 1. Requester creates the request. Users who saved that sub-area are notified.
 2. Another student accepts. Both see each other's name, phone number and profile, and a chat opens.
-3. Both confirm the order details (items, price, delivery charge, payment method) in the app before purchase → ORDER_CONFIRMED.
-4. The accepter buys the food and uploads a receipt or bill image → FOOD_COLLECTED, status IN_PROGRESS.
+3. Both confirm the order details (items, price, delivery charge, payment method) in the app before purchase → ORDER_CONFIRMED. Either person fills them in; saving counts as their own confirmation and the other person confirms the same version. Any change after a confirmation clears it, and the details need confirming again before the food is bought. The details lock once the receipt is uploaded, or once the payment is marked PAID.
+4. The accepter buys the food and uploads a receipt or bill image with the actual food cost → FOOD_COLLECTED, status IN_PROGRESS. Food has no separate Start step; the receipt is required to reach IN_PROGRESS.
 5. The accepter delivers to the delivery location.
 6. Two-step completion (section 7.3), then blind reviews.
 
 ### 10.4 Rules
 
 - Payment method (Cash, bKash, Nagad) is chosen by the two users. UniGo records the amounts and method only.
-- If the real cost goes above the estimated budget, the accepter must get approval in chat before buying.
-- Requester can edit, upgrade or delete before acceptance; after acceptance, cancel with the cancellation rules.
+- If the real cost goes above the confirmed food price, the accepter must get approval in chat before buying: the accepter sends an approval card with the new amount, and the requester approves or rejects it once. The decision is recorded. Approving raises the confirmed price (the order stays confirmed); rejecting leaves it as it was. A receipt above the confirmed price is refused. A confirmed price above the estimated budget needs no extra approval, because both confirmed it.
+- Requester can edit, upgrade or delete before acceptance; after acceptance, cancel with the cancellation rules (reason required, late flag under 60 minutes). After the receipt is uploaded only the accepter can cancel; the requester raises a complaint instead (section 15.4).
+- Any verified student can accept, except the creator and anyone blocked either way; the 90-minute conflict check applies to both (section 7.5).
 - Nobody can accept their own request. One request has one accepter.
 - **Requester No-Show:** if the requester does not collect the food, the accepter can report a No-Show with evidence. The admin reviews it and can warn, restrict or ban the requester.
 
@@ -512,6 +515,9 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | The other participant's account was restricted, suspended or banned | Other participant of each accepted activity | In-app, push, email |
 | Rider access changed (suspended, reinstated, suspension ended, Inactive because the licence expired) | Rider | In-app, email |
 | A review about me was published | Reviewee | In-app |
+| Food order details to confirm (saved or changed by the other person) | Other participant | In-app, push |
+| Food over-budget approval requested | Requester | In-app, push |
+| Food over-budget approval approved or rejected | Accepter | In-app, push |
 
 Rules for all notifications:
 
@@ -584,7 +590,7 @@ UniGo does not process any payment in version 1; it only records what users agre
 - Each activity (ride booking, food, service) stores amount, method (Cash, bKash, Nagad) and status (UNPAID, PAID).
 - The record is created on acceptance with the agreed amount (for a ride, the request's amount or the booking's amount). Either person chooses the method; only the person who receives the money (the rider for rides) marks it PAID, which cannot be undone by users. The Rider Dashboard's earnings record is the sum of PAID ride payments the rider received.
 - Carpool keeps one payment record per contract month (section 9.5).
-- Food records the food cost and the delivery charge separately.
+- Food records the food cost and the delivery charge separately; the amount is their sum. The record starts from the estimate and follows the order while UNPAID (the confirmed details, an approved higher price, the receipt's actual cost). The person who buys the food (the accepter) receives the money and is the only one who marks it PAID, from ORDER_CONFIRMED onwards (students often pay by bKash before the food is bought), never when CANCELLED. For food the payment method is chosen in the order details.
 - Promos in version 1 are informational offers only.
 
 ## 17. Admin panel
@@ -598,7 +604,7 @@ UniGo does not process any payment in version 1; it only records what users agre
 | Rider Requests | Review documents and vehicles, approve or reject with reason, suspend riders |
 | Ride Sharing | View and manage all requests, offers and bookings |
 | Carpool | View posts, bookings, contracts, sessions, payment records and rider cancellation history; suspend carpool access |
-| Food Delivery | View and manage requests; review No-Show reports |
+| Food Delivery | View and filter requests (status, person or restaurant, day), details with the order, approvals, receipts, payment, reviews and status history; cancel with a reason; review No-Show reports |
 | Uni Service | View and manage requests; remove policy-breaking requests |
 | Disputes & Complaints | Review evidence, record decision and action, notify both users |
 | Reports & Support | Review reports and support requests, take action |

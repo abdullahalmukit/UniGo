@@ -8,6 +8,9 @@ export const PAYMENT_METHODS: PaymentMethod[] = ["CASH", "BKASH", "NAGAD"];
 
 export type Payment = {
   amount: number;
+  // B4: food cost and delivery charge, separately (null for other features)
+  foodCost?: number | null;
+  deliveryCharge?: number | null;
   method: PaymentMethod | null;
   status: "UNPAID" | "PAID";
   paidAt: string | null;

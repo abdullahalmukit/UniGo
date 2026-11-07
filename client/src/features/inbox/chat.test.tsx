@@ -137,7 +137,8 @@ describe("Chat", () => {
     expect(await screen.findByRole("link", { name: /Call \+8801711000000/ })).toHaveAttribute("href", "tel:+8801711000000");
     // B3b-1: the number as text, View details and the profile link
     expect(screen.getByText("+8801711000000")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "View details" })).toHaveAttribute("href", "/activity");
+    // B4: a food chat opens the food request page
+    expect(screen.getByRole("link", { name: "View details" })).toHaveAttribute("href", "/food/requests/a1");
     expect(screen.getByRole("link", { name: "Rafi Hasan" })).toHaveAttribute("href", "/u/user-other");
 
     act(() => fakeSocket.emit("message:new", message({ id: "m2", body: "Reached the gate" })));

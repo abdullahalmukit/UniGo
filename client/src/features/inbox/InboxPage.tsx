@@ -101,6 +101,7 @@ function preview(chat: InboxItem, myId: string, t: (key: string, options?: Recor
   const last = chat.lastMessage;
   if (!last) return "";
   if (last.kind === "IMAGE") return t("chat.photo");
+  if (last.kind === "APPROVAL") return t("food.approval.chatPreview");
   if (last.kind === "SYSTEM") {
     const { key, fallbackKey } = systemMessageKey(last, myId, chat.activity.type);
     return t(key, { defaultValue: t(fallbackKey) });

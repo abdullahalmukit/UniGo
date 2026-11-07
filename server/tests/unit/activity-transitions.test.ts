@@ -62,10 +62,17 @@ function errorCode(fn: () => unknown) {
 }
 
 describe("transition table", () => {
-  it("has at most one rule per feature and action", () => {
+  // B4: an action may have several rules for one feature (food CANCEL before
+  // and after the receipt), but never two from the same state.
+  it("has at most one rule per feature, action and starting state", () => {
     for (const type of ALL_ACTIVITY_TYPES) {
       for (const action of ACTIONS) {
-        expect(TRANSITIONS.filter((rule) => rule.action === action && rule.types.includes(type)).length, `${type} ${action}`).toBeLessThanOrEqual(1);
+        const rules = TRANSITIONS.filter((rule) => rule.action === action && rule.types.includes(type));
+        for (const status of STATUSES) {
+          for (const subStatus of SUBS) {
+            expect(rules.filter((rule) => matchesFrom(rule, status, subStatus)).length, `${type} ${action} ${status}/${subStatus}`).toBeLessThanOrEqual(1);
+          }
+        }
       }
     }
   });
@@ -80,9 +87,9 @@ describe("transition table", () => {
     let checked = 0;
     for (const type of ALL_ACTIVITY_TYPES) {
       for (const action of ACTIONS) {
-        const rule = findRule(type, action);
         for (const status of STATUSES) {
           for (const subStatus of SUBS) {
+            const rule = findRule(type, action, { status, subStatus });
             const activity = subject(type, status, subStatus);
             checked += 1;
             if (!rule) {
@@ -136,6 +143,29 @@ describe("per-feature permissions (B2a decision 4)", () => {
     expect(errorCode(() => checkTransition(subject("FOOD", "ACCEPTED", "ORDER_CONFIRMED"), "COLLECT_FOOD", user(CREATOR)))).toBe("ACTION_NOT_ALLOWED");
     // The order must be confirmed first
     expect(errorCode(() => checkTransition(subject("FOOD", "ACCEPTED", null), "COLLECT_FOOD", user(ACCEPTER)))).toBe("INVALID_TRANSITION");
+  });
+
+  it("reopens confirmed food order details on a change, by either participant (B4)", () => {
+    const confirmed = subject("FOOD", "ACCEPTED", "ORDER_CONFIRMED");
+    expect(errorCode(() => checkTransition(confirmed, "REOPEN_ORDER", user(CREATOR)))).toBe("OK");
+    expect(errorCode(() => checkTransition(confirmed, "REOPEN_ORDER", user(ACCEPTER)))).toBe("OK");
+    expect(findRule("FOOD", "REOPEN_ORDER")!.to).toEqual({ status: "ACCEPTED", subStatus: null });
+    // Not after the receipt
+    expect(errorCode(() => checkTransition(subject("FOOD", "IN_PROGRESS", "FOOD_COLLECTED"), "REOPEN_ORDER", user(CREATOR)))).toBe("INVALID_TRANSITION");
+  });
+
+  it("lets either side cancel food before the receipt and only the accepter after it (B4)", () => {
+    for (const sub of [null, "ORDER_CONFIRMED"] as const) {
+      const accepted = subject("FOOD", "ACCEPTED", sub);
+      expect(errorCode(() => checkTransition(accepted, "CANCEL", user(CREATOR)))).toBe("OK");
+      expect(errorCode(() => checkTransition(accepted, "CANCEL", user(ACCEPTER)))).toBe("OK");
+    }
+    const collected = subject("FOOD", "IN_PROGRESS", "FOOD_COLLECTED");
+    expect(errorCode(() => checkTransition(collected, "CANCEL", user(CREATOR)))).toBe("ACTION_NOT_ALLOWED");
+    expect(errorCode(() => checkTransition(collected, "CANCEL", user(ACCEPTER)))).toBe("OK");
+    expect(findRule("FOOD", "CANCEL", collected)!.reasonRequired).toBe(true);
+    // Other features keep cancelling by either side while in progress
+    expect(errorCode(() => checkTransition(subject("SERVICE", "IN_PROGRESS", null), "CANCEL", user(CREATOR)))).toBe("OK");
   });
 
   it("keeps the main status when only the sub-status changes", () => {

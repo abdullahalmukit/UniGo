@@ -113,7 +113,8 @@ describe("activity status changes (proposal section 14)", () => {
     expect(await rowsOf(accepter.id)).toEqual([]);
     expect(sentEmails.map((email) => email.to)).toEqual([creator.email]);
     expect(sentPushes).toHaveLength(1);
-    expect(sentPushes[0].payload).toMatchObject({ title: "Your request was accepted", url: expect.stringMatching(/^\/inbox\//) });
+    // B4: food notifications open the food request page
+    expect(sentPushes[0].payload).toMatchObject({ title: "Your request was accepted", url: `/food/requests/${food.id}` });
     const [inApp] = await rowsOf(creator.id, "REQUEST_ACCEPTED");
     expect(inApp.data).toMatchObject({ activityType: "FOOD", name: "Test Student" });
   });

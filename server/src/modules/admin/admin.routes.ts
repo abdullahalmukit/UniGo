@@ -1,3 +1,4 @@
+import { adminCancelFood, getAdminFood, listAdminFood } from "../food/food.admin.service.js";
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, authUser } from "../../middleware/authenticate.js";
@@ -142,6 +143,28 @@ adminRouter.post("/rides/activities/:id/cancel", validateBody(adminReason), asyn
 
 adminRouter.post("/rides/offers/:id/cancel", validateBody(adminReason), async (req, res) => {
   res.json({ offer: await adminCancelOffer(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+// ---- Food (B4): Moderators and Super Admins, as Ride Sharing --------------------
+
+const foodQuery = z.object({
+  status: z.enum(["OPEN", "ACCEPTED", "IN_PROGRESS", "DISPUTED", "COMPLETED", "CANCELLED", "EXPIRED", "NOT_MARKED"]).optional(),
+  q: optionalText,
+  date: z.iso.date().optional(),
+  subAreaId: z.uuid().optional(),
+  page,
+});
+
+adminRouter.get("/food", async (req, res) => {
+  res.json(await listAdminFood(parseInput(foodQuery, req.query)));
+});
+
+adminRouter.get("/food/:id", async (req, res) => {
+  res.json({ food: await getAdminFood(id(req.params.id)) });
+});
+
+adminRouter.post("/food/:id/cancel", validateBody(adminReason), async (req, res) => {
+  res.json({ food: await adminCancelFood(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
 });
 
 // ---- Reviews (B3b-2): hide with a reason, audited -------------------------------

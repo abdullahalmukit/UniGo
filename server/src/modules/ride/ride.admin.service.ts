@@ -22,15 +22,16 @@ export type AdminRideFilters = { kind: RideKind; status?: string; q?: string; da
 const DAY = 24 * 60 * 60 * 1000;
 const notFound = () => new AppError(404, "RIDE_NOT_FOUND", "This ride was not found");
 
-const personSelect = { id: true, email: true, phone: true, profile: { select: { fullName: true } } } as const satisfies Prisma.UserSelect;
+export const adminPersonSelect = { id: true, email: true, phone: true, profile: { select: { fullName: true } } } as const satisfies Prisma.UserSelect;
+const personSelect = adminPersonSelect;
 type Person = Prisma.UserGetPayload<{ select: typeof personSelect }>;
-const person = (user: Person | null) => (user ? { id: user.id, name: user.profile?.fullName ?? "", email: user.email, phone: user.phone } : null);
+export const adminPerson = (user: Person | null) => (user ? { id: user.id, name: user.profile?.fullName ?? "", email: user.email, phone: user.phone } : null);
 
-const userMatch = (q: string): Prisma.UserWhereInput => ({
+export const adminUserMatch = (q: string): Prisma.UserWhereInput => ({
   OR: [{ email: { contains: q } }, { phone: { contains: q.replace(/[\s-]/g, "") } }, { profile: { fullName: { contains: q } } }],
 });
 
-function dayRange(date: string | undefined) {
+export function dayRange(date: string | undefined) {
   if (!date) return undefined;
   const start = dhakaWallTime(date, 0, 0);
   return { gte: start, lt: new Date(start.getTime() + DAY) };
@@ -47,7 +48,7 @@ export async function listAdminRides(filters: AdminRideFilters) {
       ...(filters.status && { status: filters.status as PostStatus }),
       ...(when && { departureTime: when }),
       ...(filters.subAreaId && { subAreaId: filters.subAreaId }),
-      ...(q && { rider: userMatch(q) }),
+      ...(q && { rider: adminUserMatch(q) }),
     };
     const [total, rows] = await Promise.all([
       prisma.rideOffer.count({ where }),
@@ -84,7 +85,7 @@ export async function listAdminRides(filters: AdminRideFilters) {
         amount: Number(row.farePerSeat),
         seats: `${row.totalSeats - row.seatsAvailable}/${row.totalSeats}`,
         bookings: row._count.bookings,
-        creator: person(row.rider),
+        creator: adminPerson(row.rider),
         accepter: null,
       })),
     };
@@ -96,7 +97,7 @@ export async function listAdminRides(filters: AdminRideFilters) {
     ...(filters.status && { status: filters.status as ActivityStatus }),
     ...(when && { startTime: when }),
     ...(filters.subAreaId && (type === "RIDE_REQUEST" ? { rideRequest: { subAreaId: filters.subAreaId } } : { rideBooking: { rideOffer: { subAreaId: filters.subAreaId } } })),
-    ...(q && { OR: [{ creator: userMatch(q) }, { accepter: userMatch(q) }] }),
+    ...(q && { OR: [{ creator: adminUserMatch(q) }, { accepter: adminUserMatch(q) }] }),
   };
   const [total, rows] = await Promise.all([
     prisma.activity.count({ where }),
@@ -134,15 +135,15 @@ export async function listAdminRides(filters: AdminRideFilters) {
       seats: row.rideBooking ? String(row.rideBooking.seatsBooked) : null,
       bookings: null,
       // For a booking the creator is the rider and the accepter the passenger
-      creator: person(row.creator),
-      accepter: person(row.accepter),
+      creator: adminPerson(row.creator),
+      accepter: adminPerson(row.accepter),
     })),
   };
 }
 
 const vehicleSelect = { id: true, type: true, brand: true, model: true, colour: true, registrationNumber: true, seatCapacity: true } as const;
 
-async function activityExtras(activityId: string) {
+export async function activityExtras(activityId: string) {
   const [history, payment, reviews] = await Promise.all([
     prisma.activityStatusHistory.findMany({
       where: { activityId },
@@ -161,7 +162,7 @@ async function activityExtras(activityId: string) {
     }),
     prisma.paymentRecord.findUnique({
       where: { activityId },
-      select: { amount: true, method: true, status: true, paidAt: true, payeeId: true },
+      select: { amount: true, foodCost: true, deliveryCharge: true, method: true, status: true, paidAt: true, payeeId: true },
     }),
     prisma.review.findMany({
       where: { activityId },
@@ -180,7 +181,14 @@ async function activityExtras(activityId: string) {
   ]);
   return {
     history: history.map((h) => ({ ...h, actor: h.actor ? { id: h.actor.id, name: h.actor.profile?.fullName ?? "" } : null })),
-    payment: payment ? { ...payment, amount: Number(payment.amount) } : null,
+    payment: payment
+      ? {
+          ...payment,
+          amount: Number(payment.amount),
+          foodCost: payment.foodCost === null ? null : Number(payment.foodCost),
+          deliveryCharge: payment.deliveryCharge === null ? null : Number(payment.deliveryCharge),
+        }
+      : null,
     reviews: reviews.map((r) => ({
       id: r.id,
       rating: r.rating,
@@ -232,8 +240,8 @@ export async function getAdminRideActivity(activityId: string) {
   return {
     kind: row.type === "RIDE_REQUEST" ? ("REQUEST" as const) : ("BOOKING" as const),
     ...row,
-    creator: person(row.creator),
-    accepter: person(row.accepter),
+    creator: adminPerson(row.creator),
+    accepter: adminPerson(row.accepter),
     cancelledBy: row.cancelledBy ? { id: row.cancelledBy.id, name: row.cancelledBy.profile?.fullName ?? "" } : null,
     rideRequest: row.rideRequest
       ? { ...row.rideRequest, offeredAmount: Number(row.rideRequest.offeredAmount), routeDistanceKm: row.rideRequest.routeDistanceKm === null ? null : Number(row.rideRequest.routeDistanceKm) }
@@ -273,8 +281,8 @@ export async function getAdminRideOffer(offerId: string) {
     kind: "OFFER" as const,
     ...row,
     farePerSeat: Number(row.farePerSeat),
-    rider: person(row.rider),
-    bookings: row.bookings.map((b) => ({ activityId: b.activityId, seatsBooked: b.seatsBooked, amount: Number(b.amount), status: b.activity.status, passenger: person(b.activity.accepter) })),
+    rider: adminPerson(row.rider),
+    bookings: row.bookings.map((b) => ({ activityId: b.activityId, seatsBooked: b.seatsBooked, amount: Number(b.amount), status: b.activity.status, passenger: adminPerson(b.activity.accepter) })),
   };
 }
 

@@ -11,11 +11,13 @@ export type ReadOnlyReason = "FINISHED" | "BLOCKED";
 export type ChatMessage = {
   id: string;
   chatId: string;
-  kind: "TEXT" | "IMAGE" | "SYSTEM";
+  kind: "TEXT" | "IMAGE" | "SYSTEM" | "APPROVAL";
   senderId: string | null;
   body: string | null;
   systemCode: string | null;
   image: SignedLink | null;
+  // B4: an over-budget approval card (food chats), with its current state
+  approval?: { id: string; amount: number; previousAmount: number; status: "PENDING" | "APPROVED" | "REJECTED" | "WITHDRAWN"; decidedAt: string | null; requestedById: string } | null;
   createdAt: string;
 };
 

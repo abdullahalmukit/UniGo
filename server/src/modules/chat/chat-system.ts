@@ -12,12 +12,25 @@ type State = { status: ActivityStatus; subStatus: ActivitySubStatus | null };
 
 // Translated on the client (chat.system.*). Carpool sessions use their own
 // codes, because they are posted in the booking's chat.
-export type SystemCode = "ACCEPTED" | "STARTED" | "COMPLETION_REQUESTED" | "COMPLETED" | "CANCELLED" | "DISPUTED" | "NOT_MARKED";
+export type SystemCode =
+  | "ACCEPTED"
+  | "STARTED"
+  | "COMPLETION_REQUESTED"
+  | "COMPLETED"
+  | "CANCELLED"
+  | "DISPUTED"
+  | "NOT_MARKED"
+  // B4: food order details confirmed by both (ACCEPTED -> ORDER_CONFIRMED)
+  | "ORDER_CONFIRMED";
+
+// B4: food messages written by the food module, not by a status change
+export type FoodSystemCode = "ORDER_UPDATED" | "BUDGET_APPROVED" | "BUDGET_REJECTED" | "RECEIPT_UPLOADED";
 
 // The key events of proposal section 13, plus NOT_MARKED (B2b decision 4), so
 // a chat never turns read-only without saying why.
 export function systemCodeFor(before: State, after: State): SystemCode | null {
   if (after.status === "ACCEPTED" && before.status === "OPEN") return "ACCEPTED";
+  if (after.status === "ACCEPTED" && after.subStatus === "ORDER_CONFIRMED" && before.subStatus !== "ORDER_CONFIRMED") return "ORDER_CONFIRMED";
   if (after.status === "IN_PROGRESS" && before.status === "ACCEPTED") return "STARTED";
   if (after.status === "IN_PROGRESS" && after.subStatus === "COMPLETION_REQUESTED" && before.subStatus !== "COMPLETION_REQUESTED") {
     return "COMPLETION_REQUESTED";
@@ -78,4 +91,30 @@ export async function postTransitionMessage(
 
   const participantIds = [activity.creatorId, activity.accepterId].filter((id): id is string => !!id);
   return { kind: "message", chatId, messageId: message.id, participantIds };
+}
+
+// B4: a message in a food chat that is not a status change: a system line
+// (order details saved, approval decided), an approval card (kind APPROVAL,
+// refId = the approval) or the receipt photo (kind IMAGE). Inside the
+// caller's transaction; the event is published after commit.
+export async function postFoodMessage(
+  tx: Tx,
+  activity: ChatSubject,
+  message:
+    | { kind: "SYSTEM"; code: FoodSystemCode; senderId: string | null; body?: string | null }
+    | { kind: "APPROVAL"; senderId: string; refId: string }
+    | { kind: "IMAGE"; senderId: string; attachmentKey: string },
+): Promise<ChatEvent | null> {
+  const chatId = await chatIdFor(tx, activity);
+  if (!chatId) return null;
+  const data =
+    message.kind === "SYSTEM"
+      ? { kind: "SYSTEM" as const, senderId: message.senderId, systemCode: message.code, body: message.body ?? null }
+      : message.kind === "APPROVAL"
+        ? { kind: "APPROVAL" as const, senderId: message.senderId, refId: message.refId }
+        : { kind: "IMAGE" as const, senderId: message.senderId, attachmentKey: message.attachmentKey, attachmentMimeType: "image/jpeg" };
+  const created = await tx.message.create({ data: { chatId, ...data }, select: { id: true, createdAt: true } });
+  await tx.chat.update({ where: { id: chatId }, data: { lastMessageAt: created.createdAt } });
+  const participantIds = [activity.creatorId, activity.accepterId].filter((id): id is string => !!id);
+  return { kind: "message", chatId, messageId: created.id, participantIds };
 }

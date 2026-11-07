@@ -78,7 +78,7 @@ export async function applyTransition(
 ): Promise<TransitionOutcome | null> {
   const now = options.now ?? new Date();
   if (options.quiet && !isTransitionAllowed(activity, action, actor)) return null;
-  const rule = options.quiet ? findRule(activity.type, action)! : checkTransition(activity, action, actor);
+  const rule = options.quiet ? findRule(activity.type, action, activity)! : checkTransition(activity, action, actor);
 
   // B3a decision (Q4): a ride can be started from 30 minutes before its start time.
   if (action === "START" && (activity.type === "RIDE_REQUEST" || activity.type === "RIDE_BOOKING")) {

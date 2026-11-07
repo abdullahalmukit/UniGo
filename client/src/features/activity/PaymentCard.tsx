@@ -50,6 +50,11 @@ export function PaymentCard({ activityId }: { activityId: string }) {
       <p className={styles.amount}>
         ৳{taka(payment.amount, i18n.language)} · {payment.payee === "ME" ? t("payment.youReceive") : t("payment.youPay")}
       </p>
+      {payment.foodCost !== undefined && payment.foodCost !== null && (
+        <p className={styles.note}>
+          {t("payment.foodSplit", { food: taka(payment.foodCost, i18n.language), charge: taka(payment.deliveryCharge ?? 0, i18n.language) })}
+        </p>
+      )}
       <div className={styles.methods} role="group" aria-label={t("payment.method")}>
         {PAYMENT_METHODS.map((method) => (
           <button
@@ -70,6 +75,7 @@ export function PaymentCard({ activityId }: { activityId: string }) {
         </button>
       )}
       {payment.payee === "ME" && payment.status === "UNPAID" && !payment.method && <p className={styles.note}>{t("payment.chooseFirst")}</p>}
+      {payment.foodCost !== undefined && payment.foodCost !== null && payment.status === "UNPAID" && <p className={styles.note}>{t("payment.foodMethodInOrder")}</p>}
       <p className={styles.note}>{t("payment.noGateway")}</p>
       <ConfirmSheet
         title={t("payment.confirmTitle")}

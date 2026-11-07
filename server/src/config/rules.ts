@@ -208,6 +208,25 @@ export const rules = {
     ratePerKm: { min: 1, max: 500 },
   },
 
+  // B4: Food Delivery (proposal section 10, B4 decisions)
+  food: {
+    // Estimated food budget, confirmed food price and receipt cost, in taka
+    budget: { min: 10, max: 5000 },
+    // Delivery charge: 0 (none) or within this range
+    deliveryCharge: { min: 10, max: 1000 },
+    quantity: { min: 1, max: 20 },
+    restaurantNameMaxLength: 150,
+    itemsMaxLength: 1000,
+    detailsMaxLength: 1000,
+    addressMaxLength: 255,
+    // Search: straight-line distance from the chosen restaurant or delivery point (B4 Q4)
+    searchRadiusKm: [1, 2, 5],
+    defaultSearchRadiusKm: 2,
+    pageSize: 30,
+    // Receipt photo: the chat image rules (B2b decision 10)
+    receiptFolder: "food-receipts" as const,
+  },
+
   // B3b-1: Activity and Upcoming (proposal 12.2, 12.3)
   feed: { pageSize: 20, upcomingMax: 50 },
 
