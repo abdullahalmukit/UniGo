@@ -11,8 +11,11 @@ import { notify } from "./notify.service.js";
 // verified students, and accounts that are not ACTIVE right now. An inactive
 // sub-area notifies nobody. B4 and B5 call queueSubAreaNotification() after
 // creating the request.
+//
+// B3a decision (Q1): a passenger request notifies only Active riders who saved
+// its sub-area, since only they can accept it. Ride offers notify nobody.
 
-const SUB_AREA_TYPES = ["FOOD", "SERVICE"] as const;
+const SUB_AREA_TYPES = ["FOOD", "SERVICE", "RIDE_REQUEST"] as const;
 
 export function queueSubAreaNotification(activityId: string) {
   return queueJob({ name: "sub-area-notify", jobId: `sub-area-notify-${activityId}`, runAt: new Date(), data: { id: activityId } });
@@ -29,9 +32,10 @@ export async function runSubAreaNotifyJob(activityId: string, now = new Date()) 
       creatorId: true,
       foodRequest: { select: { subArea: { select: { id: true, name: true, isActive: true } } } },
       serviceRequest: { select: { subArea: { select: { id: true, name: true, isActive: true } } } },
+      rideRequest: { select: { subArea: { select: { id: true, name: true, isActive: true } } } },
     },
   });
-  const subArea = activity?.foodRequest?.subArea ?? activity?.serviceRequest?.subArea;
+  const subArea = activity?.foodRequest?.subArea ?? activity?.serviceRequest?.subArea ?? activity?.rideRequest?.subArea;
   if (!activity || !subArea || !subArea.isActive) return 0;
 
   const excluded = new Set([activity.creatorId, ...(await blockedUserIds(prisma, activity.creatorId))]);
@@ -39,7 +43,12 @@ export async function runSubAreaNotifyJob(activityId: string, now = new Date()) 
   let cursor: string | undefined;
   for (;;) {
     const users = await prisma.user.findMany({
-      where: { studentVerificationStatus: "VERIFIED", accountStatus: { not: "BANNED" }, subAreas: { some: { subAreaId: subArea.id } } },
+      where: {
+        studentVerificationStatus: "VERIFIED",
+        accountStatus: { not: "BANNED" },
+        subAreas: { some: { subAreaId: subArea.id } },
+        ...(activity.type === "RIDE_REQUEST" && { riderActive: true }),
+      },
       select: { id: true, ...accountStatusSelect },
       orderBy: { id: "asc" },
       take: rules.notifications.subAreaBatch,

@@ -320,7 +320,23 @@
     "MESSAGE_TOO_LONG": "A message can have at most 1000 characters.",
     "CANNOT_BLOCK_SELF": "You cannot block yourself.",
     "BLOCK_CARPOOL_CONTRACT": "You share a carpool contract with this user. Ask to end it early or report the problem.",
-    "CANNOT_REPORT_SELF": "You cannot report yourself."
+    "CANNOT_REPORT_SELF": "You cannot report yourself.",
+    "RIDE_NOT_FOUND": "This ride is not available.",
+    "RIDER_NOT_ACTIVE": "Only Active riders can do this. Switch to Active in Drive with UniGo.",
+    "VEHICLE_NOT_USABLE": "Choose one of your approved vehicles.",
+    "SEATS_EXCEED_CAPACITY": "This vehicle does not have that many seats.",
+    "OWN_OFFER_CONFLICT": "You have an open ride offer within 90 minutes of this time. Use \"Stop new bookings\" on that offer first.",
+    "NOT_EDITABLE": "This can no longer be edited.",
+    "OFFER_LOCKED": "This offer has bookings: only more seats can be added.",
+    "OFFER_HAS_BOOKINGS": "This offer has bookings. Stop new bookings or cancel the offer instead.",
+    "OFFER_CLOSED": "This offer is already closed.",
+    "OFFER_HAS_STARTED_BOOKINGS": "A booking on this offer has already started. It finishes normally.",
+    "ALREADY_BOOKED": "You already have a booking on this ride.",
+    "RIDER_NOT_AVAILABLE": "This rider is not taking bookings right now.",
+    "OFFER_CHANGED": "This offer changed a moment ago. Look at it again and book.",
+    "AMOUNT_NOT_HIGHER": "Choose a higher amount.",
+    "START_TOO_EARLY": "You can start the ride from 30 minutes before its time.",
+    "GEO_UNAVAILABLE": "Place search is not available right now. Try again in a moment."
   },
   "verification": {
     "title": "Verify your student status",
@@ -406,7 +422,8 @@
       "universities": "Universities",
       "subAreas": "Sub-Areas",
       "auditLog": "Audit Log",
-      "riderRequests": "Rider Requests"
+      "riderRequests": "Rider Requests",
+      "fareSettings": "Fare Settings"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -639,6 +656,16 @@
         "MOTORCYCLE_LICENCE": "Motorcycle licence"
       },
       "vehiclePhoto": "Vehicle photo"
+    },
+    "fares": {
+      "current": "Rate per km",
+      "none": "No rate set yet: no suggested fare is shown.",
+      "rate": "৳{{rate}} per km",
+      "newRate": "New rate per km (৳)",
+      "hint": "From ৳{{min}} to ৳{{max}}. Applies from now.",
+      "save": "Save rate",
+      "saved": "The new rate applies from now.",
+      "history": "History"
     }
   },
   "common": {
@@ -989,6 +1016,166 @@
         "other": "A ride was not marked.",
         "system": "A ride was not marked."
       }
+    }
+  },
+  "ride": {
+    "title": "Ride",
+    "needRide": "Need a Ride",
+    "offerRide": "Offer a Ride",
+    "pickup": "Pickup",
+    "destination": "Destination",
+    "kind": {
+      "request": "Ride request",
+      "offer": "Ride offer"
+    },
+    "tabs": {
+      "all": "All",
+      "requests": "Requests",
+      "offers": "Offers"
+    },
+    "postStatus": {
+      "OPEN": "Open",
+      "FULL": "Full",
+      "CLOSED": "Closed"
+    },
+    "role": {
+      "rider": "Rider",
+      "passenger": "Passenger"
+    },
+    "vehicleType": {
+      "BIKE": "Bike",
+      "CAR": "Car"
+    },
+    "verifiedRider": "Verified rider",
+    "total": "৳{{amount}}",
+    "perSeat": "৳{{amount}} per seat",
+    "seatsLeft_one": "{{count}} seat left",
+    "seatsLeft_other": "{{count}} seats left",
+    "seatsCount_one": "{{count}} seat",
+    "seatsCount_other": "{{count}} seats",
+    "passengers_one": "{{count}} passenger",
+    "passengers_other": "{{count}} passengers",
+    "distance": "{{km}} km",
+    "yours": "Yours",
+    "mapLabel": "Map of open rides",
+    "empty": "No open rides right now. Ask for one with Need a Ride.",
+    "emptyFiltered": "No rides match these filters.",
+    "loadFailed": "Could not load rides.",
+    "loadMore": "Load more",
+    "notFound": "This ride is not available.",
+    "verifyFirst": "Verify your student status to use Ride Sharing.",
+    "onlyRidersAccept": "Only Active riders can accept passenger requests.",
+    "noVehicleFits_one": "None of your vehicles has a seat for {{count}} passenger.",
+    "noVehicleFits_other": "None of your vehicles has seats for {{count}} passengers.",
+    "filters": {
+      "title": "Filters",
+      "titleCount_one": "Filters ({{count}})",
+      "titleCount_other": "Filters ({{count}})",
+      "radius": "Within",
+      "km_one": "{{count}} km",
+      "km_other": "{{count}} km",
+      "date": "Date",
+      "from": "From",
+      "to": "To",
+      "apply": "Show rides",
+      "clear": "Clear filters"
+    },
+    "place": {
+      "choose": "Choose a place",
+      "search": "Search a place",
+      "address": "Address",
+      "use": "Use this place"
+    },
+    "subArea": {
+      "label": "Sub-area",
+      "optionalLabel": "Sub-area (optional)",
+      "choose": "Choose a sub-area",
+      "search": "Search sub-areas",
+      "none": "No sub-area"
+    },
+    "form": {
+      "pickupTime": "Pickup date and time",
+      "departure": "Departure date and time",
+      "timeHint": "Bangladesh time. From 15 minutes to 48 hours from now.",
+      "offeredAmount": "Offered amount (৳)",
+      "farePerSeat": "Fare per seat (৳)",
+      "amountHint": "From ৳{{min}} to ৳{{max}}.",
+      "passengers": "Passengers",
+      "vehicle": "Vehicle",
+      "seats": "Seats offered",
+      "seatsHint_one": "This vehicle takes {{count}} passenger.",
+      "seatsHint_other": "This vehicle takes up to {{count}} passengers.",
+      "notes": "Notes (optional)",
+      "suggested": "Suggested fare: ৳{{amount}} for about {{km}} km.",
+      "suggestedPerSeat": "Suggested fare per seat: ৳{{amount}} for about {{km}} km.",
+      "useSuggested": "Use it",
+      "postRequest": "Post request",
+      "postOffer": "Post offer",
+      "save": "Save",
+      "saved": "Saved.",
+      "requestCreated": "Your ride request is posted.",
+      "offerCreated": "Your ride offer is posted.",
+      "editRequest": "Edit request",
+      "editOffer": "Edit offer",
+      "lockedHint": "This offer has bookings, so its details are locked. You can still add seats.",
+      "notActiveRider": "Only Active riders can offer rides. Open Drive with UniGo to become a rider or switch to Active."
+    },
+    "actions": {
+      "accept": "Accept request",
+      "acceptTitle": "Choose the vehicle",
+      "accepted": "Request accepted. A chat is open.",
+      "book": "Book for ৳{{amount}}",
+      "booked": "Seat booked. A chat is open.",
+      "start": "Start Ride",
+      "started": "Ride started.",
+      "complete": "Mark completed",
+      "completionAsked": "Asked the other person to confirm.",
+      "confirm": "Confirm completed",
+      "completed": "Ride completed.",
+      "waiting": "Waiting for the other person to confirm. It completes automatically after 24 hours.",
+      "chat": "Open chat",
+      "cancel": "Cancel ride",
+      "cancelTitle": "Cancel this ride?",
+      "cancelHint": "Give a reason. Cancelling less than 60 minutes before the start counts as a late cancellation.",
+      "cancelled": "Ride cancelled.",
+      "reason": "Reason",
+      "edit": "Edit",
+      "addSeats": "Add seats",
+      "upgrade": "Raise amount",
+      "delete": "Delete request",
+      "deleteTitle": "Delete this request?",
+      "deleted": "Request deleted.",
+      "stop": "Stop new bookings",
+      "cancelOffer": "Cancel offer",
+      "removeOffer": "Remove offer"
+    },
+    "offerSheet": {
+      "stop": {
+        "title": "Stop new bookings?",
+        "hint": "Nobody else can book. The bookings you already have carry on."
+      },
+      "cancel": {
+        "title": "Cancel this offer?",
+        "hint": "Every booking is cancelled with your reason and each passenger is told. Late cancellation rules apply."
+      },
+      "remove": {
+        "title": "Remove this offer?",
+        "hint": "Nobody has booked it yet. It is removed from the list."
+      }
+    },
+    "bookings": {
+      "title_one": "{{count}} booking",
+      "title_other": "{{count}} bookings",
+      "none": "No bookings yet.",
+      "yours_one": "Your booking: {{count}} seat, ৳{{amount}}",
+      "yours_other": "Your booking: {{count}} seats, ৳{{amount}}",
+      "open": "Open your booking",
+      "seats": "Seats",
+      "fewer": "One seat fewer",
+      "more": "One seat more"
+    },
+    "booking": {
+      "title": "Booking"
     }
   }
 }

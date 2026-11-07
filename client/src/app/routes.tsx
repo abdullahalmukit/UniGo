@@ -58,6 +58,21 @@ export const routes: RouteObject[] = [
           { path: "account/blocked", element: <BlockedUsersPage /> },
           // Drive with UniGo (B1)
           { path: "drive", lazy: page(() => import("../features/rider/DrivePage"), (m) => m.DrivePage) },
+          // Ride Sharing (B3a): verified students only, loaded per route (map and forms)
+          {
+            path: "ride",
+            lazy: page(() => import("../features/ride/RideGate"), (m) => m.RideGate),
+            children: [
+              { index: true, lazy: page(() => import("../features/ride/RidePage"), (m) => m.RidePage) },
+              { path: "requests/new", lazy: page(() => import("../features/ride/RideForms"), (m) => m.RequestFormPage) },
+              { path: "requests/:id", lazy: page(() => import("../features/ride/RideDetails"), (m) => m.RequestDetailPage) },
+              { path: "requests/:id/edit", lazy: page(() => import("../features/ride/RideForms"), (m) => m.RequestFormPage) },
+              { path: "offers/new", lazy: page(() => import("../features/ride/RideForms"), (m) => m.OfferFormPage) },
+              { path: "offers/:id", lazy: page(() => import("../features/ride/RideDetails"), (m) => m.OfferDetailPage) },
+              { path: "offers/:id/edit", lazy: page(() => import("../features/ride/RideForms"), (m) => m.OfferFormPage) },
+              { path: "bookings/:id", lazy: page(() => import("../features/ride/RideDetails"), (m) => m.BookingDetailPage) },
+            ],
+          },
         ],
       },
       { path: "*", element: <NotFoundPage /> },
@@ -80,6 +95,7 @@ export const routes: RouteObject[] = [
           { path: "universities", lazy: page(() => import("../features/admin/AdminUniversitiesPage"), (m) => m.AdminUniversitiesPage) },
           { path: "sub-areas", lazy: page(() => import("../features/admin/AdminSubAreasPage"), (m) => m.AdminSubAreasPage) },
           { path: "audit-log", lazy: page(() => import("../features/admin/AdminAuditLogPage"), (m) => m.AdminAuditLogPage) },
+          { path: "fare-settings", lazy: page(() => import("../features/admin/AdminFareSettingsPage"), (m) => m.AdminFareSettingsPage) },
         ],
       },
       { path: "*", lazy: page(() => import("../features/admin/AdminDashboardPage"), (m) => m.AdminDashboardPage) },

@@ -24,6 +24,11 @@ const FIELD_CODES: Record<string, string> = {
   IMAGE_TYPE_NOT_ALLOWED: "photo",
   IMAGE_UNREADABLE: "photo",
   ADDRESS_LABEL_TAKEN: "label",
+  // Ride Sharing (B3a)
+  SEATS_EXCEED_CAPACITY: "seats",
+  VEHICLE_NOT_USABLE: "vehicleId",
+  SUB_AREA_NOT_FOUND: "subAreaId",
+  AMOUNT_NOT_HIGHER: "offeredAmount",
 };
 
 // Turns any error from an API call into translated messages: one per field

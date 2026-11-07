@@ -178,8 +178,18 @@ const query = (params: Record<string, string | number | undefined>) => {
   return text ? `?${text}` : "";
 };
 
+export type FareSettings = {
+  current: number | null;
+  history: { id: string; ratePerKm: number; effectiveFrom: string }[];
+  limits: { min: number; max: number };
+};
+
 export const adminApi = {
   dashboard: () => api<Dashboard>("/admin/dashboard"),
+
+  // B3a: Fare Settings (Super Admin)
+  fareSettings: () => api<FareSettings>("/admin/fare-settings"),
+  setFareRate: (ratePerKm: number) => api<FareSettings>("/admin/fare-settings", { method: "POST", body: { ratePerKm } }),
 
   idCards: (status: "PENDING" | "VERIFIED" | "REJECTED", page = 1) =>
     api<Page<IdCardReview>>(`/admin/student-verifications${query({ status, page })}`),

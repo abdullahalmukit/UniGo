@@ -134,7 +134,7 @@ export async function notificationView(row: NotificationRow, language: "BN" | "E
     type: row.type,
     title: text.title,
     body: text.body,
-    link: notificationLink(row.type, data),
+    link: notificationLink(row.type, data, row.activityId),
     read: row.readAt !== null,
     createdAt: row.createdAt,
   };
@@ -215,7 +215,7 @@ export async function deliverNotification(notificationId: string, options: { las
   });
   if (!row || row.status !== "PENDING" || row.channel === "IN_APP") return false;
   const data = (row.data ?? {}) as NotificationData;
-  const link = notificationLink(row.type, data);
+  const link = notificationLink(row.type, data, row.activityId);
 
   try {
     if (row.channel === "EMAIL") {

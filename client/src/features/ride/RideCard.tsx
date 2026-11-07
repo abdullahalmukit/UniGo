@@ -1,0 +1,92 @@
+import { BadgeCheck, CircleDot, MapPin, Users } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+import { Avatar } from "../../components/Avatar";
+import { formatRideTime } from "../../lib/dates";
+import type { MiniProfile, Place, PublicVehicle, RideItem } from "./ride-api";
+import styles from "./ride.module.css";
+
+export function taka(amount: number, language: string) {
+  return new Intl.NumberFormat(language === "bn" ? "bn-BD" : "en", { maximumFractionDigits: 2 }).format(amount);
+}
+
+export function Route({ pickup, destination }: { pickup: Place; destination: Place }) {
+  const { t } = useTranslation();
+  return (
+    <div className={styles.route}>
+      <span className={styles.routeLine}>
+        <CircleDot aria-hidden size={16} className={styles.routeIcon} />
+        <span>
+          <span className="visually-hidden">{t("ride.pickup")}: </span>
+          {pickup.address}
+        </span>
+      </span>
+      <span className={styles.routeLine}>
+        <MapPin aria-hidden size={16} className={styles.routeIcon} />
+        <span>
+          <span className="visually-hidden">{t("ride.destination")}: </span>
+          {destination.address}
+        </span>
+      </span>
+    </div>
+  );
+}
+
+// Mini profile (proposal 8.3). Rating, completion rate and badges arrive in B3b.
+export function PersonRow({ person, caption }: { person: MiniProfile; caption?: string }) {
+  const { t } = useTranslation();
+  const university = person.university?.shortName ?? person.university?.name;
+  return (
+    <div className={styles.person}>
+      <Avatar name={person.name} src={person.photo?.url} size={40} />
+      <span className={styles.personText}>
+        <span className={styles.personName}>
+          {person.name || t("chat.someone")}{" "}
+          {person.isVerifiedRider && <BadgeCheck aria-label={t("ride.verifiedRider")} size={16} />}
+        </span>
+        <span className={styles.muted}>{[caption, university, person.department].filter(Boolean).join(" · ")}</span>
+      </span>
+    </div>
+  );
+}
+
+export function VehicleLine({ vehicle }: { vehicle: PublicVehicle }) {
+  const { t } = useTranslation();
+  return (
+    <span className={styles.muted}>
+      {t(`ride.vehicleType.${vehicle.type}`)} · {vehicle.brand} {vehicle.model} · {vehicle.colour} · {vehicle.registrationNumber}
+    </span>
+  );
+}
+
+// A request or an offer in the list (proposal 8.3).
+export function RideCard({ item }: { item: RideItem }) {
+  const { t, i18n } = useTranslation();
+  const isOffer = item.kind === "OFFER";
+  const to = isOffer ? `/ride/offers/${item.id}` : `/ride/requests/${item.id}`;
+  const time = isOffer ? item.departureTime : item.startTime;
+
+  return (
+    <Link to={to} className={styles.card}>
+      <span className={styles.cardTop}>
+        <span className={styles.kind}>{isOffer ? t("ride.kind.offer") : t("ride.kind.request")}</span>
+        <span className={styles.amount}>
+          {isOffer
+            ? t("ride.perSeat", { amount: taka(item.farePerSeat, i18n.language) })
+            : t("ride.total", { amount: taka(item.offeredAmount, i18n.language) })}
+        </span>
+      </span>
+      <Route pickup={item.pickup} destination={item.destination} />
+      <span className={styles.meta}>
+        <span>{formatRideTime(time, i18n.language)}</span>
+        <span>
+          <Users aria-hidden size={14} />{" "}
+          {isOffer ? t("ride.seatsLeft", { count: item.seatsAvailable }) : t("ride.passengers", { count: item.passengerCount })}
+        </span>
+        {item.mine && <span>{t("ride.yours")}</span>}
+      </span>
+      <PersonRow person={isOffer ? item.rider : item.passenger} caption={isOffer ? t("ride.role.rider") : t("ride.role.passenger")} />
+      {isOffer && <VehicleLine vehicle={item.vehicle} />}
+    </Link>
+  );
+}

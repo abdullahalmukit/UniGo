@@ -13,7 +13,8 @@ const post = (path: string, token: string, body: object = {}) => api().post(`/ap
 describe("lifecycle endpoints", () => {
   it("runs a ride from start to two-step completion", async () => {
     const [passenger, rider] = await Promise.all([verifiedUser(), verifiedUser()]);
-    const ride = await createActivity({ type: "RIDE_REQUEST", creatorId: passenger.id, accepterId: rider.id, status: "ACCEPTED", subStatus: "RIDE_CONFIRMED" });
+    // Start Ride is allowed from 30 minutes before the start (B3a Q4)
+    const ride = await createActivity({ type: "RIDE_REQUEST", creatorId: passenger.id, accepterId: rider.id, status: "ACCEPTED", subStatus: "RIDE_CONFIRMED", startTime: fromNow(20 * MINUTE) });
     const events: ActivityTransitionEvent[] = [];
     const stop = onActivityTransition((event) => events.push(event));
 
@@ -122,7 +123,7 @@ describe("lifecycle endpoints", () => {
     const [rider, passenger] = await Promise.all([verifiedUser(), verifiedUser()]);
     const offer = await createRideOffer(rider.id, { seats: 2, seatsAvailable: 0, status: "FULL" });
     const booking = await createActivity({ type: "RIDE_BOOKING", creatorId: rider.id, accepterId: passenger.id, status: "ACCEPTED", subStatus: "RIDE_CONFIRMED", conflictGroupId: offer.id });
-    await prisma.rideBooking.create({ data: { activityId: booking.id, rideOfferId: offer.id, seatsBooked: 2 } });
+    await prisma.rideBooking.create({ data: { activityId: booking.id, rideOfferId: offer.id, seatsBooked: 2, amount: 160 } });
 
     expect((await post(`/${booking.id}/cancel`, passenger.accessToken, { reason: "Not going" })).status).toBe(200);
 

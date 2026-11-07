@@ -41,6 +41,10 @@ const envSchema = z
     // B2a: Redis for BullMQ background jobs (Memurai on Windows). Tests never
     // connect; they use the in-memory job scheduler.
     REDIS_URL: z.string().trim().regex(/^rediss?:\/\//, "REDIS_URL must start with redis:// or rediss://").default("redis://localhost:6379"),
+    // B3a: route distance for the suggested fare, and place search. Public
+    // servers by default; tests never call them.
+    OSRM_URL: z.url().default("https://router.project-osrm.org"),
+    NOMINATIM_URL: z.url().default("https://nominatim.openstreetmap.org"),
     // B2c: Web Push keys. Required in production; without them in development
     // push is off. Tests use the in-memory push transport.
     VAPID_PUBLIC_KEY: optionalText,

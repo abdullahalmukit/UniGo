@@ -170,6 +170,36 @@ export const rules = {
     expiryGrace: 5 * 1000,
   },
 
+  // B3a: Ride Sharing (proposal section 8, B3a decisions)
+  ride: {
+    // Offered amount of a passenger request and fare per seat of an offer, in taka
+    amount: { min: 10, max: 1000 },
+    passengers: { min: 1, max: 4 },
+    notesMaxLength: 500,
+    addressMaxLength: 255,
+    // Start Ride is allowed from this long before the start time (B3a Q4)
+    startAllowedBefore: 30 * MINUTE,
+    // Search: straight-line distance from the chosen point (B3a Q6)
+    searchRadiusKm: [1, 2, 5],
+    defaultSearchRadiusKm: 2,
+    pageSize: 30,
+    // Suggested fare: OSRM route distance x the admin rate per km
+    fareEstimate: { timeout: 3000, cacheSize: 1000, cacheTtl: DAY, perUser: { window: MINUTE, max: 20 } },
+    ratePerKm: { min: 1, max: 500 },
+  },
+
+  // B3a: Nominatim through the server (CLAUDE.md 9, Maps)
+  geo: {
+    // Nominatim's usage policy: at most one request per second, from the whole server
+    minInterval: 1000,
+    timeout: 5000,
+    cacheSize: 2000,
+    cacheTtl: DAY,
+    queryMaxLength: 200,
+    results: 5,
+    perUser: { window: MINUTE, max: 30 },
+  },
+
   // B2c: notifications (proposal section 14, B2c decisions)
   notifications: {
     pageSize: 20,

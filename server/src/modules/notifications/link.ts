@@ -4,14 +4,19 @@ import type { NotificationData } from "./catalogue.js";
 // The page a notification opens, in the app and from a push. One place, so
 // B3-B8 change a link here when their pages arrive. Always a path on this
 // site (the service worker refuses anything else).
-export function notificationLink(type: NotificationType, data: NotificationData | null | undefined): string {
+export function notificationLink(type: NotificationType, data: NotificationData | null | undefined, activityId?: string | null): string {
   const d = data ?? {};
   const chat = d.chatId ? `/inbox/${encodeURIComponent(d.chatId)}` : null;
+  // B3a: ride notifications open the ride's own page
+  if (activityId && type !== "NEW_CHAT_MESSAGE") {
+    if (d.activityType === "RIDE_REQUEST") return `/ride/requests/${encodeURIComponent(activityId)}`;
+    if (d.activityType === "RIDE_BOOKING") return `/ride/bookings/${encodeURIComponent(activityId)}`;
+  }
   switch (type) {
     case "NEW_CHAT_MESSAGE":
       return chat ?? "/inbox";
     case "SUB_AREA_NEW_REQUEST":
-      // Food and Service pages come in B4/B5.
+      // Food and Service pages come in B4/B5 (ride requests are handled above).
       return "/services";
     case "REQUEST_EXPIRED":
       return "/activity";

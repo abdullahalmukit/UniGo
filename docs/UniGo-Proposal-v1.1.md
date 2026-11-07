@@ -288,19 +288,25 @@ Route, date and time, amount, seats left, and a mini profile: name, photo, unive
 - The system validates seats against the selected vehicle type and that vehicle's verified capacity.
 - Each booking reserves 1 seat by default; a passenger may reserve extra seats for companions up to the seats left.
 - Each booking has its own status, chat, completion and review. The offer becomes FULL when no seats are left and returns to OPEN if a booking is cancelled before the departure time. At the departure time an OPEN or FULL offer is CLOSED and never reopens; bookings already made carry on.
+- A passenger has at most one active booking per offer. The amount of a booking (fare per seat × seats) is fixed when it is made.
+- On a shared offer the rider sees every booking; a passenger sees only their own booking and the seats left, never the other passengers.
+- A rider cannot post an offer within 90 minutes of another of their open or full offers, or of an activity they have already accepted.
+- Once an offer has a booking its details are locked; the rider can only add seats (up to the vehicle's capacity), stop new bookings (the bookings carry on), or cancel the offer with a reason, which cancels every accepted booking (late cancellation rules apply to each). An offer nobody has booked can simply be removed.
 
 ### 8.5 Who can accept what
 
-- **Passenger request:** only a Verified & Active Rider whose vehicle has enough seats can accept it. One request has one accepter.
-- **Ride offer:** any verified student can book a seat.
+- **Passenger request:** only a Verified & Active Rider whose vehicle has enough seats can accept it. One request has one accepter. The rider chooses the vehicle; only their approved vehicles with enough seats can be chosen.
+- **Ride offer:** any verified student can book a seat. Only offers of Active riders are shown and bookable.
 - A Rider who needs a ride acts as a passenger. A normal user can never accept a passenger request.
+- A rider with an open offer of their own within 90 minutes cannot accept a passenger request or book a seat as a passenger until they stop new bookings on that offer.
+- Search a Ride matches pickup and destination within 1, 2 or 5 km (straight line), and the date is the Asia/Dhaka day.
 
 ### 8.6 Workflow
 
 1. Create a passenger request or a ride offer.
 2. Others browse or get a sub-area/route notification and open the card.
 3. Accept or book. This is the confirmation (section 7.2). Both see each other's phone number, profile and vehicle details, and a chat opens.
-4. On ride day, either person can tap Start Ride → IN_PROGRESS.
+4. From 30 minutes before the start time, either person can tap Start Ride → IN_PROGRESS.
 5. Either marks Completed; the other confirms or disputes within 24 hours (section 7.3).
 6. Both leave blind reviews (section 15).
 
@@ -489,6 +495,7 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | Dispute opened, updated or resolved | Both | In-app, push, email |
 | New chat message | Receiver | In-app, push |
 | New food or service request in my sub-area | Users who saved that sub-area (not blocked) | In-app, push |
+| New passenger ride request in my sub-area | Active riders who saved that sub-area (not blocked) | In-app, push |
 | Student or rider verification result | Applicant | In-app, email |
 | Request expired | Creator | In-app |
 | Monthly carpool payment due | Passenger | In-app |

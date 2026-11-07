@@ -2,7 +2,7 @@ import sharp from "sharp";
 import { describe, expect, it } from "vitest";
 import { prisma } from "../../src/lib/prisma.js";
 import { transitionActivity } from "../../src/modules/activities/engine.js";
-import { HOUR, acceptedWithChat, createActivity, fromNow, verifiedUser } from "./activity-helpers.js";
+import { HOUR, MINUTE, acceptedWithChat, createActivity, fromNow, verifiedUser } from "./activity-helpers.js";
 import { api, bearer, files } from "./helpers.js";
 
 const get = (path: string, token: string) => api().get(`/api/chats${path}`).set(bearer(token));
@@ -37,7 +37,8 @@ describe("chat creation and system messages", () => {
   });
 
   it("writes a system message for each key event, with the cancellation reason", async () => {
-    const { creator, accepter, activity, chatId } = await acceptedWithChat("RIDE_REQUEST");
+    // Start Ride is allowed from 30 minutes before the start (B3a Q4)
+    const { creator, accepter, activity, chatId } = await acceptedWithChat("RIDE_REQUEST", fromNow(20 * MINUTE));
     const as = (id: string) => ({ type: "USER" as const, id });
     await transitionActivity(activity.id, "START", as(accepter.id));
     await transitionActivity(activity.id, "REQUEST_COMPLETION", as(accepter.id));

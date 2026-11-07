@@ -3,7 +3,10 @@ import { prisma } from "../../src/lib/prisma.js";
 import { scheduledJobs } from "../../src/jobs/scheduler.js";
 import { resetRateLimits } from "../../src/middleware/rate-limit.js";
 import { sentEmails } from "../../src/modules/email/email.service.js";
+import { setOutboundFetchForTests } from "../../src/lib/outbound.js";
+import { resetGeoForTests } from "../../src/modules/geo/geo.service.js";
 import { useDeliveryQueueForTests } from "../../src/modules/notifications/notify.service.js";
+import { resetFareCacheForTests } from "../../src/modules/ride/fare.service.js";
 import { failingPushEndpoints, sentPushes } from "../../src/modules/notifications/push.transport.js";
 import { settleBackgroundTasks } from "../../src/utils/background.js";
 
@@ -34,6 +37,10 @@ beforeEach(async () => {
   sentPushes.length = 0;
   failingPushEndpoints.clear();
   useDeliveryQueueForTests(false);
+  // B3a: no outside calls unless a test fakes them; empty caches
+  setOutboundFetchForTests(null);
+  resetGeoForTests();
+  resetFareCacheForTests();
 });
 
 afterAll(async () => {

@@ -11,6 +11,7 @@ import { adminRouter } from "./modules/admin/admin.routes.js";
 import { adminStudentVerificationsRouter } from "./modules/admin/student-verifications.routes.js";
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
+import { geoRouter } from "./modules/geo/geo.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { registerNotificationListeners } from "./modules/notifications/listeners.js";
 import { notificationsRouter, pushRouter, pushSubscriptionsRouter } from "./modules/notifications/notifications.routes.js";
@@ -19,6 +20,7 @@ import { adminUniversitiesRouter } from "./modules/universities/universities.adm
 import { universitiesRouter } from "./modules/universities/universities.routes.js";
 import { adminRiderApplicationsRouter, adminRidersRouter } from "./modules/riders/riders.admin.routes.js";
 import { riderRouter } from "./modules/riders/riders.routes.js";
+import { rideRouter } from "./modules/ride/ride.routes.js";
 import { meRouter } from "./modules/users/me.routes.js";
 import { verificationRouter } from "./modules/verification/verification.routes.js";
 
@@ -40,6 +42,8 @@ app.use("/api/me", meRouter);
 app.use("/api/sub-areas", subAreasRouter);
 app.use("/api/rider", riderRouter);
 app.use("/api/activities", activitiesRouter);
+app.use("/api/rides", rideRouter);
+app.use("/api/geo", geoRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/notifications", notificationsRouter);

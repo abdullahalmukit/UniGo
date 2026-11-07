@@ -13,6 +13,8 @@ import {
   type CreateSubAreaInput,
   type UpdateSubAreaInput,
 } from "../subareas/subareas.admin.service.js";
+import { rules } from "../../config/rules.js";
+import { listFareSettings, setRatePerKm } from "../ride/fare.service.js";
 import { listAuditLogs } from "./audit-log.service.js";
 import { getDashboard } from "./dashboard.service.js";
 import { actionSchemas, applyAccountAction, type AccountAction, type ActionInput } from "./moderation.service.js";
@@ -75,6 +77,20 @@ adminRouter.patch("/sub-areas/:id", superAdminOnly, validateBody(updateSubAreaSc
 
 adminRouter.delete("/sub-areas/:id", superAdminOnly, async (req, res) => {
   res.json(await removeSubArea(authUser(req).id, id(req.params.id), req.ip));
+});
+
+// ---- Fare Settings (Super Admin, B3a) -----------------------------------------
+
+const fareSchema = z.object({
+  ratePerKm: z.coerce.number().min(rules.ride.ratePerKm.min).max(rules.ride.ratePerKm.max).transform((v) => Math.round(v * 100) / 100),
+});
+
+adminRouter.get("/fare-settings", superAdminOnly, async (_req, res) => {
+  res.json(await listFareSettings());
+});
+
+adminRouter.post("/fare-settings", superAdminOnly, validateBody(fareSchema), async (req, res) => {
+  res.status(201).json(await setRatePerKm(authUser(req).id, (req.body as z.infer<typeof fareSchema>).ratePerKm, req.ip));
 });
 
 // ---- Audit Log (Super Admin) --------------------------------------------------

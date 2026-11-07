@@ -48,7 +48,7 @@ export async function runAutoCompleteJob(activityId: string, now = new Date()) {
 export async function runCloseRideOfferJob(offerId: string, now = new Date()) {
   const closed = await prisma.rideOffer.updateMany({
     where: { id: offerId, status: { in: ["OPEN", "FULL"] }, departureTime: { lte: now } },
-    data: { status: "CLOSED", closedAt: now },
+    data: { status: "CLOSED", closedAt: now, closeReason: "DEPARTED" },
   });
   return closed.count === 1;
 }
@@ -96,7 +96,7 @@ export async function runActivitySweep(now = new Date()) {
 
   const offers = await prisma.rideOffer.updateMany({
     where: { status: { in: ["OPEN", "FULL"] }, departureTime: { lte: now } },
-    data: { status: "CLOSED", closedAt: now },
+    data: { status: "CLOSED", closedAt: now, closeReason: "DEPARTED" },
   });
 
   // B2c: reminders that are due but were never sent, and push or email rows a

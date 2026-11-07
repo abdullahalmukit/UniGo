@@ -68,6 +68,10 @@ export const riderApplicationRateLimit = limiter(
 // B2b: reports, per account.
 export const reportRateLimit = limiter(rules.reports.perUser.window, rules.reports.perUser.max, userKey);
 
+// B3a: place search through the server, and the suggested fare (public OSRM)
+export const geoRateLimit = limiter(rules.geo.perUser.window, rules.geo.perUser.max, userKey);
+export const fareEstimateRateLimit = limiter(rules.ride.fareEstimate.perUser.window, rules.ride.fareEstimate.perUser.max, userKey);
+
 // B2c: saving this device's push subscription
 export const pushSubscribeRateLimit = limiter(
   rules.notifications.subscribePerUser.window,

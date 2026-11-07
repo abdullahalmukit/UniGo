@@ -33,6 +33,16 @@ export function AllServicesPage() {
                     {t("services.browse")}
                   </Link>
                 </>
+              ) : key === "ride" ? (
+                // Ride Sharing is open since B3a
+                <>
+                  <Link to="/ride/requests/new" className={buttonStyles.primary}>
+                    {t("services.create")}
+                  </Link>
+                  <Link to="/ride" className={buttonStyles.secondary}>
+                    {t("services.browse")}
+                  </Link>
+                </>
               ) : (
                 <>
                   <button type="button" className={buttonStyles.primary} disabled>
@@ -44,7 +54,7 @@ export function AllServicesPage() {
                 </>
               )}
             </div>
-            {!isGuest && <p className={styles.soon}>{t("services.comingSoon")}</p>}
+            {!isGuest && key !== "ride" && <p className={styles.soon}>{t("services.comingSoon")}</p>}
           </article>
         ))}
       </div>

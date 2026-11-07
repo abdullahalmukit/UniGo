@@ -24,6 +24,8 @@ describe("Redis down while jobs are queued after a commit (B2b decision 1)", () 
       accepterId: rider.id,
       status: "ACCEPTED",
       subStatus: "RIDE_CONFIRMED",
+      // Start Ride is allowed from 30 minutes before the start (B3a Q4)
+      startTime: fromNow(20 * MINUTE),
     });
 
     // The first call may wait for the connection to fail, but never longer than the timeout.

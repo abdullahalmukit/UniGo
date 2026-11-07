@@ -1,4 +1,5 @@
-import type { Prisma } from "../../generated/prisma/client.js";
+import { rules } from "../../config/rules.js";
+import type { ActivitySubStatus, ActivityType, Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { effectiveAccountStatus } from "../auth/account-status.js";
@@ -7,7 +8,7 @@ import { postTransitionMessage } from "../chat/chat-system.js";
 import { assertNoTimeConflict } from "./conflict.js";
 import { emitActivityTransitions, type ActivityTransitionEvent } from "./events.js";
 import { releaseCarpoolSeat, releaseRideOfferSeats } from "./seats.js";
-import { isLateCancellation } from "./time-rules.js";
+import { blocksTimeFor, isLateCancellation } from "./time-rules.js";
 import { replaceActivityTimers } from "./timers.js";
 import { lockUsers, runActivityTransaction, type Tx } from "./transaction.js";
 import {
@@ -76,6 +77,13 @@ export async function applyTransition(
   const now = options.now ?? new Date();
   if (options.quiet && !isTransitionAllowed(activity, action, actor)) return null;
   const rule = options.quiet ? findRule(activity.type, action)! : checkTransition(activity, action, actor);
+
+  // B3a decision (Q4): a ride can be started from 30 minutes before its start time.
+  if (action === "START" && (activity.type === "RIDE_REQUEST" || activity.type === "RIDE_BOOKING")) {
+    if (now.getTime() < activity.startTime.getTime() - rules.ride.startAllowedBefore) {
+      throw new AppError(409, "START_TOO_EARLY", "You can start the ride from 30 minutes before its time");
+    }
+  }
 
   const reason = options.reason?.trim() || undefined;
   if (rule.reasonRequired && !reason) {
@@ -330,6 +338,83 @@ async function assertNotBlocked(tx: Tx, a: string, b: string) {
     select: { blockerId: true },
   });
   if (block) throw new AppError(409, "NOT_AVAILABLE", "This item is not available");
+}
+
+export type CreateAcceptedInput = {
+  type: ActivityType;
+  // Owner of the parent post (the rider of a ride offer)
+  creatorId: string;
+  // Who books (the passenger)
+  accepterId: string;
+  startTime: Date;
+  subStatus: ActivitySubStatus | null;
+  conflictGroupId: string | null;
+  now?: Date;
+  // Feature checks with both users locked, before the activity is written
+  // (e.g. the offer's rider is Active, one booking per passenger, seats)
+  check?: (tx: Tx) => Promise<void>;
+  // The feature's own row, in the same transaction (e.g. ride_bookings)
+  afterCreate?: (tx: Tx, activity: EngineActivity) => Promise<void>;
+};
+
+// Booking a seat (B3a): the activity is created already ACCEPTED, since the
+// booking is the confirmation (CLAUDE.md 5.2). The same guarantees as
+// acceptActivity() in one READ COMMITTED transaction: both users locked, own
+// post, start passed, restricted accepter and blocks refused, the feature's
+// checks, then the 90-minute check for both users. History, chat and the
+// ACCEPT event as for an accept.
+export async function createAcceptedActivity(input: CreateAcceptedInput) {
+  const now = input.now ?? new Date();
+  const actor: ActorRef = { type: "USER", id: input.accepterId };
+  if (input.creatorId === input.accepterId) throw new AppError(403, "OWN_ITEM", "You cannot book your own post");
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    await lockUsers(tx, [input.creatorId, input.accepterId]);
+    if (input.startTime <= now) throw new AppError(409, "START_TIME_PASSED", "This item's start time has passed");
+    await assertCanAccept(tx, input.accepterId, now);
+    await assertNotBlocked(tx, input.creatorId, input.accepterId);
+    if (input.check) await input.check(tx);
+
+    const activity = await tx.activity.create({
+      data: {
+        type: input.type,
+        status: "ACCEPTED",
+        subStatus: input.subStatus,
+        startTime: input.startTime,
+        blocksTime: blocksTimeFor(input.type),
+        creatorId: input.creatorId,
+        accepterId: input.accepterId,
+        acceptedAt: now,
+        conflictGroupId: input.conflictGroupId,
+      },
+      select: engineActivitySelect,
+    });
+    if (input.afterCreate) await input.afterCreate(tx, activity);
+
+    if (activity.blocksTime) {
+      await assertNoTimeConflict(tx, {
+        userIds: [input.creatorId, input.accepterId],
+        slots: [activity.startTime],
+        excludeActivityIds: [activity.id],
+        conflictGroupId: activity.conflictGroupId,
+      });
+    }
+    await recordCreation(tx, activity, actor);
+    const opened = { status: "OPEN" as const, subStatus: null };
+    const chatEvent = await postTransitionMessage(tx, activity, opened, { status: activity.status, subStatus: activity.subStatus }, {
+      senderId: input.accepterId,
+      body: null,
+    });
+    return {
+      before: { ...activity, ...opened, accepterId: null },
+      activity,
+      events: [transitionEvent({ ...activity, ...opened }, activity, "ACCEPT", actor, now)],
+      chatEvents: chatEvent ? [chatEvent] : [],
+    };
+  });
+
+  await afterActivityCommit([outcome]);
+  return outcome.activity;
 }
 
 // Records the first status of an activity created directly in a later state

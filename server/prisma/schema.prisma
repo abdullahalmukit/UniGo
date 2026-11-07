@@ -158,6 +158,20 @@ enum PostStatus {
   CLOSED
 }
 
+// B3a: why a ride offer was CLOSED
+enum RideOfferCloseReason {
+  // Reached its departure time
+  DEPARTED
+  // The rider cancelled it; its accepted bookings were cancelled
+  CANCELLED_BY_RIDER
+  // The rider stopped new bookings; accepted bookings carry on
+  STOPPED_BY_RIDER
+  // The rider removed it before anyone booked
+  REMOVED_BY_RIDER
+  // The rider's account was restricted, suspended or banned
+  ACCOUNT_MODERATED
+}
+
 enum CarpoolContractStatus {
   ACTIVE
   ENDED
@@ -801,27 +815,28 @@ model RideRequest {
 
 // Parent post, not an activity. Each booking is its own activity.
 model RideOffer {
-  id                 String     @id @default(uuid(7)) @db.Char(36)
-  riderId            String     @map("rider_id") @db.Char(36)
-  vehicleId          String     @map("vehicle_id") @db.Char(36)
-  pickupAddress      String     @map("pickup_address") @db.VarChar(255)
-  pickupLat          Decimal    @map("pickup_lat") @db.Decimal(9, 6)
-  pickupLng          Decimal    @map("pickup_lng") @db.Decimal(9, 6)
-  destinationAddress String     @map("destination_address") @db.VarChar(255)
-  destinationLat     Decimal    @map("destination_lat") @db.Decimal(9, 6)
-  destinationLng     Decimal    @map("destination_lng") @db.Decimal(9, 6)
-  departureTime      DateTime   @map("departure_time")
-  farePerSeat        Decimal    @map("fare_per_seat") @db.Decimal(10, 2)
-  totalSeats         Int        @map("total_seats") @db.TinyInt
+  id                 String                @id @default(uuid(7)) @db.Char(36)
+  riderId            String                @map("rider_id") @db.Char(36)
+  vehicleId          String                @map("vehicle_id") @db.Char(36)
+  pickupAddress      String                @map("pickup_address") @db.VarChar(255)
+  pickupLat          Decimal               @map("pickup_lat") @db.Decimal(9, 6)
+  pickupLng          Decimal               @map("pickup_lng") @db.Decimal(9, 6)
+  destinationAddress String                @map("destination_address") @db.VarChar(255)
+  destinationLat     Decimal               @map("destination_lat") @db.Decimal(9, 6)
+  destinationLng     Decimal               @map("destination_lng") @db.Decimal(9, 6)
+  departureTime      DateTime              @map("departure_time")
+  farePerSeat        Decimal               @map("fare_per_seat") @db.Decimal(10, 2)
+  totalSeats         Int                   @map("total_seats") @db.TinyInt
   // Changed only by conditional updates (seatsAvailable >= n) inside the booking transaction.
-  seatsAvailable     Int        @map("seats_available") @db.TinyInt
-  notes              String?    @db.Text
-  subAreaId          String?    @map("sub_area_id") @db.Char(36)
-  routeDistanceKm    Decimal?   @map("route_distance_km") @db.Decimal(7, 2)
-  status             PostStatus @default(OPEN)
-  closedAt           DateTime?  @map("closed_at")
-  createdAt          DateTime   @default(now()) @map("created_at")
-  updatedAt          DateTime   @updatedAt @map("updated_at")
+  seatsAvailable     Int                   @map("seats_available") @db.TinyInt
+  notes              String?               @db.Text
+  subAreaId          String?               @map("sub_area_id") @db.Char(36)
+  routeDistanceKm    Decimal?              @map("route_distance_km") @db.Decimal(7, 2)
+  status             PostStatus            @default(OPEN)
+  closedAt           DateTime?             @map("closed_at")
+  closeReason        RideOfferCloseReason? @map("close_reason")
+  createdAt          DateTime              @default(now()) @map("created_at")
+  updatedAt          DateTime              @updatedAt @map("updated_at")
 
   rider    User          @relation(fields: [riderId], references: [id])
   vehicle  Vehicle       @relation(fields: [vehicleId], references: [id])
@@ -830,6 +845,8 @@ model RideOffer {
 
   @@index([status, departureTime])
   @@index([riderId, status])
+  // B3a: a rider's own offers near a time (overlap checks)
+  @@index([riderId, departureTime])
   @@index([vehicleId])
   @@index([subAreaId])
   @@map("ride_offers")
@@ -841,6 +858,8 @@ model RideBooking {
   activityId  String   @unique @map("activity_id") @db.Char(36)
   rideOfferId String   @map("ride_offer_id") @db.Char(36)
   seatsBooked Int      @default(1) @map("seats_booked") @db.TinyInt
+  // B3a: fare per seat x seats when booked; later changes never alter it
+  amount      Decimal  @db.Decimal(10, 2)
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt @map("updated_at")
 

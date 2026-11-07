@@ -1,28 +1,23 @@
-// Place search and address lookup with OpenStreetMap Nominatim (CLAUDE.md 9,
-// Maps). Its usage policy allows at most 1 request per second, so every
-// request waits its turn in one queue, and answers are cached in memory and in
-// sessionStorage. Callers debounce typing before calling `search`.
+import { api } from "./api";
+
+// Place search and address lookup (CLAUDE.md 9, Maps). Since B3a they go
+// through the UniGo server (/api/geo), which keeps OpenStreetMap Nominatim's
+// one-request-per-second rule for the whole app and caches answers. Here the
+// answers are also cached in memory and in sessionStorage; callers debounce
+// typing before calling `search`.
 
 export type Place = { label: string; lat: number; lng: number };
 
 export type GeocoderDeps = {
-  fetch: typeof fetch;
-  now?: () => number;
-  sleep?: (ms: number) => Promise<void>;
+  // GET a path of the UniGo API (e.g. "/geo/search?q=...")
+  get: (path: string) => Promise<unknown>;
   storage?: Pick<Storage, "getItem" | "setItem"> | null;
-  baseUrl?: string;
 };
 
-const MIN_INTERVAL_MS = 1000;
 const CACHE_PREFIX = "unigo.geo.";
 
 export function createGeocoder(deps: GeocoderDeps) {
-  const now = deps.now ?? Date.now;
-  const sleep = deps.sleep ?? ((ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms)));
-  const baseUrl = deps.baseUrl ?? "https://nominatim.openstreetmap.org";
   const memory = new Map<string, unknown>();
-  let queue: Promise<unknown> = Promise.resolve();
-  let lastRequestAt = -Infinity;
 
   function cached<T>(key: string): T | undefined {
     if (memory.has(key)) return memory.get(key) as T;
@@ -48,31 +43,24 @@ export function createGeocoder(deps: GeocoderDeps) {
     }
   }
 
-  // Runs requests one after another, at least MIN_INTERVAL_MS apart.
-  function throttled<T>(task: () => Promise<T>): Promise<T> {
-    const run = queue.then(async () => {
-      const wait = lastRequestAt + MIN_INTERVAL_MS - now();
-      if (wait > 0) await sleep(wait);
-      lastRequestAt = now();
-      return task();
-    });
-    queue = run.catch(() => undefined);
-    return run;
-  }
+  // The same question asked twice at once waits for one answer.
+  const pending = new Map<string, Promise<unknown>>();
 
-  async function lookup<T>(key: string, url: string, parse: (body: unknown) => T): Promise<T> {
+  async function lookup<T>(key: string, path: string, parse: (body: unknown) => T): Promise<T> {
     const hit = cached<T>(key);
     if (hit !== undefined) return hit;
-    return throttled(async () => {
-      // Asked again while waiting in the queue
-      const again = cached<T>(key);
-      if (again !== undefined) return again;
-      const response = await deps.fetch(url, { headers: { Accept: "application/json" } });
-      if (!response.ok) throw new Error(`Nominatim answered ${response.status}`);
-      const value = parse(await response.json());
-      remember(key, value);
-      return value;
-    });
+    const running = pending.get(key) as Promise<T> | undefined;
+    if (running) return running;
+    const request = deps
+      .get(path)
+      .then((body) => {
+        const value = parse(body);
+        remember(key, value);
+        return value;
+      })
+      .finally(() => pending.delete(key));
+    pending.set(key, request);
+    return request;
   }
 
   return {
@@ -80,31 +68,22 @@ export function createGeocoder(deps: GeocoderDeps) {
     search(query: string, language: "bn" | "en"): Promise<Place[]> {
       const q = query.trim().replace(/\s+/g, " ");
       if (q.length < 3) return Promise.resolve([]);
-      const params = new URLSearchParams({
-        q,
-        format: "jsonv2",
-        countrycodes: "bd",
-        limit: "6",
-        "accept-language": language,
+      const params = new URLSearchParams({ q, lang: language });
+      return lookup(`s:${language}:${q.toLowerCase()}`, `/geo/search?${params}`, (body) => {
+        const places = (body as { places?: unknown } | null)?.places;
+        return Array.isArray(places) ? (places as Place[]) : [];
       });
-      return lookup(`s:${language}:${q.toLowerCase()}`, `${baseUrl}/search?${params}`, (body) =>
-        (Array.isArray(body) ? body : []).map((item: { display_name: string; lat: string; lon: string }) => ({
-          label: item.display_name,
-          lat: Number(item.lat),
-          lng: Number(item.lon),
-        })),
-      );
     },
 
-    // The address at a point, or null when Nominatim has none.
+    // The address at a point, or null when there is none.
     reverse(lat: number, lng: number, language: "bn" | "en"): Promise<string | null> {
       // About 1 m: moving the map a hair does not cost a request.
       const la = lat.toFixed(5);
       const ln = lng.toFixed(5);
-      const params = new URLSearchParams({ lat: la, lon: ln, format: "jsonv2", zoom: "18", "accept-language": language });
-      return lookup(`r:${language}:${la},${ln}`, `${baseUrl}/reverse?${params}`, (body) => {
-        const name = (body as { display_name?: unknown }).display_name;
-        return typeof name === "string" ? name : null;
+      const params = new URLSearchParams({ lat: la, lng: ln, lang: language });
+      return lookup(`r:${language}:${la},${ln}`, `/geo/reverse?${params}`, (body) => {
+        const address = (body as { address?: unknown } | null)?.address;
+        return typeof address === "string" ? address : null;
       });
     },
   };
@@ -120,5 +99,5 @@ function sessionStorageOrNull() {
   }
 }
 
-// The app's one geocoder, so the 1-per-second rule holds across every page.
-export const geocoder = createGeocoder({ fetch: (...args) => fetch(...args), storage: sessionStorageOrNull() });
+// The app's one geocoder, with one cache for every page.
+export const geocoder = createGeocoder({ get: (path) => api<unknown>(path), storage: sessionStorageOrNull() });
