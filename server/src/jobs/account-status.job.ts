@@ -1,16 +1,17 @@
 import { prisma } from "../lib/prisma.js";
 import { afterAccountLocked, onAccountLocked } from "../modules/admin/account-hooks.js";
-import { accountStatusEmail } from "../modules/email/account-status-templates.js";
-import { sendEmailInBackground } from "../modules/email/email.service.js";
-import { riderEmail } from "../modules/email/rider-templates.js";
+import { notify } from "../modules/notifications/notify.service.js";
 import { validLicenceFilter } from "../modules/riders/rider-status.js";
+import { dhakaDateString } from "../utils/time.js";
 
 // Ends temporary statuses (CLAUDE.md section 8, A8 decision 5):
 // - starts a suspension booked for later once its start date arrives;
-// - returns a suspension to ACTIVE at its end date and emails the user;
-// - returns a restriction with an end date to ACTIVE and emails the user;
-// - sets riders with an expired licence Inactive (B1);
-// - lifts rider suspensions at their end date and emails the rider (B1).
+// - returns a suspension to ACTIVE at its end date and notifies the user;
+// - returns a restriction with an end date to ACTIVE and notifies the user;
+// - sets riders with an expired licence Inactive and notifies them (B1, B2c);
+// - lifts rider suspensions at their end date and notifies the rider (B1).
+// Notifications are in-app and email, always sent (B2c), each with a fixed
+// dedupe key, so a second run never sends one twice.
 // Idempotent: every change is conditional on the state it was found in, so a
 // second run (or two servers) changes nothing twice. Not an admin action, so
 // no Audit Log row; the original suspend or restrict entry holds the end date.
@@ -76,7 +77,7 @@ async function endEach(
 ) {
   const users = await prisma.user.findMany({
     where,
-    select: { id: true, email: true, language: true, profile: { select: { fullName: true } } },
+    select: { id: true, suspendedUntil: true, restrictedUntil: true },
     take: BATCH,
   });
   let count = 0;
@@ -84,9 +85,12 @@ async function endEach(
     const result = await prisma.user.updateMany({ where: { ...where, id: user.id }, data });
     if (result.count === 0) continue;
     count += 1;
-    sendEmailInBackground(kind.toLowerCase(), {
-      to: user.email,
-      ...accountStatusEmail(user.language, kind, { name: user.profile?.fullName ?? "" }),
+    const ended = (kind === "SUSPENSION_ENDED" ? user.suspendedUntil : user.restrictedUntil)?.getTime() ?? 0;
+    await notify({
+      type: "ACCOUNT_STATUS_CHANGED",
+      userIds: [user.id],
+      dedupeKey: `ACCOUNT_STATUS_CHANGED:${kind}:${user.id}:${ended}`,
+      data: { kind },
     });
   }
   return count;
@@ -94,13 +98,24 @@ async function endEach(
 
 // B1 decision 6: an Active rider whose licence expiry day has ended (Asia/Dhaka)
 // is set Inactive. They can switch Active again once a re-verification with a
-// later expiry date is approved. No email: B2 adds expiry reminders.
+// later expiry date is approved. B2c: the rider is told (RIDER_ACCESS_CHANGED,
+// in-app and email, always sent).
 async function deactivateExpiredLicences(now: Date) {
   const where = { riderActive: true, riderApplications: { none: validLicenceFilter(now) } };
   const users = await prisma.user.findMany({ where, select: { id: true }, take: BATCH });
-  if (users.length === 0) return 0;
-  const result = await prisma.user.updateMany({ where: { ...where, id: { in: users.map((u) => u.id) } }, data: { riderActive: false } });
-  return result.count;
+  let count = 0;
+  for (const { id } of users) {
+    const result = await prisma.user.updateMany({ where: { ...where, id }, data: { riderActive: false } });
+    if (result.count === 0) continue;
+    count += 1;
+    await notify({
+      type: "RIDER_ACCESS_CHANGED",
+      userIds: [id],
+      dedupeKey: `RIDER_ACCESS_CHANGED:LICENCE_EXPIRED:${id}:${dhakaDateString(now)}`,
+      data: { kind: "LICENCE_EXPIRED" },
+    });
+  }
+  return count;
 }
 
 // B1 decision 8: a rider suspension with an end date is lifted then. The rider
@@ -112,7 +127,7 @@ function endRiderSuspensions(now: Date) {
 async function endEachRider(where: Record<string, unknown>) {
   const users = await prisma.user.findMany({
     where,
-    select: { id: true, email: true, language: true, profile: { select: { fullName: true } } },
+    select: { id: true, riderSuspendedUntil: true },
     take: BATCH,
   });
   let count = 0;
@@ -123,9 +138,11 @@ async function endEachRider(where: Record<string, unknown>) {
     });
     if (result.count === 0) continue;
     count += 1;
-    sendEmailInBackground("rider suspension ended", {
-      to: user.email,
-      ...riderEmail(user.language, "SUSPENSION_ENDED", { name: user.profile?.fullName ?? "" }),
+    await notify({
+      type: "RIDER_ACCESS_CHANGED",
+      userIds: [user.id],
+      dedupeKey: `RIDER_ACCESS_CHANGED:SUSPENSION_ENDED:${user.id}:${user.riderSuspendedUntil?.getTime() ?? 0}`,
+      data: { kind: "SUSPENSION_ENDED" },
     });
   }
   return count;

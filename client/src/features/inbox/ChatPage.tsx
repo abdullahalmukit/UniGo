@@ -83,6 +83,8 @@ export function ChatPage() {
     loadLatest().catch((error) => setLoadError(formErrors(error, t).form ?? t("errors.generic")));
 
     const leave = chatSocket.joinChat(chatId);
+    // No push or notification for this chat while it is on screen (B2c)
+    chatSocket.setViewingChat(chatId);
     const stops = [
       chatSocket.on("message:new", (message: ChatMessage) => {
         if (message.chatId !== chatId) return;
@@ -97,6 +99,7 @@ export function ChatPage() {
       chatSocket.on("connect", () => void loadLatest().catch(() => undefined)),
     ];
     return () => {
+      chatSocket.setViewingChat(null);
       leave();
       stops.forEach((stop) => stop());
     };

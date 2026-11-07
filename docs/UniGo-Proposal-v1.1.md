@@ -471,7 +471,7 @@ UniGo sends notifications through three channels so users do not miss updates wh
 
 1. **In-app:** bell with unread count and a Notifications page.
 2. **Web Push (PWA):** browser push even when UniGo is closed, if the user enables it and the device supports it.
-3. **Email (fallback):** for important events: acceptance, booking, cancellation, disputes, verification results and reminders.
+3. **Email (fallback):** for important events: acceptance, booking, cancellation, disputes and verification results.
 
 Users can turn Web Push on or off. The system sends notifications on status transitions and prevents duplicates (one notification per event per user per channel).
 
@@ -496,6 +496,18 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | Promo, spotlight or announcement | All or selected users | In-app, push |
 | Account status changed (warned, restricted, suspended, banned, unbanned) | Affected user | In-app, email |
 | Password reset requested / password changed | Account owner | Email |
+| Licence expiry reminder (30 and 7 days before) | Rider | In-app, email |
+| The other participant's account was restricted, suspended or banned | Other participant of each accepted activity | In-app, push, email |
+| Rider access changed (suspended, reinstated, suspension ended, Inactive because the licence expired) | Rider | In-app, email |
+
+Rules for all notifications:
+
+- Text is in the recipient's saved language (Bangla or English). Each notification opens the page it is about.
+- The email switch in Account › Notifications covers activity emails only. Password, verification, account status and rider emails are always sent.
+- Web Push is switched on per device. A device keeps one subscription; a subscription the push service no longer knows is deleted. Logging out removes the device's subscription, and logging out of all devices, a password reset or a password change remove all of them.
+- Chat messages: nothing while the receiver has that chat open. One in-app notification per chat until it is read; a push per message, replacing the previous one for that chat and alerting only for the first. A push never shows the message text, only "New message from <name>".
+- The 30-minute reminder is for accepted rides, food and service requests with a time; an activity accepted less than 30 minutes before its start gets none. Carpool sessions get the ride-day reminder instead: 07:00 Asia/Dhaka, or 60 minutes before the start when that is earlier.
+- Sub-area notifications go to verified students with an active account who saved the sub-area, never to the creator or anyone blocked either way.
 
 ## 15. Trust, safety and privacy
 
@@ -660,11 +672,12 @@ IDs are time-ordered UUIDs (v7), so they cannot be guessed in URLs.
 | Carpool seat hold release | 24 hours after rider accepts, or at start date |
 | Generate carpool sessions | When a contract is created |
 | Monthly payment records | Start of each contract month |
-| Reminders | 30 minutes before start; carpool on ride day |
+| Reminders | 30 minutes before start; carpool on ride day (07:00, or 60 minutes before an earlier start) |
 | Publish blind reviews | When both submit, or 7 days after completion |
-| Licence expiry reminders (Phase 4) | Before expiry date |
+| Licence expiry reminders | 30 and 7 days before the expiry date (checked every hour) |
+| Notification delivery | Push and email sent by a job with retries; sent directly when Redis is unavailable |
 | Close ride offers | At departure time |
-| Safety-net sweep | Every minute: catches any expiry, NOT_MARKED, auto-complete or ride offer closing a delayed job missed |
+| Safety-net sweep | Every minute: catches any expiry, NOT_MARKED, auto-complete or ride offer closing a delayed job missed, reminders that were not sent and push or email notifications still waiting to be sent |
 
 ### 19.3 Non-functional requirements
 

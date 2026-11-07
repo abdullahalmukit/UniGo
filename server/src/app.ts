@@ -12,6 +12,8 @@ import { adminStudentVerificationsRouter } from "./modules/admin/student-verific
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
+import { registerNotificationListeners } from "./modules/notifications/listeners.js";
+import { notificationsRouter, pushRouter, pushSubscriptionsRouter } from "./modules/notifications/notifications.routes.js";
 import { subAreasRouter } from "./modules/subareas/subareas.routes.js";
 import { adminUniversitiesRouter } from "./modules/universities/universities.admin.routes.js";
 import { universitiesRouter } from "./modules/universities/universities.routes.js";
@@ -22,6 +24,9 @@ import { verificationRouter } from "./modules/verification/verification.routes.j
 
 export const app = express();
 
+// B2c: notifications follow activity and chat changes.
+registerNotificationListeners();
+
 app.use(helmet());
 app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
 app.use(express.json({ limit: "1mb" }));
@@ -30,12 +35,15 @@ app.use(cookieParser());
 app.use("/api/health", healthRouter);
 app.use("/api/auth", authRouter);
 app.use("/api/universities", universitiesRouter);
+app.use("/api/me/push-subscriptions", pushSubscriptionsRouter);
 app.use("/api/me", meRouter);
 app.use("/api/sub-areas", subAreasRouter);
 app.use("/api/rider", riderRouter);
 app.use("/api/activities", activitiesRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/reports", reportsRouter);
+app.use("/api/notifications", notificationsRouter);
+app.use("/api/push", pushRouter);
 app.use("/api/verification", verificationRouter);
 app.use("/api/files", filesRouter);
 app.use("/api/admin/student-verifications", adminStudentVerificationsRouter);

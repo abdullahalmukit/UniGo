@@ -68,6 +68,13 @@ export const riderApplicationRateLimit = limiter(
 // B2b: reports, per account.
 export const reportRateLimit = limiter(rules.reports.perUser.window, rules.reports.perUser.max, userKey);
 
+// B2c: saving this device's push subscription
+export const pushSubscribeRateLimit = limiter(
+  rules.notifications.subscribePerUser.window,
+  rules.notifications.subscribePerUser.max,
+  userKey,
+);
+
 // B2b: chat messages, per user, shared by REST and Socket.IO (so it is not an
 // express middleware). A sliding window: at most `max` sends in any `window`.
 const chatSends = new Map<string, number[]>();

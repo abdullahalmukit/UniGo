@@ -7,7 +7,7 @@ import { userFromAccessToken } from "../middleware/authenticate.js";
 import { onChatEvent, type ChatEvent } from "../modules/chat/chat-events.js";
 import { assertChatParticipant, markChatRead, messageViewById, sendTextMessage, unreadTotal } from "../modules/chat/chat.service.js";
 import { AppError } from "../utils/app-error.js";
-import { setSocketServer } from "./registry.js";
+import { setSocketServer, userRoom } from "./registry.js";
 
 // Real-time chat (proposal section 13, B2b decision 5):
 // - a socket signs in with the access token (same checks as REST: signature,
@@ -20,11 +20,14 @@ import { setSocketServer } from "./registry.js";
 // - payloads are built by the chat service views: never an email address.
 
 type Ack = (response: unknown) => void;
-type SocketData = { userId: string; expiresAt: Date; expiryTimer?: NodeJS.Timeout };
+// viewingChatId (B2c): the chat this tab shows while the tab is visible; no
+// push or in-app notification for its messages then.
+type SocketData = { userId: string; expiresAt: Date; expiryTimer?: NodeJS.Timeout; viewingChatId?: string | null };
 
 const chatIdSchema = z.string().trim().min(1).max(64);
 const sendSchema = z.object({ chatId: chatIdSchema, body: z.string() });
 const readSchema = z.object({ chatId: chatIdSchema, upTo: z.string().trim().min(1).max(64).optional() });
+const viewingSchema = z.object({ chatId: chatIdSchema.nullable(), visible: z.boolean() });
 
 function errorPayload(error: unknown) {
   if (error instanceof AppError) return { error: { ...error.data, code: error.code, message: error.message } };
@@ -33,7 +36,6 @@ function errorPayload(error: unknown) {
   return { error: { code: "INTERNAL_ERROR", message: "Something went wrong" } };
 }
 
-const userRoom = (userId: string) => `user:${userId}`;
 const chatRoom = (chatId: string) => `chat:${chatId}`;
 
 function scheduleExpiry(socket: Socket) {
@@ -99,7 +101,9 @@ export function attachSockets(httpServer: HttpServer) {
 
     socket.on("chat:leave", async (chatId: unknown) => {
       const parsed = chatIdSchema.safeParse(chatId);
-      if (parsed.success) await socket.leave(chatRoom(parsed.data));
+      if (!parsed.success) return;
+      if (data.viewingChatId === parsed.data) data.viewingChatId = null;
+      await socket.leave(chatRoom(parsed.data));
     });
 
     socket.on("message:send", async (payload: unknown, ack?: Ack) => {
@@ -110,6 +114,23 @@ export function attachSockets(httpServer: HttpServer) {
         ack?.(errorPayload(error));
         // A suspended or banned account loses its connection at once.
         if (error instanceof AppError && (error.code === "ACCOUNT_SUSPENDED" || error.code === "ACCOUNT_BANNED")) socket.disconnect(true);
+      }
+    });
+
+    // B2c: which chat this tab shows, and whether the tab is visible.
+    socket.on("chat:viewing", async (payload: unknown, ack?: Ack) => {
+      try {
+        const { chatId, visible } = viewingSchema.parse(payload);
+        if (chatId && visible) {
+          await assertChatParticipant(userId, chatId);
+          data.viewingChatId = chatId;
+        } else {
+          data.viewingChatId = null;
+        }
+        ack?.({ ok: true });
+      } catch (error) {
+        data.viewingChatId = null;
+        ack?.(errorPayload(error));
       }
     });
 

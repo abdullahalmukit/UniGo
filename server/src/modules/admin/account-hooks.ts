@@ -1,13 +1,15 @@
 import type { AccountStatus, Prisma } from "../../generated/prisma/client.js";
 import { disconnectUserSockets } from "../../sockets/registry.js";
+import { runInBackground } from "../../utils/background.js";
+import { notifyParticipantsOfLockedUser } from "../notifications/activity-notifications.js";
 import { afterActivityCommit, applyTransition, engineActivitySelect, type TransitionOutcome } from "../activities/engine.js";
 import type { ActorRef } from "../activities/transitions.js";
 
 export type AccountLockResult = {
   // Status changes to pass to afterActivityCommit() once the transaction commits
   outcomes: TransitionOutcome[];
-  // The user's accepted and ongoing activities, which stay as they are; B2c
-  // notifies the other participant of each one.
+  // The user's accepted and ongoing activities, which stay as they are; the
+  // other participant of each one is notified (B2c).
   acceptedActivityIds: string[];
 };
 
@@ -61,7 +63,9 @@ export async function onAccountLocked(
 // After the transaction has committed: queue the jobs and push the system
 // messages of the closed items, and disconnect every socket of a suspended or
 // banned account at once (B2b decision 5). A restricted user keeps chatting.
+// The other participants of the accepted activities are notified (B2c).
 export async function afterAccountLocked(userId: string, result: AccountLockResult, status: AccountStatus) {
   await afterActivityCommit(result.outcomes);
   if (status === "SUSPENDED" || status === "BANNED") disconnectUserSockets(userId);
+  runInBackground("locked account notifications", () => notifyParticipantsOfLockedUser(userId, result.acceptedActivityIds, status));
 }

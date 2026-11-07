@@ -3,6 +3,8 @@ import { prisma } from "../../src/lib/prisma.js";
 import { scheduledJobs } from "../../src/jobs/scheduler.js";
 import { resetRateLimits } from "../../src/middleware/rate-limit.js";
 import { sentEmails } from "../../src/modules/email/email.service.js";
+import { useDeliveryQueueForTests } from "../../src/modules/notifications/notify.service.js";
+import { failingPushEndpoints, sentPushes } from "../../src/modules/notifications/push.transport.js";
 import { settleBackgroundTasks } from "../../src/utils/background.js";
 
 let tables: string[] | undefined;
@@ -28,6 +30,10 @@ beforeEach(async () => {
   resetRateLimits();
   sentEmails.length = 0;
   scheduledJobs.clear();
+  // B2c: pushes "sent", failing endpoints, delivery straight away (not by job)
+  sentPushes.length = 0;
+  failingPushEndpoints.clear();
+  useDeliveryQueueForTests(false);
 });
 
 afterAll(async () => {

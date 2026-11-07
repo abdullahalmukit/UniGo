@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -15,6 +15,8 @@ vi.mock("../../lib/api", async (importOriginal) => ({
   session: { getState: () => state.current, subscribe: () => () => {}, logout: vi.fn(), signIn: vi.fn(), updateUser: vi.fn() },
 }));
 vi.mock("../../lib/google-identity", () => ({ googleClientId: undefined, loadGoogleIdentity: vi.fn() }));
+const push = vi.hoisted(() => ({ pushState: vi.fn(), enablePush: vi.fn(), disablePush: vi.fn() }));
+vi.mock("../../lib/push", async (importOriginal) => ({ ...(await importOriginal<typeof import("../../lib/push")>()), ...push }));
 vi.mock("../verification/verification-api", () => ({
   getStudentVerification: vi.fn().mockResolvedValue({ status: "VERIFIED" }),
 }));
@@ -257,16 +259,50 @@ describe("My Sub-Areas", () => {
 });
 
 describe("Notification settings", () => {
-  it("keeps Web Push off until B2 and saves the email setting", async () => {
+  it("turns Web Push on for this device and saves the email setting", async () => {
+    push.pushState.mockResolvedValue("off");
+    push.enablePush.mockResolvedValue("on");
     accountApi.updatePreferences.mockResolvedValue(me);
     renderAt("/account/notifications");
 
-    expect(await screen.findByRole("switch", { name: "Push notifications" })).toBeDisabled();
-    expect(screen.getByText("Coming in a later update.")).toBeInTheDocument();
+    const pushSwitch = await screen.findByRole("switch", { name: "Push notifications" });
+    await waitFor(() => expect(pushSwitch).toBeEnabled());
+    expect(pushSwitch).toHaveAttribute("aria-checked", "false");
+    await userEvent.click(pushSwitch);
+    expect(push.enablePush).toHaveBeenCalled();
+    await waitFor(() => expect(pushSwitch).toHaveAttribute("aria-checked", "true"));
+    expect(await screen.findByText("Push notifications turned on for this device.")).toBeInTheDocument();
+
     const email = screen.getByRole("switch", { name: "Activity emails" });
     expect(email).toHaveAttribute("aria-checked", "true");
     await userEvent.click(email);
     expect(accountApi.updatePreferences).toHaveBeenCalledWith({ emailNotificationsEnabled: false });
+  });
+});
+
+describe("Notification settings: push states", () => {
+  it("turns push off on this device", async () => {
+    push.pushState.mockResolvedValue("on");
+    push.disablePush.mockResolvedValue("off");
+    renderAt("/account/notifications");
+    const pushSwitch = await screen.findByRole("switch", { name: "Push notifications" });
+    await waitFor(() => expect(pushSwitch).toHaveAttribute("aria-checked", "true"));
+    await userEvent.click(pushSwitch);
+    expect(push.disablePush).toHaveBeenCalled();
+    await waitFor(() => expect(pushSwitch).toHaveAttribute("aria-checked", "false"));
+  });
+
+  it("explains when the browser blocks notifications or cannot show them", async () => {
+    push.pushState.mockResolvedValue("denied");
+    renderAt("/account/notifications");
+    expect(await screen.findByText(/Notifications are blocked for UniGo in this browser/)).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Push notifications" })).toBeDisabled();
+    cleanup();
+
+    push.pushState.mockResolvedValue("unsupported");
+    renderAt("/account/notifications");
+    expect(await screen.findByText(/This browser cannot show push notifications/)).toBeInTheDocument();
+    expect(screen.getByRole("switch", { name: "Push notifications" })).toBeDisabled();
   });
 });
 

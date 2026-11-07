@@ -4,8 +4,9 @@ import type { AccountStatus, ModerationActionType } from "../../generated/prisma
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { accountStatusSelect, effectiveAccountStatus } from "../auth/account-status.js";
-import { accountStatusEmail, type AccountEmailKind } from "../email/account-status-templates.js";
-import { sendEmailInBackground } from "../email/email.service.js";
+import type { AccountEmailKind } from "../email/account-status-templates.js";
+import { notify } from "../notifications/notify.service.js";
+import { runInBackground } from "../../utils/background.js";
 import { afterAccountLocked, onAccountLocked } from "./account-hooks.js";
 import { recordAudit } from "./audit-log.js";
 
@@ -98,7 +99,8 @@ export async function applyAccountAction(
     const newStatus = action === "suspend" ? "SUSPENDED" : effectiveAccountStatus(after, now);
     const period = actionPeriod(action, after);
 
-    await tx.moderationAction.create({
+    const moderation = await tx.moderationAction.create({
+      select: { id: true },
       data: {
         userId,
         adminId,
@@ -125,19 +127,25 @@ export async function applyAccountAction(
     const locks = action === "restrict" || action === "ban" || (action === "suspend" && effectiveAccountStatus(after, now) === "SUSPENDED");
     const locked = locks ? await onAccountLocked(tx, userId, { type: "ADMIN", id: adminId }, now) : null;
 
-    return { user, period, newStatus, locked };
+    return { user, period, newStatus, locked, moderationId: moderation.id };
   });
 
   if (result.locked) await afterAccountLocked(userId, result.locked, result.newStatus);
 
-  sendEmailInBackground(`account ${action}`, {
-    to: result.user.email,
-    ...accountStatusEmail(result.user.language, action.toUpperCase() as AccountEmailKind, {
-      name: result.user.profile?.fullName ?? "",
-      reason: input.reason,
-      ...result.period,
+  // In-app and email, always sent (proposal section 14, B2c)
+  runInBackground(`account ${action} notification`, () =>
+    notify({
+      type: "ACCOUNT_STATUS_CHANGED",
+      userIds: [userId],
+      dedupeKey: `ACCOUNT_STATUS_CHANGED:${result.moderationId}`,
+      data: {
+        kind: action.toUpperCase() as AccountEmailKind,
+        reason: input.reason,
+        startsAt: result.period.startsAt?.toISOString(),
+        endsAt: result.period.endsAt?.toISOString(),
+      },
     }),
-  });
+  );
 
   return { accountStatus: result.newStatus, ...result.period };
 }

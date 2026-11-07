@@ -6,6 +6,7 @@ import { accountStatusSelect, assertCanAccess, effectiveAccountStatus } from "./
 import type { LoginInput, RegisterInput } from "./auth.validation.js";
 import { burnPasswordCheck, hashPassword, verifyPassword } from "./password.js";
 import { photoLink } from "../users/photo.js";
+import { removeAllPushSubscriptions } from "../notifications/notifications.service.js";
 import { hashToken, invalidRefreshToken, signAccessToken, signRefreshToken, verifyRefreshToken } from "./tokens.js";
 
 export type SessionMeta = { userAgent?: string; ipAddress?: string };
@@ -172,12 +173,14 @@ export async function logout(token: string | undefined) {
 
 // Ends every session: refresh tokens are revoked and access tokens issued
 // up to now stop working at once (users.tokensValidAfter).
+// No device keeps receiving pushes (B2c).
 export async function logoutAll(userId: string) {
   const now = new Date();
   await prisma.$transaction([
     prisma.refreshToken.updateMany({ where: { userId, revokedAt: null }, data: { revokedAt: now } }),
     prisma.user.update({ where: { id: userId }, data: { tokensValidAfter: now } }),
   ]);
+  await removeAllPushSubscriptions(userId);
 }
 
 export async function getMe(userId: string) {

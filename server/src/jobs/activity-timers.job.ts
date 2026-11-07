@@ -2,6 +2,8 @@ import { rules } from "../config/rules.js";
 import { prisma } from "../lib/prisma.js";
 import { transitionActivity } from "../modules/activities/engine.js";
 import { NOT_COMPLETION_REQUESTED, NOT_MARKED_TYPES, OPEN_REQUEST_TYPES } from "../modules/activities/transitions.js";
+import { deliverNotification } from "../modules/notifications/notify.service.js";
+import { sendMissedReminders } from "./reminders.job.js";
 
 // Handlers of the delayed activity jobs and the safety-net sweeper
 // (CLAUDE.md section 8, B2a decisions 10 and 11). Each handler re-reads the
@@ -97,5 +99,32 @@ export async function runActivitySweep(now = new Date()) {
     data: { status: "CLOSED", closedAt: now },
   });
 
-  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count };
+  // B2c: reminders that are due but were never sent, and push or email rows a
+  // lost delivery job left PENDING.
+  const remindersSent = await sendMissedReminders(now);
+  const notificationsDelivered = await deliverStaleNotifications(now);
+
+  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count, remindersSent, notificationsDelivered };
+}
+
+// A row still PENDING this long after it was written lost its job (Redis
+// data lost, server down). Sent once; rows older than a day are left alone.
+const STALE_AFTER = 2 * 60 * 1000;
+const GIVE_UP_AFTER = 24 * 60 * 60 * 1000;
+
+async function deliverStaleNotifications(now: Date) {
+  const rows = await prisma.notification.findMany({
+    where: { status: "PENDING", channel: { in: ["PUSH", "EMAIL"] }, createdAt: { lte: ago(now, STALE_AFTER), gt: ago(now, GIVE_UP_AFTER) } },
+    select: { id: true },
+    take: rules.jobs.sweepBatch,
+  });
+  let delivered = 0;
+  for (const { id } of rows) {
+    try {
+      if (await deliverNotification(id, { lastAttempt: true })) delivered += 1;
+    } catch {
+      // Recorded as FAILED on the row
+    }
+  }
+  return delivered;
 }

@@ -3,12 +3,13 @@ import { mimeTypeForKey } from "../../lib/private-storage.js";
 import { signPrivateFileUrl } from "../../lib/signed-files.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
-import { sendEmailInBackground } from "../email/email.service.js";
-import { studentVerificationApprovedEmail, studentVerificationRejectedEmail } from "../email/templates.js";
+import { runInBackground } from "../../utils/background.js";
+import { notify } from "../notifications/notify.service.js";
 import { recordAudit } from "./audit-log.js";
 
 // Admin review of student ID cards (proposal sections 4 and 17.1). Moderators
-// and Super Admins. Every decision is in the Audit Log and emailed to the student.
+// and Super Admins. Every decision is in the Audit Log and sent to the student
+// in-app and by email (B2c).
 
 type ReviewStatus = "PENDING" | "VERIFIED" | "REJECTED";
 
@@ -103,7 +104,7 @@ async function review(
         method: true,
         userId: true,
         user: {
-          select: { email: true, language: true, studentVerificationStatus: true, profile: { select: { fullName: true } } },
+          select: { id: true, studentVerificationStatus: true },
         },
       },
     });
@@ -144,13 +145,14 @@ async function review(
     return row.user;
   });
 
-  const name = student.profile?.fullName ?? "";
-  sendEmailInBackground("student verification result", {
-    to: student.email,
-    ...(reason
-      ? studentVerificationRejectedEmail(student.language, { name, reason })
-      : studentVerificationApprovedEmail(student.language, { name })),
-  });
+  runInBackground("student verification notification", () =>
+    notify({
+      type: "STUDENT_VERIFICATION_RESULT",
+      userIds: [student.id],
+      dedupeKey: `STUDENT_VERIFICATION_RESULT:${verificationId}`,
+      data: { kind: reason ? "REJECTED" : "APPROVED", ...(reason && { reason }) },
+    }),
+  );
 }
 
 const notFound = () => new AppError(404, "VERIFICATION_NOT_FOUND", "Verification not found");

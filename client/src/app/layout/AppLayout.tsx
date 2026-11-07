@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet } from "react-router";
 import { useUnreadTotal } from "../../features/inbox/unread";
+import { useNotificationUnread } from "../../features/notifications/notifications-api";
 import { IconLink } from "./IconLink";
 import { Logo } from "./Logo";
 import { accountLink, bottomTabs, desktopLinks, notificationsLink } from "./nav-items";
@@ -11,8 +12,8 @@ import styles from "./layout.module.css";
 // page; CSS shows the one that fits.
 export function AppLayout() {
   const { t } = useTranslation();
-  // Unread chat messages (B2b); notifications arrive in B2c.
-  const unread = { messages: useUnreadTotal(), notifications: 0 };
+  // Unread chat messages (B2b) and notifications (B2c), kept live by the socket.
+  const unread = { messages: useUnreadTotal(), notifications: useNotificationUnread() };
 
   return (
     <div className={styles.shell}>

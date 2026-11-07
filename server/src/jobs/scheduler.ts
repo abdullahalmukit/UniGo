@@ -9,7 +9,16 @@ import { rules } from "../config/rules.js";
 
 export const QUEUE_NAME = "unigo";
 
-export type TimerJobName = "activity-expire" | "activity-not-marked" | "activity-auto-complete" | "ride-offer-close";
+export type TimerJobName =
+  | "activity-expire"
+  | "activity-not-marked"
+  | "activity-auto-complete"
+  | "ride-offer-close"
+  // B2c
+  | "activity-reminder"
+  | "carpool-session-reminder"
+  | "sub-area-notify"
+  | "notification-deliver";
 
 export type TimerJob = {
   name: TimerJobName;
@@ -19,6 +28,9 @@ export type TimerJob = {
   jobId: string;
   runAt: Date;
   data: { id: string };
+  // Overrides of defaultJobOptions (B2c: delivery retries)
+  attempts?: number;
+  backoffMs?: number;
 };
 
 // Finished and failed jobs are removed at once (B2a decision 10), so Redis
@@ -98,15 +110,30 @@ async function onTimerQueue(label: string, operation: (queue: Queue) => Promise<
 // Queues the jobs. Called only after the database transaction has committed,
 // so a rolled-back change never leaves a job behind. Never throws.
 export async function scheduleTimerJobs(jobs: readonly TimerJob[]) {
-  for (const job of jobs) {
-    if (driver === "memory") {
-      scheduledJobs.set(job.jobId, job);
-      continue;
-    }
-    await onTimerQueue(`queue job ${job.name}`, (queue) =>
-      queue.add(job.name, job.data, { jobId: job.jobId, delay: Math.max(0, job.runAt.getTime() - Date.now()) }),
-    );
+  for (const job of jobs) await queueJob(job);
+}
+
+// Queues one job. True when it was queued (or recorded in memory); false when
+// Redis is unavailable, so the caller can do the work another way. Never throws.
+export async function queueJob(job: TimerJob) {
+  if (driver === "memory") {
+    scheduledJobs.set(job.jobId, job);
+    return true;
   }
+  return onTimerQueue(`queue job ${job.name}`, (queue) =>
+    queue.add(job.name, job.data, {
+      jobId: job.jobId,
+      delay: Math.max(0, job.runAt.getTime() - Date.now()),
+      ...(job.attempts !== undefined && { attempts: job.attempts }),
+      ...(job.backoffMs !== undefined && { backoff: { type: "exponential", delay: job.backoffMs } }),
+    }),
+  );
+}
+
+// Which driver queues jobs now: "memory" in tests (unless a test switched to
+// BullMQ), "bullmq" everywhere else.
+export function jobsDriver() {
+  return driver;
 }
 
 // Removes jobs that are no longer needed. Best effort: a job that still runs

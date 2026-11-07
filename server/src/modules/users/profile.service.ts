@@ -5,9 +5,8 @@ import { AppError } from "../../utils/app-error.js";
 import { runInBackground } from "../../utils/background.js";
 import { getMe, openSession, type SessionMeta } from "../auth/auth.service.js";
 import { hashPassword, verifyPassword } from "../auth/password.js";
-import { requestPasswordReset } from "../auth/password-reset.service.js";
-import { sendEmailInBackground } from "../email/email.service.js";
-import { passwordChangedEmail } from "../email/templates.js";
+import { requestPasswordReset, sendPasswordChanged } from "../auth/password-reset.service.js";
+import { removeAllPushSubscriptions } from "../notifications/notifications.service.js";
 import { processProfilePhoto } from "./photo.js";
 import type { ChangePasswordInput, UpdatePreferencesInput, UpdateProfileInput } from "./users.validation.js";
 
@@ -107,10 +106,10 @@ export async function changePassword(userId: string, input: ChangePasswordInput,
   while (Date.now() <= now.getTime()) await new Promise((resolve) => setTimeout(resolve, 1));
   const session = await openSession(userId, meta);
 
-  sendEmailInBackground("password changed", {
-    to: user.email,
-    ...passwordChangedEmail(user.language, { name: user.profile?.fullName ?? "" }),
-  });
+  // The other devices are logged out, so they stop receiving pushes; this
+  // device saves its subscription again (B2c).
+  await removeAllPushSubscriptions(userId);
+  sendPasswordChanged(userId, now);
   return session;
 }
 

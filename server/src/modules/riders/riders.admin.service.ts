@@ -6,8 +6,8 @@ import { signPrivateFileUrl } from "../../lib/signed-files.js";
 import { AppError } from "../../utils/app-error.js";
 import { dateOnlyString } from "../../utils/time.js";
 import { recordAudit } from "../admin/audit-log.js";
-import { sendEmailInBackground } from "../email/email.service.js";
-import { riderEmail } from "../email/rider-templates.js";
+import { runInBackground } from "../../utils/background.js";
+import { notify } from "../notifications/notify.service.js";
 import { currentLicenceExpiry, licenceExpired, riderSuspensionInForce } from "./rider-status.js";
 
 // Rider Requests in the admin panel (proposal sections 6 and 17, B1 decisions).
@@ -235,14 +235,14 @@ async function decide(
     return row;
   });
 
-  sendEmailInBackground("rider application result", {
-    to: result.user.email,
-    ...riderEmail(result.user.language, decision.status, {
-      name: result.user.profile?.fullName ?? "",
-      reason: reason ?? undefined,
-      reverification: result.kind === "REVERIFICATION",
+  runInBackground("rider application notification", () =>
+    notify({
+      type: "RIDER_VERIFICATION_RESULT",
+      userIds: [result.userId],
+      dedupeKey: `RIDER_VERIFICATION_RESULT:${applicationId}`,
+      data: { kind: decision.status, ...(reason && { reason }), reverification: result.kind === "REVERIFICATION" },
     }),
-  });
+  );
 }
 
 export type RiderFilters = { q?: string; status?: "ACTIVE" | "INACTIVE" | "SUSPENDED"; page: number };
@@ -340,7 +340,8 @@ async function changeRiderAccess(
     });
     if (updated.count === 0) throw new AppError(409, "STATUS_CHANGED", "This rider changed meanwhile. Reload and try again.");
 
-    await tx.moderationAction.create({
+    const moderation = await tx.moderationAction.create({
+      select: { id: true },
       data: { userId, adminId, type, reason, startsAt: suspend ? now : null, endsAt },
     });
     await recordAudit(tx, {
@@ -358,17 +359,17 @@ async function changeRiderAccess(
       },
       ipAddress,
     });
-    return user;
+    return { ...user, moderationId: moderation.id };
   });
 
-  sendEmailInBackground(suspend ? "rider suspended" : "rider reinstated", {
-    to: user.email,
-    ...riderEmail(user.language, suspend ? "SUSPENDED" : "REINSTATED", {
-      name: user.profile?.fullName ?? "",
-      reason,
-      until: endsAt,
+  runInBackground(suspend ? "rider suspended notification" : "rider reinstated notification", () =>
+    notify({
+      type: "RIDER_ACCESS_CHANGED",
+      userIds: [userId],
+      dedupeKey: `RIDER_ACCESS_CHANGED:${user.moderationId}`,
+      data: { kind: suspend ? "SUSPENDED" : "REINSTATED", reason, endsAt: endsAt?.toISOString() },
     }),
-  });
+  );
   return { riderSuspended: suspend, riderSuspendedUntil: endsAt };
 }
 

@@ -95,7 +95,11 @@
   },
   "notifications": {
     "title": "Notifications",
-    "empty": "You're all caught up."
+    "empty": "You're all caught up.",
+    "markAllRead": "Mark all as read",
+    "loadMore": "Load more",
+    "loadFailed": "Could not load your notifications.",
+    "unreadLabel": "Unread"
   },
   "account": {
     "title": "Account & Settings",
@@ -738,12 +742,17 @@
   "notificationSettings": {
     "title": "Notifications",
     "push": "Push notifications",
-    "pushComing": "Coming in a later update.",
     "email": "Activity emails",
-    "emailHint": "Emails when a request is accepted or cancelled, about disputes and reminders.",
+    "emailHint": "Emails when a request is accepted, booked or cancelled, and about disputes.",
     "emailOn": "Activity emails turned on.",
     "emailOff": "Activity emails turned off.",
-    "alwaysSent": "Emails about your password, your account status and your verification are always sent."
+    "alwaysSent": "Emails about your password, your account status and your verification are always sent.",
+    "pushHint": "Get notified on this device even when UniGo is closed.",
+    "pushOn": "Push notifications turned on for this device.",
+    "pushOff": "Push notifications turned off for this device.",
+    "pushDenied": "Notifications are blocked for UniGo in this browser. Allow them in the browser's site settings, then try again.",
+    "pushUnsupported": "This browser cannot show push notifications. On iPhone, add UniGo to your Home Screen first.",
+    "pushFailed": "Could not turn on push notifications. Try again."
   },
   "blocked": {
     "title": "Blocked Users",

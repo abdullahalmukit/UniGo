@@ -1,0 +1,99 @@
+/* Notifications page (B2c). Colours only from theme tokens. */
+
+.page {
+  display: grid;
+  gap: var(--space-4);
+  max-width: 720px;
+}
+
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  overflow: hidden;
+}
+
+.list > li + li {
+  border-top: 1px solid var(--color-border);
+}
+
+.item {
+  display: flex;
+  align-items: flex-start;
+  gap: var(--space-3);
+  width: 100%;
+  min-height: 64px;
+  padding: var(--space-3) var(--space-4);
+  border: 0;
+  background: transparent;
+  color: var(--color-text);
+  font: inherit;
+  text-align: start;
+  cursor: pointer;
+}
+
+.item:hover {
+  background: var(--color-surface-muted);
+}
+
+.item:focus-visible {
+  outline: 2px solid var(--color-focus);
+  outline-offset: -2px;
+}
+
+.dot {
+  flex: none;
+  width: 8px;
+  height: 8px;
+  margin-top: 8px;
+  border-radius: var(--radius-pill);
+  background: transparent;
+}
+
+.unread .dot {
+  background: var(--color-accent);
+}
+
+.text {
+  display: grid;
+  flex: 1;
+  min-width: 0;
+  gap: 2px;
+}
+
+.top {
+  display: flex;
+  align-items: baseline;
+  gap: var(--space-2);
+}
+
+.title {
+  flex: 1;
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.unread .title {
+  font-weight: var(--weight-bold);
+}
+
+.time {
+  flex: none;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.body {
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}

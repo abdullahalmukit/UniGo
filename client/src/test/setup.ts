@@ -23,6 +23,7 @@ vi.mock("../lib/socket", () => ({
       return () => set.delete(handler);
     },
     joinChat: () => () => undefined,
+    setViewingChat: () => undefined,
     emitWithAck: () => Promise.reject(new Error("not connected")),
   },
 }));

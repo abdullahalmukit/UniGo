@@ -210,6 +210,10 @@ enum NotificationType {
   PASSWORD_RESET_REQUESTED
   PASSWORD_CHANGED
   LICENCE_EXPIRY_REMINDER
+  // B2c: the other participant of an accepted activity was restricted, suspended or banned
+  PARTICIPANT_ACCOUNT_LOCKED
+  // B2c: rider access suspended, reinstated, suspension ended, or set Inactive for an expired licence
+  RIDER_ACCESS_CHANGED
 }
 
 enum NotificationChannel {
@@ -1197,6 +1201,8 @@ model Notification {
 
   @@unique([userId, channel, dedupeKey])
   @@index([userId, channel, readAt])
+  // B2c: the Notifications page, newest first
+  @@index([userId, channel, createdAt])
   @@index([status, createdAt])
   @@index([activityId])
   @@map("notifications")

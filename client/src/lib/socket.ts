@@ -9,7 +9,9 @@ import { apiBaseUrl, session } from "./api";
 //   so an idle chat stays connected;
 // - the server disconnects an expired socket ("auth:expired"): reconnect with
 //   a new token; a suspended or banned account is not retried;
-// - rooms of open chats are joined again after a reconnect.
+// - rooms of open chats are joined again after a reconnect;
+// - B2c: tells the server which chat this tab shows while the tab is visible
+//   ("chat:viewing"), so no push or notification arrives for that chat.
 
 export const SOCKET_PATH = "/api/socket";
 const REFRESH_MARGIN_MS = 60_000;
@@ -25,12 +27,26 @@ class ChatSocket {
   private readonly listeners = new Map<string, Set<Handler>>();
   private readonly chats = new Map<string, number>();
   private started = false;
+  private viewing: string | null = null;
 
   start() {
     if (this.started) return;
     this.started = true;
     session.subscribe(() => this.sync());
+    if (typeof document !== "undefined") document.addEventListener("visibilitychange", () => this.sendViewing());
     this.sync();
+  }
+
+  // The chat this tab shows (null when it shows none).
+  setViewingChat(chatId: string | null) {
+    this.viewing = chatId;
+    this.sendViewing();
+  }
+
+  private sendViewing() {
+    if (!this.socket?.connected) return;
+    const visible = typeof document === "undefined" || document.visibilityState === "visible";
+    this.socket.emit("chat:viewing", { chatId: this.viewing, visible });
   }
 
   get connected() {
@@ -106,6 +122,7 @@ class ChatSocket {
     });
     socket.on("connect", () => {
       for (const chatId of this.chats.keys()) socket.emit("chat:join", chatId);
+      this.sendViewing();
       this.dispatch("connect");
     });
     socket.on("auth:expired", () => {

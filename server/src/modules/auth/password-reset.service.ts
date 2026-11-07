@@ -4,8 +4,10 @@ import type { Prisma } from "../../generated/prisma/client.js";
 import { rules } from "../../config/rules.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
-import { sendEmail, sendEmailInBackground } from "../email/email.service.js";
-import { passwordChangedEmail, passwordResetEmail } from "../email/templates.js";
+import { passwordResetEmail } from "../email/templates.js";
+import { notify, notifyWithDirectEmail } from "../notifications/notify.service.js";
+import { removeAllPushSubscriptions } from "../notifications/notifications.service.js";
+import { runInBackground } from "../../utils/background.js";
 import { hashPassword } from "./password.js";
 import { hashToken } from "./tokens.js";
 
@@ -24,23 +26,30 @@ export async function requestPasswordReset(email: string) {
 
   const token = randomBytes(32).toString("base64url");
   const now = new Date();
-  await prisma.$transaction([
+  const [, created] = await prisma.$transaction([
     // Only the newest link works.
     cancelOpenTokens(prisma, user.id, now),
     prisma.passwordResetToken.create({
+      select: { id: true },
       data: { userId: user.id, tokenHash: hashToken(token), expiresAt: new Date(now.getTime() + lifetime) },
     }),
   ]);
 
   // The token goes in the URL fragment, which browsers never send to a server.
   const resetUrl = `${env.CLIENT_URL}/reset-password#token=${token}`;
-  await sendEmail({
-    to: user.email,
-    ...passwordResetEmail(user.language, {
-      name: user.profile?.fullName ?? "",
-      resetUrl,
-      minutes: lifetime / 60_000,
-    }),
+  // Sent at once and never stored: the link is single-use (B2c decision).
+  await notifyWithDirectEmail({
+    type: "PASSWORD_RESET_REQUESTED",
+    userId: user.id,
+    dedupeKey: `PASSWORD_RESET_REQUESTED:${created.id}`,
+    email: {
+      to: user.email,
+      ...passwordResetEmail(user.language, {
+        name: user.profile?.fullName ?? "",
+        resetUrl,
+        minutes: lifetime / 60_000,
+      }),
+    },
   });
 }
 
@@ -70,7 +79,7 @@ export async function resetPassword(token: string, newPassword: string) {
     return tx.user.update({
       where: { id: stored.userId },
       data: { passwordHash, passwordChangedAt: now, tokensValidAfter: now },
-      select: { email: true, language: true, profile: { select: { fullName: true } } },
+      select: { id: true },
     });
   });
 
@@ -78,10 +87,16 @@ export async function resetPassword(token: string, newPassword: string) {
     throw new AppError(400, "INVALID_RESET_TOKEN", "This reset link is invalid or has expired");
   }
 
-  sendEmailInBackground("password changed", {
-    to: user.email,
-    ...passwordChangedEmail(user.language, { name: user.profile?.fullName ?? "" }),
-  });
+  // Every session ended, so no device keeps receiving pushes (B2c).
+  await removeAllPushSubscriptions(user.id);
+  sendPasswordChanged(user.id, now);
+}
+
+// "Password changed" email, always sent (proposal section 14).
+export function sendPasswordChanged(userId: string, at: Date) {
+  runInBackground("password changed notification", () =>
+    notify({ type: "PASSWORD_CHANGED", userIds: [userId], dedupeKey: `PASSWORD_CHANGED:${userId}:${at.getTime()}` }),
+  );
 }
 
 function cancelOpenTokens(db: Prisma.TransactionClient, userId: string, now: Date) {

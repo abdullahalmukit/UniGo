@@ -41,8 +41,10 @@ describe("atomic accept (CLAUDE.md 5.7)", () => {
     expect(await historyOf(ride.id)).toMatchObject([
       { fromStatus: "OPEN", toStatus: "ACCEPTED", toSubStatus: "RIDE_CONFIRMED", actorType: "USER", actorId: rider.id },
     ]);
-    expect([...scheduledJobs.values()].map((job) => job.name)).toEqual(["activity-not-marked"]);
+    // The expiry job is replaced by NOT_MARKED and, since B2c, the 30-minute reminder
+    expect([...scheduledJobs.values()].map((job) => job.name)).toEqual(["activity-not-marked", "activity-reminder"]);
     expect([...scheduledJobs.values()][0].runAt).toEqual(new Date(start.getTime() + 6 * HOUR));
+    expect([...scheduledJobs.values()][1].runAt).toEqual(new Date(start.getTime() - 30 * MINUTE));
   });
 
   it("refuses an item whose start time has passed, without waiting for the expiry job", async () => {

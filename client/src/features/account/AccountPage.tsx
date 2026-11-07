@@ -9,7 +9,7 @@ import { useToast } from "../../components/toast";
 import { buttonStyles, Section } from "../../components/ui";
 import { VerificationChip } from "../../components/VerificationChip";
 import { setLanguage, type AppLanguage } from "../../i18n";
-import { session } from "../../lib/api";
+import { logoutWithPush } from "../../lib/push";
 import { formErrors } from "../../lib/errors";
 import type { ThemeChoice } from "../../lib/theme";
 import { isAdminRole, useAdminRole } from "../admin/admin-ui";
@@ -155,7 +155,7 @@ export function AccountPage() {
       </ul>
 
       {signedIn && (
-        <button type="button" className={`${buttonStyles.secondary} ${styles.logout}`} onClick={() => void session.logout()}>
+        <button type="button" className={`${buttonStyles.secondary} ${styles.logout}`} onClick={() => void logoutWithPush()}>
           <LogOut aria-hidden size={18} />
           {t("account.logout")}
         </button>

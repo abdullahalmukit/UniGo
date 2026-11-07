@@ -1,6 +1,7 @@
 import { rules } from "../../config/rules.js";
 import type { ActivityStatus, ActivitySubStatus, ActivityType } from "../../generated/prisma/client.js";
 import { removeTimerJobs, scheduleTimerJobs, type TimerJob, type TimerJobName } from "../../jobs/scheduler.js";
+import { dhakaDateString, dhakaWallTime } from "../../utils/time.js";
 import { NOT_MARKED_TYPES, OPEN_REQUEST_TYPES } from "./transitions.js";
 
 // Which delayed jobs an activity needs in its current state (CLAUDE.md
@@ -13,7 +14,29 @@ export type TimerSubject = {
   subStatus: ActivitySubStatus | null;
   startTime: Date;
   completionRequestedAt: Date | null;
+  // B2c reminders: a service request without a time (false) gets none
+  blocksTime?: boolean;
 };
+
+// B2c: the 30-minute reminder (proposal section 14) for these types; carpool
+// sessions get the ride-day reminder instead (developer decision Q4).
+export const REMINDER_TYPES = ["RIDE_REQUEST", "RIDE_BOOKING", "FOOD", "SERVICE"] as const satisfies readonly ActivityType[];
+
+// When an accepted activity's reminder is due, or null when it gets none.
+// The caller also needs the activity to have been accepted before this time:
+// an activity accepted later gets no reminder (B2c decision).
+export function reminderTimeFor(activity: { type: ActivityType; startTime: Date; blocksTime?: boolean }): Date | null {
+  if (activity.type === "CARPOOL_SESSION") {
+    const { hour, minute } = rules.notifications.carpoolReminderAt;
+    const morning = dhakaWallTime(dhakaDateString(activity.startTime), hour, minute);
+    const lead = new Date(activity.startTime.getTime() - rules.notifications.carpoolReminderLeadTime);
+    return morning < lead ? morning : lead;
+  }
+  if (!includes(REMINDER_TYPES, activity.type) || activity.blocksTime === false) return null;
+  return new Date(activity.startTime.getTime() - rules.notifications.reminderBeforeStart);
+}
+
+const includes = (types: readonly ActivityType[], type: ActivityType) => types.includes(type);
 
 const job = (name: TimerJobName, id: string, runAt: Date): TimerJob => ({
   name,
@@ -22,9 +45,7 @@ const job = (name: TimerJobName, id: string, runAt: Date): TimerJob => ({
   data: { id },
 });
 
-const includes = (types: readonly ActivityType[], type: ActivityType) => types.includes(type);
-
-export function timerJobsFor(activity: TimerSubject): TimerJob[] {
+export function timerJobsFor(activity: TimerSubject, now = new Date()): TimerJob[] {
   const jobs: TimerJob[] = [];
   if (activity.status === "OPEN" && includes(OPEN_REQUEST_TYPES, activity.type)) {
     jobs.push(job("activity-expire", activity.id, activity.startTime));
@@ -37,6 +58,14 @@ export function timerJobsFor(activity: TimerSubject): TimerJob[] {
       job("activity-auto-complete", activity.id, new Date(activity.completionRequestedAt.getTime() + rules.activity.autoCompleteAfter)),
     );
   }
+  // B2c: reminders, only while ACCEPTED and only if still ahead (an activity
+  // accepted after its reminder time gets none).
+  if (activity.status === "ACCEPTED") {
+    const remindAt = reminderTimeFor(activity);
+    if (remindAt && remindAt > now) {
+      jobs.push(job(activity.type === "CARPOOL_SESSION" ? "carpool-session-reminder" : "activity-reminder", activity.id, remindAt));
+    }
+  }
   return jobs;
 }
 
@@ -46,7 +75,7 @@ export function rideOfferCloseJob(offer: { id: string; departureTime: Date }) {
 }
 
 export function scheduleActivityTimers(activities: readonly TimerSubject[]) {
-  return scheduleTimerJobs(activities.flatMap(timerJobsFor));
+  return scheduleTimerJobs(activities.flatMap((activity) => timerJobsFor(activity)));
 }
 
 // After a change, removes the jobs the old state needed and the new one does not.

@@ -4,7 +4,8 @@ import type { Language } from "../../generated/prisma/client.js";
 import { formatDhakaDateTime } from "../../utils/time.js";
 import { escapeHtml, layout, paragraph, type Email } from "./templates.js";
 
-export type RiderEmailKind = "APPROVED" | "REJECTED" | "SUSPENDED" | "REINSTATED" | "SUSPENSION_ENDED";
+// LICENCE_EXPIRED (B2c): the licence-expiry check set the rider Inactive.
+export type RiderEmailKind = "APPROVED" | "REJECTED" | "SUSPENDED" | "REINSTATED" | "SUSPENSION_ENDED" | "LICENCE_EXPIRED";
 
 type Data = { name: string; reason?: string; until?: Date | null; reverification?: boolean };
 
@@ -43,6 +44,11 @@ const copy: Record<
       subject: () => "Your UniGo rider suspension has ended",
       body: () => "Your rider suspension has ended. You can switch to Active again.",
     },
+    LICENCE_EXPIRED: {
+      subject: () => "Your UniGo rider status is Inactive: licence expired",
+      body: () =>
+        "Your driving licence has expired, so your rider status was set to Inactive. Send a re-verification with your renewed licence from Drive with UniGo to drive again.",
+    },
   },
   BN: {
     greeting: (name) => `প্রিয় ${name},`,
@@ -72,8 +78,20 @@ const copy: Record<
       subject: () => "আপনার UniGo রাইডার স্থগিতাদেশ শেষ হয়েছে",
       body: () => "আপনার রাইডার স্থগিতাদেশের মেয়াদ শেষ হয়েছে। আপনি আবার Active চালু করতে পারবেন।",
     },
+    LICENCE_EXPIRED: {
+      subject: () => "আপনার UniGo রাইডার স্ট্যাটাস Inactive: লাইসেন্সের মেয়াদ শেষ",
+      body: () =>
+        "আপনার ড্রাইভিং লাইসেন্সের মেয়াদ শেষ হয়েছে, তাই আপনার রাইডার স্ট্যাটাস Inactive করা হয়েছে। আবার চালাতে Drive with UniGo থেকে নবায়ন করা লাইসেন্স দিয়ে পুনঃযাচাই পাঠান।",
+    },
   },
 };
+
+// The subject and main sentence, for in-app notifications (B2c).
+export function riderText(language: Language, kind: RiderEmailKind, data: Omit<Data, "name">) {
+  const item = copy[language][kind];
+  const until = data.until ? formatDhakaDateTime(data.until, language) : undefined;
+  return { title: item.subject({ name: "", ...data }), body: item.body({ name: "", ...data }, until) };
+}
 
 export function riderEmail(language: Language, kind: RiderEmailKind, data: Data): Email {
   const t = copy[language];

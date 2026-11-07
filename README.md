@@ -20,6 +20,7 @@ University-only, peer-to-peer PWA for verified students: Ride Sharing, Carpool, 
 - Node.js 22 or newer
 - MySQL 8 running locally
 - Redis running locally for background jobs (BullMQ). On Windows use [Memurai](https://www.memurai.com/), which runs as a service on port 6379. Set `REDIS_URL` in `server/.env` (default `redis://localhost:6379`). Tests do not need Redis.
+- For Web Push, a VAPID key pair in `server/.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`); make one with `npx web-push generate-vapid-keys`. Required in production; without it in development push is off and in-app and email notifications still work. Tests do not need it.
 
 ## First-time setup
 

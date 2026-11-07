@@ -41,6 +41,15 @@ const envSchema = z
     // B2a: Redis for BullMQ background jobs (Memurai on Windows). Tests never
     // connect; they use the in-memory job scheduler.
     REDIS_URL: z.string().trim().regex(/^rediss?:\/\//, "REDIS_URL must start with redis:// or rediss://").default("redis://localhost:6379"),
+    // B2c: Web Push keys. Required in production; without them in development
+    // push is off. Tests use the in-memory push transport.
+    VAPID_PUBLIC_KEY: optionalText,
+    VAPID_PRIVATE_KEY: optionalText,
+    VAPID_SUBJECT: z
+      .string()
+      .trim()
+      .regex(/^(mailto:|https:\/\/)/, "VAPID_SUBJECT must start with mailto: or https://")
+      .optional(),
   })
   .superRefine((value, ctx) => {
     if (value.JWT_ACCESS_SECRET === value.JWT_REFRESH_SECRET) {
@@ -57,12 +66,26 @@ const envSchema = z
         if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required to send email by SMTP` });
       }
     }
+    const vapid = ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT"] as const;
+    const given = vapid.filter((key) => value[key]);
+    if (value.NODE_ENV === "production" || given.length > 0) {
+      for (const key of vapid) {
+        if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required for Web Push` });
+      }
+    }
   })
   .transform((value) => ({
     ...value,
     emailTransport: emailTransportFor(value),
     // Tests record scheduled jobs in memory; everywhere else BullMQ runs them.
     jobsDriver: value.NODE_ENV === "test" ? ("memory" as const) : ("bullmq" as const),
+    // Tests record pushes in memory; without VAPID keys push is off.
+    pushTransport:
+      value.NODE_ENV === "test"
+        ? ("memory" as const)
+        : value.VAPID_PUBLIC_KEY && value.VAPID_PRIVATE_KEY && value.VAPID_SUBJECT
+          ? ("webpush" as const)
+          : ("off" as const),
   }));
 
 function emailTransportFor(value: { NODE_ENV: string; EMAIL_TRANSPORT?: "console" | "smtp" }) {

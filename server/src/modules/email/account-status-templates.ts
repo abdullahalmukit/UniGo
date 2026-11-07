@@ -84,6 +84,16 @@ const copy: Record<Language, { greeting: (name: string) => string; reason: strin
   },
 };
 
+// The subject and main sentence, for in-app notifications (B2c).
+export function accountStatusText(language: Language, kind: AccountEmailKind, data: Omit<Data, "name">) {
+  const item = copy[language][kind];
+  const body = item.body({
+    from: data.startsAt ? formatDhakaDateTime(data.startsAt, language) : undefined,
+    until: data.endsAt ? formatDhakaDateTime(data.endsAt, language) : undefined,
+  });
+  return { title: item.subject, body };
+}
+
 export function accountStatusEmail(language: Language, kind: AccountEmailKind, data: Data): Email {
   const t = copy[language];
   const dates = {

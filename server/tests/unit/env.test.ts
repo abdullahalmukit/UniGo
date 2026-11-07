@@ -9,6 +9,7 @@ const base = {
   GOOGLE_CLIENT_ID: "client.apps.googleusercontent.com",
 };
 const smtp = { SMTP_HOST: "smtp.example.com", SMTP_USER: "user", SMTP_PASSWORD: "pass", MAIL_FROM: "UniGo <a@b.c>" };
+const vapid = { VAPID_PUBLIC_KEY: "public-key", VAPID_PRIVATE_KEY: "private-key", VAPID_SUBJECT: "mailto:admin@unigo.app" };
 
 const failingKeys = (source: Record<string, string>) => {
   const result = parseEnv(source);
@@ -28,15 +29,29 @@ describe("email transport", () => {
   });
 
   it("always uses SMTP in production and refuses to start without the SMTP settings", () => {
-    expect(parseEnv({ ...base, NODE_ENV: "production", ...smtp }).data?.emailTransport).toBe("smtp");
-    expect(failingKeys({ ...base, NODE_ENV: "production" })).toEqual(["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"]);
-    expect(failingKeys({ ...base, NODE_ENV: "production", ...smtp, EMAIL_TRANSPORT: "console" })).toEqual([
+    expect(parseEnv({ ...base, NODE_ENV: "production", ...smtp, ...vapid }).data?.emailTransport).toBe("smtp");
+    expect(failingKeys({ ...base, NODE_ENV: "production", ...vapid })).toEqual(["SMTP_HOST", "SMTP_USER", "SMTP_PASSWORD", "MAIL_FROM"]);
+    expect(failingKeys({ ...base, NODE_ENV: "production", ...smtp, ...vapid, EMAIL_TRANSPORT: "console" })).toEqual([
       "EMAIL_TRANSPORT",
     ]);
   });
 
   it("needs the SMTP settings when development opts in to SMTP", () => {
     expect(failingKeys({ ...base, NODE_ENV: "development", EMAIL_TRANSPORT: "smtp" })).toContain("SMTP_HOST");
+  });
+});
+
+describe("web push (B2c)", () => {
+  it("needs the three VAPID settings in production", () => {
+    expect(failingKeys({ ...base, NODE_ENV: "production", ...smtp })).toEqual(["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT"]);
+    expect(parseEnv({ ...base, NODE_ENV: "production", ...smtp, ...vapid }).data?.pushTransport).toBe("webpush");
+  });
+
+  it("is off in development without keys, refuses half a key set, and uses memory in tests", () => {
+    expect(parseEnv({ ...base, NODE_ENV: "development" }).data?.pushTransport).toBe("off");
+    expect(failingKeys({ ...base, NODE_ENV: "development", VAPID_PUBLIC_KEY: "x" })).toEqual(["VAPID_PRIVATE_KEY", "VAPID_SUBJECT"]);
+    expect(failingKeys({ ...base, NODE_ENV: "development", ...vapid, VAPID_SUBJECT: "admin@unigo.app" })).toContain("VAPID_SUBJECT");
+    expect(parseEnv({ ...base, NODE_ENV: "test" }).data?.pushTransport).toBe("memory");
   });
 });
 

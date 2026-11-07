@@ -2,12 +2,16 @@ import { Queue, Worker, type Job } from "bullmq";
 import { rules } from "../config/rules.js";
 import { runAccountStatusJob } from "./account-status.job.js";
 import { runActivitySweep, runAutoCompleteJob, runCloseRideOfferJob, runExpireJob, runNotMarkedJob } from "./activity-timers.job.js";
+import { deliverNotification } from "../modules/notifications/notify.service.js";
+import { runSubAreaNotifyJob } from "../modules/notifications/sub-area.service.js";
+import { runLicenceReminderJob } from "./licence-reminder.job.js";
+import { runReminderJob } from "./reminders.job.js";
 import { closeTimerQueue, createRedisConnection, defaultJobOptions, QUEUE_NAME } from "./scheduler.js";
 
 // BullMQ background jobs (CLAUDE.md section 8, B2a decision 10). Started by the
 // API process; never in tests, which call the handlers directly.
 
-type JobResult = boolean | Record<string, number>;
+type JobResult = boolean | number | Record<string, number>;
 
 export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> {
   const id = job.data?.id ?? "";
@@ -24,6 +28,19 @@ export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> 
       return runActivitySweep();
     case "account-status":
       return runAccountStatusJob();
+    // B2c
+    case "activity-reminder":
+    case "carpool-session-reminder":
+      return runReminderJob(id);
+    case "sub-area-notify":
+      return runSubAreaNotifyJob(id);
+    case "licence-reminder":
+      return runLicenceReminderJob();
+    case "notification-deliver": {
+      // Retried with backoff; the last attempt records FAILED on the row.
+      const attempts = job.opts.attempts ?? 1;
+      return deliverNotification(id, { lastAttempt: job.attemptsMade + 1 >= attempts });
+    }
     default:
       throw new Error(`Unknown job ${job.name}`);
   }
@@ -33,6 +50,7 @@ export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> 
 const REPEATING = [
   { id: "account-status", every: rules.jobs.accountStatusInterval },
   { id: "activity-sweep", every: rules.jobs.sweepInterval },
+  { id: "licence-reminder", every: rules.notifications.licenceReminderInterval },
 ] as const;
 
 export function startJobs() {

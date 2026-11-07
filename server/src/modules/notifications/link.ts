@@ -1,0 +1,39 @@
+import type { NotificationType } from "../../generated/prisma/client.js";
+import type { NotificationData } from "./catalogue.js";
+
+// The page a notification opens, in the app and from a push. One place, so
+// B3-B8 change a link here when their pages arrive. Always a path on this
+// site (the service worker refuses anything else).
+export function notificationLink(type: NotificationType, data: NotificationData | null | undefined): string {
+  const d = data ?? {};
+  const chat = d.chatId ? `/inbox/${encodeURIComponent(d.chatId)}` : null;
+  switch (type) {
+    case "NEW_CHAT_MESSAGE":
+      return chat ?? "/inbox";
+    case "SUB_AREA_NEW_REQUEST":
+      // Food and Service pages come in B4/B5.
+      return "/services";
+    case "REQUEST_EXPIRED":
+      return "/activity";
+    case "CARPOOL_SESSION_REMINDER":
+      return chat ?? "/upcoming";
+    case "STUDENT_VERIFICATION_RESULT":
+      return "/verify-student";
+    case "RIDER_VERIFICATION_RESULT":
+    case "RIDER_ACCESS_CHANGED":
+    case "LICENCE_EXPIRY_REMINDER":
+      return "/drive";
+    case "ACCOUNT_STATUS_CHANGED":
+    case "REPORT_UPDATE":
+    case "SUPPORT_UPDATE":
+      return "/account";
+    case "PASSWORD_RESET_REQUESTED":
+    case "PASSWORD_CHANGED":
+      return "/account/profile";
+    case "ANNOUNCEMENT":
+      return "/";
+    default:
+      // Activity notifications: the activity's chat while it has one (B3 adds detail pages)
+      return chat ?? "/activity";
+  }
+}

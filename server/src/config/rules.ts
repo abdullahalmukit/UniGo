@@ -170,6 +170,34 @@ export const rules = {
     expiryGrace: 5 * 1000,
   },
 
+  // B2c: notifications (proposal section 14, B2c decisions)
+  notifications: {
+    pageSize: 20,
+    // Reminder of an accepted activity, this long before its start (ride, food,
+    // service with a time). Not scheduled when the activity is accepted later.
+    reminderBeforeStart: 30 * MINUTE,
+    // Carpool ride-day reminder: this time of day in Asia/Dhaka, or
+    // carpoolReminderLeadTime before the start when that is earlier
+    carpoolReminderAt: { hour: 7, minute: 0 },
+    carpoolReminderLeadTime: 60 * MINUTE,
+    // Licence expiry reminders, whole days before the expiry date (Asia/Dhaka)
+    licenceReminderDays: [30, 7],
+    licenceReminderInterval: HOUR,
+    // Users notified per batch query of the sub-area engine
+    subAreaBatch: 500,
+    // How long a push service keeps an undelivered push (seconds)
+    pushTtlSeconds: 24 * 60 * 60,
+    // Push and email delivery job: attempts in total, first backoff
+    delivery: { attempts: 3, backoffMs: 10 * 1000 },
+    // Subscribing this device, per account
+    subscribePerUser: { window: HOUR, max: 20 },
+    // A push subscription endpoint and its keys
+    endpointMaxLength: 512,
+    keyMaxLength: 255,
+    // Never shown longer than this in a push or notification
+    textMaxLength: 120,
+  },
+
   admin: {
     pageSize: 20,
     // Every warning, restriction, suspension, ban, unban and reactivation
