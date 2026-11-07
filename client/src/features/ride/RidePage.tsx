@@ -1,8 +1,9 @@
 import { Car, SlidersHorizontal } from "lucide-react";
-import { lazy, Suspense, useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Link, useNavigate } from "react-router";
+import { Link } from "react-router";
 import formStyles from "../../components/form.module.css";
+import { TimeSelect } from "../../components/DateTimeInput";
 import { BottomSheet, FormAlert, TextField } from "../../components/form";
 import { buttonStyles, EmptyState, PageHeader } from "../../components/ui";
 import { SkeletonList } from "../account/SubPage";
@@ -12,17 +13,15 @@ import { RideCard } from "./RideCard";
 import { PlaceField, SubAreaField } from "./Pickers";
 import styles from "./ride.module.css";
 
-const RideMap = lazy(() => import("./RideMap").then((module) => ({ default: module.RideMap })));
-
 type Tab = "all" | "requests" | "offers";
 const TABS: Tab[] = ["all", "requests", "offers"];
 const RADII = [1, 2, 5];
 
-// The Ride page (proposal 8.1): with no filter, the map and every open request
-// and offer. Search a Ride uses the filters, alone or together.
+// The Ride page (proposal 8.1, changed in B3b-1 E): a list of every open
+// request and offer, with no map. Search a Ride uses the filters, alone or
+// together; a map opens only inside the place picker.
 export function RidePage() {
   const { t } = useTranslation();
-  const navigate = useNavigate();
   const rider = useRiderStatus();
   const [tab, setTab] = useState<Tab>("all");
   const [filters, setFilters] = useState<Omit<RideFilters, "type" | "page">>({});
@@ -89,12 +88,6 @@ export function RidePage() {
         <button type="button" className={buttonStyles.secondary} onClick={() => setFilterOpen(true)}>
           <SlidersHorizontal aria-hidden size={18} /> {filterCount > 0 ? t("ride.filters.titleCount", { count: filterCount }) : t("ride.filters.title")}
         </button>
-      </div>
-
-      <div className={styles.map}>
-        <Suspense fallback={<SkeletonList rows={1} />}>
-          <RideMap items={items ?? []} onOpen={(path) => void navigate(path)} />
-        </Suspense>
       </div>
 
       {failed && (
@@ -179,8 +172,8 @@ function FilterSheet({
       </label>
       <TextField label={t("ride.filters.date")} type="date" value={draft.date ?? ""} onChange={(date) => set({ date: date || undefined })} />
       <div className={styles.grid2}>
-        <TextField label={t("ride.filters.from")} type="time" value={draft.timeFrom ?? ""} onChange={(timeFrom) => set({ timeFrom: timeFrom || undefined })} />
-        <TextField label={t("ride.filters.to")} type="time" value={draft.timeTo ?? ""} onChange={(timeTo) => set({ timeTo: timeTo || undefined })} />
+        <TimeSelect label={t("ride.filters.from")} optional value={draft.timeFrom ?? ""} onChange={(timeFrom) => set({ timeFrom: timeFrom || undefined })} />
+        <TimeSelect label={t("ride.filters.to")} optional value={draft.timeTo ?? ""} onChange={(timeTo) => set({ timeTo: timeTo || undefined })} />
       </div>
       <SubAreaField label={t("ride.subArea.label")} value={subArea} optional onChange={(area) => (setSubArea(area), set({ subAreaId: area?.id }))} />
       <div className={formStyles.sheetButtons}>

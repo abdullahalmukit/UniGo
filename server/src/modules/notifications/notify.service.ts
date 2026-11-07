@@ -135,6 +135,8 @@ export async function notificationView(row: NotificationRow, language: "BN" | "E
     title: text.title,
     body: text.body,
     link: notificationLink(row.type, data, row.activityId),
+    // B3b-1: Activity and Upcoming refresh when a notification is about an activity
+    activityId: row.activityId,
     read: row.readAt !== null,
     createdAt: row.createdAt,
   };

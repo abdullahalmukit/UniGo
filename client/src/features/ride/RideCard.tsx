@@ -2,6 +2,7 @@ import { BadgeCheck, CircleDot, MapPin, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Avatar } from "../../components/Avatar";
+import { profilePath } from "../../lib/activity-links";
 import { formatRideTime } from "../../lib/dates";
 import type { MiniProfile, Place, PublicVehicle, RideItem } from "./ride-api";
 import styles from "./ride.module.css";
@@ -33,11 +34,13 @@ export function Route({ pickup, destination }: { pickup: Place; destination: Pla
 }
 
 // Mini profile (proposal 8.3). Rating, completion rate and badges arrive in B3b.
-export function PersonRow({ person, caption }: { person: MiniProfile; caption?: string }) {
+// Tapping the name or photo opens the person's profile (B3b-1 G); pass
+// link={false} where the row is already inside a link.
+export function PersonRow({ person, caption, link = true }: { person: MiniProfile; caption?: string; link?: boolean }) {
   const { t } = useTranslation();
   const university = person.university?.shortName ?? person.university?.name;
-  return (
-    <div className={styles.person}>
+  const content = (
+    <>
       <Avatar name={person.name} src={person.photo?.url} size={40} />
       <span className={styles.personText}>
         <span className={styles.personName}>
@@ -46,7 +49,14 @@ export function PersonRow({ person, caption }: { person: MiniProfile; caption?: 
         </span>
         <span className={styles.muted}>{[caption, university, person.department].filter(Boolean).join(" · ")}</span>
       </span>
-    </div>
+    </>
+  );
+  return link ? (
+    <Link to={profilePath(person.id)} className={styles.person} aria-label={t("profile.open", { name: person.name || t("chat.someone") })}>
+      {content}
+    </Link>
+  ) : (
+    <div className={styles.person}>{content}</div>
   );
 }
 
@@ -66,8 +76,11 @@ export function RideCard({ item }: { item: RideItem }) {
   const to = isOffer ? `/ride/offers/${item.id}` : `/ride/requests/${item.id}`;
   const time = isOffer ? item.departureTime : item.startTime;
 
+  // The card links to the ride; the person row below links to the profile
+  // (two separate links, never one inside the other).
   return (
-    <Link to={to} className={styles.card}>
+    <div className={styles.card}>
+      <Link to={to} className={styles.cardLink}>
       <span className={styles.cardTop}>
         <span className={styles.kind}>{isOffer ? t("ride.kind.offer") : t("ride.kind.request")}</span>
         <span className={styles.amount}>
@@ -85,8 +98,9 @@ export function RideCard({ item }: { item: RideItem }) {
         </span>
         {item.mine && <span>{t("ride.yours")}</span>}
       </span>
+      </Link>
       <PersonRow person={isOffer ? item.rider : item.passenger} caption={isOffer ? t("ride.role.rider") : t("ride.role.passenger")} />
       {isOffer && <VehicleLine vehicle={item.vehicle} />}
-    </Link>
+    </div>
   );
 }

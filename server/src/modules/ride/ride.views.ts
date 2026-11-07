@@ -3,7 +3,8 @@ import { photoLink } from "../users/photo.js";
 import { toPublicVehicle } from "../vehicles/vehicles.js";
 
 // What students see of rides (proposal 8.3, B3a decisions). Built field by
-// field: never an email; the phone only in the chat after acceptance (B2b);
+// field: never an email; the phone only to the two participants while the
+// ride runs (users/contact.ts, B2b and B3b-1);
 // vehicles always through toPublicVehicle() (masked registration number). On
 // a shared offer a passenger sees only their own booking and the seats left.
 
@@ -41,7 +42,8 @@ export const vehicleSelect = {
   seatCapacity: true,
 } as const satisfies Prisma.VehicleSelect;
 
-export const subAreaSelect = { id: true, name: true } as const;
+// isActive: "Create again" leaves a sub-area empty when it is no longer active (B3b-1)
+export const subAreaSelect = { id: true, name: true, isActive: true } as const;
 
 const place = (address: string, lat: Prisma.Decimal, lng: Prisma.Decimal) => ({ address, lat: Number(lat), lng: Number(lng) });
 

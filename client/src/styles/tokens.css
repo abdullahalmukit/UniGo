@@ -70,6 +70,15 @@
   --content-width: 1100px;
   --bar-height: 56px;
   --tabs-height: 64px;
+
+  /* Layers (B3b-1). Every map container also isolates its own stacking
+     context, and these sit above the map library's own layers (up to 1000)
+     anyway, so bars, sheets, dialogs and toasts are never covered by a map. */
+  --z-bar: 1100;
+  --z-tooltip: 1150;
+  --z-drawer: 1200;
+  --z-sheet: 1300;
+  --z-toast: 1400;
 }
 
 [data-theme="dark"] {

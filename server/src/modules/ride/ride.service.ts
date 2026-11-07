@@ -23,6 +23,7 @@ import { boundingBox, distanceKm, type LatLng } from "../geo/distance.js";
 import { queueSubAreaNotification } from "../notifications/sub-area.service.js";
 import { activeBlocker, currentLicenceExpiry } from "../riders/rider-status.js";
 import { blockedUserIds, isBlockedBetween } from "../users/blocks.service.js";
+import { participantPhone, participantPhones } from "../users/contact.js";
 import { seatLimits } from "../vehicles/vehicles.js";
 import { routeDistanceKm } from "./fare.service.js";
 import type { ListQuery, OfferEditInput, OfferInput, RequestEditInput, RequestInput } from "./ride.validation.js";
@@ -127,8 +128,13 @@ async function distanceFor(pickup: LatLng, destination: LatLng) {
 
 // --- Passenger requests (Need a Ride)
 
-async function loadRequest(id: string) {
-  const row = await prisma.activity.findFirst({ where: { id, type: "RIDE_REQUEST", deletedAt: null }, select: requestSelect });
+// A deleted request opens only for its creator (B3b-1); every other use
+// works on requests that are not deleted.
+async function loadRequest(id: string, options: { includeDeleted?: boolean } = {}) {
+  const row = await prisma.activity.findFirst({
+    where: { id, type: "RIDE_REQUEST", ...(!options.includeDeleted && { deletedAt: null }) },
+    select: requestSelect,
+  });
   if (!row?.rideRequest) throw notFound();
   return row;
 }
@@ -247,14 +253,18 @@ export async function acceptRideRequest(riderId: string, activityId: string, veh
 }
 
 export async function getRideRequest(viewerId: string, activityId: string, now = new Date()) {
-  const row = await loadRequest(activityId);
+  const row = await loadRequest(activityId, { includeDeleted: true });
+  if (row.deletedAt && viewerId !== row.creatorId) throw notFound();
   const participant = viewerId === row.creatorId || viewerId === row.accepterId;
-  if (!participant) {
-    // Others see only open requests that have not started, never across a block
-    if (row.status !== "OPEN" || row.startTime <= now) throw notFound();
-    if (await isBlockedBetween(prisma, viewerId, row.creatorId)) throw notFound();
+  if (participant) {
+    // The other participant's phone while the ride runs (B3b-1 fix D)
+    const otherId = viewerId === row.creatorId ? row.accepterId : row.creatorId;
+    return { ...(await requestView(row, viewerId)), phone: await participantPhone(viewerId, otherId, row.status) };
   }
-  return requestView(row, viewerId);
+  // Others see only open requests that have not started, never across a block
+  if (row.status !== "OPEN" || row.startTime <= now) throw notFound();
+  if (await isBlockedBetween(prisma, viewerId, row.creatorId)) throw notFound();
+  return { ...(await requestView(row, viewerId)), phone: null };
 }
 
 // --- Ride offers (Offer a Ride)
@@ -508,10 +518,16 @@ export async function getRideOffer(viewerId: string, offerId: string, now = new 
     if (!hasBooking && (await isBlockedBetween(prisma, viewerId, row.riderId))) throw notFound();
   }
   const views = await Promise.all(bookings.map(bookingView));
+  // Phones: the rider sees each passenger's; a passenger the rider's (B3b-1)
+  const phones = await participantPhones(
+    viewerId,
+    bookings.map((b) => ({ otherId: isRider ? b.activity.accepterId : b.activity.creatorId, status: b.activity.status })),
+  );
+  const withPhones = views.map((view, i) => ({ ...view, phone: phones[i] ?? null }));
   return {
     ...(await offerView(row, viewerId)),
-    bookings: isRider ? views : [],
-    myBooking: isRider ? null : (views.filter((b) => (ACTIVE_BOOKING as readonly string[]).includes(b.status)).at(-1) ?? views.at(-1) ?? null),
+    bookings: isRider ? withPhones : [],
+    myBooking: isRider ? null : (withPhones.filter((b) => (ACTIVE_BOOKING as readonly string[]).includes(b.status)).at(-1) ?? withPhones.at(-1) ?? null),
   };
 }
 
@@ -523,8 +539,12 @@ export async function getRideBooking(viewerId: string, activityId: string) {
   });
   if (!booking || (booking.activity.creatorId !== viewerId && booking.activity.accepterId !== viewerId)) throw notFound();
   const isRider = booking.activity.creatorId === viewerId;
+  const otherId = isRider ? booking.activity.accepterId : booking.activity.creatorId;
   return {
     ...(await bookingView(booking)),
+    phone: await participantPhone(viewerId, otherId, booking.activity.status),
+    // The rider, for the passenger's view (the passenger is in bookingView)
+    rider: isRider ? null : (await offerView(booking.rideOffer, viewerId)).rider,
     startTime: booking.activity.startTime,
     isLateCancellation: booking.activity.isLateCancellation,
     completionRequestedBy: completionBy(booking.activity.completionRequestedById, viewerId),

@@ -15,7 +15,7 @@
 .topBar {
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-bar);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -74,7 +74,7 @@
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  z-index: 20;
+  z-index: var(--z-tooltip);
   padding: var(--space-1) var(--space-2);
   border-radius: 8px;
   background: var(--color-text);
@@ -98,7 +98,7 @@
   display: none;
   position: sticky;
   top: 0;
-  z-index: 10;
+  z-index: var(--z-bar);
   background: var(--color-surface);
   border-bottom: 1px solid var(--color-border);
 }
@@ -177,7 +177,7 @@
 .bottomTabs {
   position: fixed;
   inset: auto 0 0;
-  z-index: 10;
+  z-index: var(--z-bar);
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   min-height: var(--tabs-height);

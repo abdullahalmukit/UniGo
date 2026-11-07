@@ -1,4 +1,5 @@
 import { ArrowLeft, ImagePlus, MoreVertical, Phone, SendHorizontal } from "lucide-react";
+import { activityPath, profilePath } from "../../lib/activity-links";
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
@@ -192,13 +193,35 @@ export function ChatPage() {
         <Link to="/inbox" className={styles.iconButton} aria-label={t("chat.backToInbox")}>
           <ArrowLeft aria-hidden />
         </Link>
-        <Avatar name={other?.name ?? ""} src={linkUrl(other?.photo)} size={40} />
+        {/* The name and photo open the other person's profile (B3b-1 G) */}
+        {other?.id ? (
+          <Link to={profilePath(other.id)} className={styles.headerPerson} aria-label={t("profile.open", { name: other.name || t("chat.someone") })}>
+            <Avatar name={other.name} src={linkUrl(other.photo)} size={40} />
+          </Link>
+        ) : (
+          <Avatar name={other?.name ?? ""} src={linkUrl(other?.photo)} size={40} />
+        )}
         <span className={styles.headerText}>
-          <span className={styles.name}>{other?.name || (chat ? t("chat.someone") : "")}</span>
+          {other?.id ? (
+            <Link to={profilePath(other.id)} className={`${styles.name} ${styles.headerName}`}>
+              {other.name || t("chat.someone")}
+            </Link>
+          ) : (
+            <span className={styles.name}>{other?.name || (chat ? t("chat.someone") : "")}</span>
+          )}
           {chat && (
             <span className={styles.headerMeta}>
               <span className={styles.muted}>{t(`chat.type.${chat.activity.type}`)}</span>
               <StatusChip status={chat.activity.status} />
+              <Link to={activityPath(chat.activity.type, chat.activity.id)} className={styles.detailsLink}>
+                {t("chat.viewDetails")}
+              </Link>
+            </span>
+          )}
+          {/* The phone as text, after acceptance and while the activity runs (B3b-1 D) */}
+          {other?.phone && (
+            <span className={styles.headerPhone} dir="ltr">
+              {other.phone}
             </span>
           )}
         </span>

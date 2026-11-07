@@ -8,7 +8,7 @@
 .topBar {
   position: sticky;
   top: 0;
-  z-index: 20;
+  z-index: var(--z-bar);
   display: flex;
   align-items: center;
   gap: var(--space-3);
@@ -39,7 +39,7 @@
 .sidebar {
   position: fixed;
   inset: 0 auto 0 0;
-  z-index: 40;
+  z-index: var(--z-drawer);
   display: flex;
   flex-direction: column;
   gap: var(--space-4);
@@ -96,7 +96,7 @@
 .backdrop {
   position: fixed;
   inset: 0;
-  z-index: 30;
+  z-index: calc(var(--z-drawer) - 1);
   background: rgb(0 0 0 / 40%);
 }
 

@@ -301,3 +301,30 @@
 .danger {
   color: var(--status-red-fg);
 }
+
+/* B3b-1: profile link, View details and the phone in the chat header */
+.headerPerson {
+  display: inline-flex;
+  border-radius: var(--radius-pill);
+}
+
+.headerName {
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.headerName:hover {
+  text-decoration: underline;
+}
+
+.detailsLink {
+  color: var(--color-accent);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.headerPhone {
+  color: var(--color-text);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+}

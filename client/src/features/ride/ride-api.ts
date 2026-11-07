@@ -32,6 +32,7 @@ export type PublicVehicle = {
 };
 
 export type CompletionBy = "ME" | "OTHER" | null;
+export type SubAreaRef = { id: string; name: string; isActive?: boolean };
 
 export type RideRequest = {
   kind: "REQUEST";
@@ -45,7 +46,7 @@ export type RideRequest = {
   passengerCount: number;
   notes: string | null;
   routeDistanceKm: number | null;
-  subArea: { id: string; name: string };
+  subArea: SubAreaRef;
   passenger: MiniProfile;
   rider: MiniProfile | null;
   vehicle: PublicVehicle | null;
@@ -54,6 +55,8 @@ export type RideRequest = {
   role: "PASSENGER" | "RIDER" | null;
   completionRequestedBy: CompletionBy;
   createdAt: string;
+  // The other participant's phone while the ride runs (detail only, B3b-1)
+  phone?: string | null;
 };
 
 export type RideBookingSummary = {
@@ -65,6 +68,8 @@ export type RideBookingSummary = {
   passenger: MiniProfile | null;
   chatId: string | null;
   createdAt: string;
+  // The other participant's phone while the booking runs (B3b-1)
+  phone?: string | null;
 };
 
 export type RideOffer = {
@@ -80,7 +85,7 @@ export type RideOffer = {
   seatsAvailable: number;
   notes: string | null;
   routeDistanceKm: number | null;
-  subArea: { id: string; name: string } | null;
+  subArea: SubAreaRef | null;
   rider: MiniProfile;
   vehicle: PublicVehicle;
   mine: boolean;
@@ -91,6 +96,8 @@ export type RideOffer = {
 };
 
 export type RideBooking = RideBookingSummary & {
+  // The rider, for the passenger's view
+  rider: MiniProfile | null;
   startTime: string;
   isLateCancellation: boolean;
   role: "RIDER" | "PASSENGER";

@@ -8,7 +8,7 @@ export function startOfDhakaDay(now = new Date()) {
   return new Date(local - (local % DAY) - DHAKA_OFFSET);
 }
 
-// "4 November 2026, 3:30 pm" in Asia/Dhaka, in Bangla or English.
+// "4 November 2026, 3:30 pm" in Asia/Dhaka, in Bangla or English, 12-hour clock.
 export function formatDhakaDateTime(value: Date, language: "BN" | "EN") {
   return new Intl.DateTimeFormat(language === "BN" ? "bn-BD" : "en-GB", {
     timeZone: "Asia/Dhaka",
@@ -17,6 +17,8 @@ export function formatDhakaDateTime(value: Date, language: "BN" | "EN") {
     year: "numeric",
     hour: "numeric",
     minute: "2-digit",
+    // 12-hour clock everywhere (B3b-1): "2:20 pm", never "14:20"
+    hour12: true,
   }).format(value);
 }
 

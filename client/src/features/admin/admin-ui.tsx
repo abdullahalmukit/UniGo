@@ -1,4 +1,5 @@
 // Small building blocks shared by the admin pages.
+import { DateTimeInput } from "../../components/DateTimeInput";
 import { ShieldOff } from "lucide-react";
 import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
@@ -110,8 +111,12 @@ export function formatDateTime(value: string | null, language: string) {
   if (!value) return "—";
   return new Intl.DateTimeFormat(language === "bn" ? "bn-BD" : "en-GB", {
     timeZone: DISPLAY_TIME_ZONE,
-    dateStyle: "medium",
-    timeStyle: "short",
+    day: "numeric",
+    month: "short",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+    hour12: true,
   }).format(new Date(value));
 }
 
@@ -173,17 +178,9 @@ export function TextAreaField({
   );
 }
 
+// A date and a 12-hour time (B3b-1); the value is "YYYY-MM-DDTHH:mm" as before.
 export function DateTimeField({ label, value, onChange, hint }: { label: string; value: string; onChange: (value: string) => void; hint?: string }) {
-  const id = useId();
-  return (
-    <div className={formStyles.field}>
-      <label htmlFor={id} className={formStyles.label}>
-        {label}
-      </label>
-      <input id={id} type="datetime-local" className={styles.select} value={value} onChange={(event) => onChange(event.target.value)} />
-      {hint && <p className={formStyles.hint}>{hint}</p>}
-    </div>
-  );
+  return <DateTimeInput label={label} value={value} onChange={onChange} hint={hint} />;
 }
 
 export function Pager({ page, pageSize, total, onPage }: { page: number; pageSize: number; total: number; onPage: (page: number) => void }) {

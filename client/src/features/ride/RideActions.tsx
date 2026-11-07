@@ -20,6 +20,7 @@ export function RideActions({
   completionRequestedBy,
   chatId,
   onChanged,
+  sticky = true,
 }: {
   activityId: string;
   status: ActivityStatus;
@@ -27,6 +28,8 @@ export function RideActions({
   completionRequestedBy: CompletionBy;
   chatId: string | null;
   onChanged: () => void;
+  // Off inside Activity cards
+  sticky?: boolean;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -51,7 +54,7 @@ export function RideActions({
   const active = status === "ACCEPTED" || status === "IN_PROGRESS" || status === "DISPUTED";
 
   return (
-    <div className={`${styles.actions} ${styles.sticky}`}>
+    <div className={sticky ? `${styles.actions} ${styles.sticky}` : styles.actions}>
       {status === "ACCEPTED" && (
         <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void run(() => startActivity(activityId), t("ride.actions.started"))}>
           {t("ride.actions.start")}

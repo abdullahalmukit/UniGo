@@ -1,4 +1,5 @@
-// Times are stored in UTC and always shown in Asia/Dhaka (CLAUDE.md section 9).
+// Times are stored in UTC and always shown in Asia/Dhaka (CLAUDE.md section 9),
+// on a 12-hour clock with am/pm, never "14:20" (B3b-1).
 export const DISPLAY_TIME_ZONE = "Asia/Dhaka";
 
 export function formatDate(value: string | Date, language: string) {
@@ -15,7 +16,7 @@ export function formatShortTime(value: string | Date, language = "en", now = new
   const date = new Date(value);
   const locale = language === "bn" ? "bn-BD" : "en-GB";
   const day = (d: Date) => new Intl.DateTimeFormat("en-CA", { timeZone: DISPLAY_TIME_ZONE }).format(d);
-  const time = new Intl.DateTimeFormat(locale, { timeZone: DISPLAY_TIME_ZONE, hour: "numeric", minute: "2-digit" }).format(date);
+  const time = new Intl.DateTimeFormat(locale, { timeZone: DISPLAY_TIME_ZONE, hour: "numeric", minute: "2-digit", hour12: true }).format(date);
   if (day(date) === day(now)) return time;
   const dayText = new Intl.DateTimeFormat(locale, { timeZone: DISPLAY_TIME_ZONE, day: "numeric", month: "short" }).format(date);
   return `${dayText}, ${time}`;
@@ -45,5 +46,6 @@ export function formatRideTime(value: string | Date, language: string) {
     month: "short",
     hour: "numeric",
     minute: "2-digit",
+    hour12: true,
   }).format(new Date(value));
 }

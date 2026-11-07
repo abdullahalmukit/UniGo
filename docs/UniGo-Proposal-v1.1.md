@@ -59,6 +59,7 @@ Version 1.1 removes the conflicting rules of v1.0 and adds trust, safety and tec
 | --- | --- |
 | Layout | Mobile-first. Phone: top bar + bottom tab bar. Desktop: top navbar only, content centred (about 1100 px wide). |
 | Color | Light, clean backgrounds, one brand accent color (blue, matching the logo), dark text. Status colors only on small chips: green = completed, amber = open/pending, indigo = accepted, purple = in progress, red = cancelled/disputed, grey = expired/not marked. |
+| Time | Times are always shown in Bangladesh time on a 12-hour clock with AM/PM (for example 2:20 PM, never 14:20). Time pickers use hour, minute (5-minute steps) and AM/PM. |
 | Typography | One clean sans-serif font (for example Inter, with a Bangla-supporting font such as Hind Siliguri). Only three text sizes: title, body, caption. |
 | Cards | Rounded corners (12–16 px), thin border or very light shadow, big tap area, icon + short label. |
 | Icons | One outline icon set (for example Lucide). Each service card on Home has one picture of its service; no other heavy illustrations. |
@@ -272,7 +273,7 @@ Ride Sharing has two post types: a passenger request (one-to-one) and a rider's 
 | Search a Ride | Any verified user or rider | Lists open ride offers. Filters: pickup, destination, date, time range, sub-area. Filters can be used one at a time or combined. |
 | Offer a Ride | Verified & Active Riders | Pickup, destination, date, time, fare per seat, vehicle (BIKE or CAR), available seats, notes, sub-area (optional). Creates a ride offer. |
 
-With no option selected, the Ride page shows the map and all open requests and offers, with filters. No filter means show everything.
+With no option selected, the Ride page shows a list of all open requests and offers, with filters; there is no map on the page. A map opens only inside the place picker, when someone sets a pickup or destination. No filter means show everything. Tapping a person's name or photo opens their profile: name, photo, university, department, batch, badges, verified vehicles (masked number), member since, open ride requests and offers, rating, completion rate, late cancellation rate and reviews. A profile never shows a phone number or email, and blocked users cannot open each other's profile.
 
 ### 8.2 Suggested fare
 
@@ -449,14 +450,18 @@ Activity uses the common status system. Filter chips: All, Ride Sharing, Carpool
 | COMPLETION_REQUESTED | Confirm completion or raise a dispute (other user) |
 | DISPUTED | View dispute status, add evidence |
 | COMPLETED | View details, leave review (within 7 days) |
-| CANCELLED / EXPIRED / NOT_MARKED | View details, create again with the same details |
+| CANCELLED / EXPIRED / NOT_MARKED | View details, create again with the same details (except the time; an inactive sub-area is left empty, and the open and daily limits apply again) |
+
+A rider's ride offer appears under Requested by me with its bookings: in Active while it can take bookings or a booking has not finished, in Ongoing while a booking is in progress, and in History otherwise. After acceptance, both participants see each other's phone number and a Call button on the item, the detail page and in the chat, until the activity ends or either blocks the other. Activity refreshes by itself when a notification about an activity arrives or the app comes back to the screen.
 
 ### 12.3 Upcoming
 
 - All future ACCEPTED activities from all four features in one list, nearest first.
 - Filters by feature and by type (Requested or Accepted).
 - Carpool shows only sessions in the next 7 days.
-- Each card shows type, time, route or title, other person, status chip, and a countdown for the nearest item.
+- Each card shows type, time, route or title, other person, status chip, and a countdown for the nearest item (updated every minute).
+- A rider's ride offer is one card with its booked passengers while it has at least one accepted booking; an offer nobody has booked is not in Upcoming.
+- Home shows the next 3 upcoming items.
 
 ## 13. Inbox and Chat
 

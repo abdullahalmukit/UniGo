@@ -14,8 +14,7 @@ vi.mock("../../lib/api", async (importOriginal) => ({
   ...(await importOriginal<typeof import("../../lib/api")>()),
   session: { getState: () => state.current, subscribe: () => () => {}, logout: vi.fn(), signIn: vi.fn(), updateUser: vi.fn() },
 }));
-// The map needs a real browser
-vi.mock("./RideMap", () => ({ RideMap: () => <div data-testid="ride-map" /> }));
+// The map needs a real browser (it is only in the place picker since B3b-1)
 vi.mock("../../components/MapPicker", () => ({ MapPicker: () => <div data-testid="map-picker" /> }));
 
 const rideApi = vi.hoisted(() => ({
@@ -156,6 +155,9 @@ describe("the Ride page", () => {
     expect(screen.getByRole("link", { name: /Ride request/ })).toHaveAttribute("href", "/ride/requests/r1");
     expect(screen.getByText("৳80 per seat")).toBeInTheDocument();
     expect(screen.getByText("2 seats left")).toBeInTheDocument();
+    // No map on the Ride page (B3b-1 E)
+    expect(screen.queryByTestId("map-picker")).not.toBeInTheDocument();
+    expect(document.querySelector(".leaflet-container")).toBeNull();
     // Only Active riders see Offer a Ride
     expect(screen.queryByRole("link", { name: "Offer a Ride" })).not.toBeInTheDocument();
 

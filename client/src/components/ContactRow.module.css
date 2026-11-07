@@ -1,0 +1,21 @@
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+
+.text {
+  display: grid;
+  min-width: 0;
+}
+
+.label {
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.number {
+  font-weight: var(--weight-bold);
+  overflow-wrap: anywhere;
+}

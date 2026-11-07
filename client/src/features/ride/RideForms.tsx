@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
+import { DateTimeInput } from "../../components/DateTimeInput";
 import formStyles from "../../components/form.module.css";
 import { FormAlert, SubmitButton, TextField } from "../../components/form";
 import { useToast } from "../../components/toast";
@@ -27,7 +28,29 @@ import { taka } from "./RideCard";
 import styles from "./ride.module.css";
 
 const noErrors: FormErrors = { fields: {} };
-const inOneHour = () => toDhakaInput(new Date(Date.now() + 60 * 60 * 1000));
+// An hour from now, rounded up to the picker's 5-minute steps
+const inOneHour = () => {
+  const step = 5 * 60 * 1000;
+  return toDhakaInput(new Date(Math.ceil((Date.now() + 60 * 60 * 1000) / step) * step));
+};
+
+// "Create again" (proposal 12.2, B3b-1 Q5): copy everything but the time;
+// a sub-area that is no longer active is left empty (addition 2). The
+// server checks the open and daily limits again when it is posted.
+const activeSubArea = <T extends { isActive?: boolean } | null>(subArea: T) => (subArea && subArea.isActive === false ? null : subArea);
+
+function useTemplate<T>(load: (id: string) => Promise<T>) {
+  const [params] = useSearchParams();
+  const from = params.get("from");
+  const [template, setTemplate] = useState<T | null | undefined>(from ? undefined : null);
+  useEffect(() => {
+    if (from) load(from).then(setTemplate).catch(() => setTemplate(null));
+  }, [from, load]);
+  return template;
+}
+
+const loadRequestTemplate = (id: string) => getRequest(id).then((r) => r.request);
+const loadOfferTemplate = (id: string) => getOffer(id).then((r) => r.offer);
 
 // Suggested fare (proposal 8.2): shown when both places are set; a
 // recommendation only. Nothing is shown when the route server does not answer.
@@ -81,23 +104,25 @@ export function RequestFormPage() {
   useEffect(() => {
     if (id) getRequest(id).then((r) => setExisting(r.request)).catch(() => setExisting(null));
   }, [id]);
-  if (existing === undefined) return <SkeletonList rows={4} />;
+  const template = useTemplate(loadRequestTemplate);
+  if (existing === undefined || template === undefined) return <SkeletonList rows={4} />;
   if (id && (!existing || !existing.mine || existing.status !== "OPEN")) return <Navigate to={id ? `/ride/requests/${id}` : "/ride"} replace />;
-  return <RequestForm existing={existing} />;
+  return <RequestForm existing={existing} template={id ? null : template} />;
 }
 
-function RequestForm({ existing }: { existing: RideRequest | null }) {
+function RequestForm({ existing, template }: { existing: RideRequest | null; template: RideRequest | null }) {
+  const source = existing ?? template;
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
   const config = useRideConfig();
-  const [pickup, setPickup] = useState<Place | null>(existing?.pickup ?? null);
-  const [destination, setDestination] = useState<Place | null>(existing?.destination ?? null);
+  const [pickup, setPickup] = useState<Place | null>(source?.pickup ?? null);
+  const [destination, setDestination] = useState<Place | null>(source?.destination ?? null);
   const [time, setTime] = useState(existing ? toDhakaInput(existing.startTime) : inOneHour());
-  const [amount, setAmount] = useState(existing ? String(existing.offeredAmount) : "");
-  const [passengers, setPassengers] = useState(existing ? String(existing.passengerCount) : "1");
-  const [notes, setNotes] = useState(existing?.notes ?? "");
-  const [subArea, setSubArea] = useState(existing?.subArea ?? null);
+  const [amount, setAmount] = useState(source ? String(source.offeredAmount) : "");
+  const [passengers, setPassengers] = useState(source ? String(source.passengerCount) : "1");
+  const [notes, setNotes] = useState(source?.notes ?? "");
+  const [subArea, setSubArea] = useState(existing ? existing.subArea : activeSubArea(template?.subArea ?? null));
   const [errors, setErrors] = useState<FormErrors>(noErrors);
   const [busy, setBusy] = useState(false);
   const estimate = useSuggestedFare(pickup, destination);
@@ -139,7 +164,8 @@ function RequestForm({ existing }: { existing: RideRequest | null }) {
       {errors.form && <FormAlert>{errors.form}</FormAlert>}
       <PlaceField label={t("ride.pickup")} value={pickup} onChange={setPickup} error={errors.fields.pickup} />
       <PlaceField label={t("ride.destination")} value={destination} onChange={setDestination} error={errors.fields.destination} />
-      <TextField label={t("ride.form.pickupTime")} type="datetime-local" value={time} onChange={setTime} hint={t("ride.form.timeHint")} error={errors.fields.startTime} />
+      {template && <FormAlert tone="info">{t("ride.form.copied")}</FormAlert>}
+      <DateTimeInput label={t("ride.form.pickupTime")} value={time} onChange={setTime} hint={t("ride.form.timeHint")} error={errors.fields.startTime} />
       <div className={styles.grid2}>
         <TextField
           label={t("ride.form.offeredAmount")}
@@ -180,12 +206,14 @@ export function OfferFormPage() {
   useEffect(() => {
     if (id) getOffer(id).then((r) => setExisting(r.offer)).catch(() => setExisting(null));
   }, [id]);
-  if (existing === undefined) return <SkeletonList rows={4} />;
+  const template = useTemplate(loadOfferTemplate);
+  if (existing === undefined || template === undefined) return <SkeletonList rows={4} />;
   if (id && (!existing || !existing.mine || existing.status === "CLOSED")) return <Navigate to={id ? `/ride/offers/${id}` : "/ride"} replace />;
-  return <OfferForm existing={existing} />;
+  return <OfferForm existing={existing} template={id ? null : template} />;
 }
 
-function OfferForm({ existing }: { existing: RideOffer | null }) {
+function OfferForm({ existing, template }: { existing: RideOffer | null; template: RideOffer | null }) {
+  const source = existing ?? template;
   const { t } = useTranslation();
   const toast = useToast();
   const navigate = useNavigate();
@@ -193,20 +221,21 @@ function OfferForm({ existing }: { existing: RideOffer | null }) {
   const rider = useRiderStatus();
   // After the first booking only seats can be added (B3a Q3)
   const locked = (existing?.bookings ?? []).some((b) => ["ACCEPTED", "IN_PROGRESS", "DISPUTED"].includes(b.status));
-  const [pickup, setPickup] = useState<Place | null>(existing?.pickup ?? null);
-  const [destination, setDestination] = useState<Place | null>(existing?.destination ?? null);
+  const [pickup, setPickup] = useState<Place | null>(source?.pickup ?? null);
+  const [destination, setDestination] = useState<Place | null>(source?.destination ?? null);
   const [time, setTime] = useState(existing ? toDhakaInput(existing.departureTime) : inOneHour());
-  const [fare, setFare] = useState(existing ? String(existing.farePerSeat) : "");
-  const [vehicleId, setVehicleId] = useState(existing?.vehicle.id ?? "");
-  const [seats, setSeats] = useState(existing ? String(existing.totalSeats) : "1");
-  const [notes, setNotes] = useState(existing?.notes ?? "");
-  const [subArea, setSubArea] = useState(existing?.subArea ?? null);
+  const [fare, setFare] = useState(source ? String(source.farePerSeat) : "");
+  const [vehicleId, setVehicleId] = useState(source?.vehicle.id ?? "");
+  const [seats, setSeats] = useState(source ? String(source.totalSeats) : "1");
+  const [notes, setNotes] = useState(source?.notes ?? "");
+  const [subArea, setSubArea] = useState(existing ? existing.subArea : activeSubArea(template?.subArea ?? null));
   const [errors, setErrors] = useState<FormErrors>(noErrors);
   const [busy, setBusy] = useState(false);
   const estimate = useSuggestedFare(locked ? null : pickup, destination);
 
   useEffect(() => {
-    if (!vehicleId && rider?.vehicles.length) setVehicleId(rider.vehicles[0].id);
+    // A copied vehicle that is no longer approved is replaced by the first one
+    if (rider && !rider.vehicles.some((v) => v.id === vehicleId)) setVehicleId(rider.vehicles[0]?.id ?? "");
   }, [rider, vehicleId]);
 
   if (!rider) return <SkeletonList rows={4} />;
@@ -260,11 +289,12 @@ function OfferForm({ existing }: { existing: RideOffer | null }) {
       <SubPageHeader title={existing ? t("ride.form.editOffer") : t("ride.offerRide")} back={existing ? `/ride/offers/${existing.id}` : "/ride"} />
       {errors.form && <FormAlert>{errors.form}</FormAlert>}
       {locked && <FormAlert tone="info">{t("ride.form.lockedHint")}</FormAlert>}
+      {template && <FormAlert tone="info">{t("ride.form.copied")}</FormAlert>}
       {!locked && (
         <>
           <PlaceField label={t("ride.pickup")} value={pickup} onChange={setPickup} error={errors.fields.pickup} />
           <PlaceField label={t("ride.destination")} value={destination} onChange={setDestination} error={errors.fields.destination} />
-          <TextField label={t("ride.form.departure")} type="datetime-local" value={time} onChange={setTime} hint={t("ride.form.timeHint")} error={errors.fields.departureTime} />
+          <DateTimeInput label={t("ride.form.departure")} value={time} onChange={setTime} hint={t("ride.form.timeHint")} error={errors.fields.departureTime} />
           <label className={formStyles.field}>
             <span className={formStyles.label}>{t("ride.form.vehicle")}</span>
             <select className={styles.select} value={vehicleId} onChange={(event) => setVehicleId(event.target.value)}>

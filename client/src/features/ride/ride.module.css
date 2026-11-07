@@ -60,12 +60,6 @@
   font-size: var(--text-caption);
 }
 
-.map {
-  height: 280px;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  overflow: hidden;
-}
 
 .list {
   display: grid;
@@ -86,8 +80,25 @@
   text-decoration: none;
 }
 
-.card:hover {
-  background: var(--color-surface-muted);
+.cardLink {
+  display: grid;
+  gap: var(--space-2);
+  color: var(--color-text);
+  text-decoration: none;
+}
+
+.cardLink:hover .route {
+  text-decoration: underline;
+}
+
+a.person {
+  color: var(--color-text);
+  text-decoration: none;
+  min-height: 44px;
+}
+
+a.person:hover .personName {
+  text-decoration: underline;
 }
 
 .cardTop {
@@ -311,4 +322,11 @@
   color: var(--color-text);
   font: inherit;
   resize: vertical;
+}
+
+.bookingRow {
+  display: grid;
+  gap: var(--space-2);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
 }

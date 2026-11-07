@@ -188,6 +188,9 @@ export const rules = {
     ratePerKm: { min: 1, max: 500 },
   },
 
+  // B3b-1: Activity and Upcoming (proposal 12.2, 12.3)
+  feed: { pageSize: 20, upcomingMax: 50 },
+
   // B3a: Nominatim through the server (CLAUDE.md 9, Maps)
   geo: {
     // Nominatim's usage policy: at most one request per second, from the whole server

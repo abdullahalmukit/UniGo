@@ -1,4 +1,4 @@
-import { render, screen, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -238,7 +238,11 @@ describe("user account management", () => {
     await userEvent.click(screen.getByRole("button", { name: "Suspend" }));
     const sheet = screen.getByRole("dialog");
     await userEvent.type(within(sheet).getByLabelText("Reason"), "Harassment");
-    await userEvent.type(within(sheet).getByLabelText("End"), "2026-12-01T10:00");
+    // Date, then the 12-hour time picker (B3b-1): 10:00 AM
+    fireEvent.change(within(sheet).getByLabelText("End"), { target: { value: "2026-12-01" } });
+    const [, endTime] = within(sheet).getAllByRole("group", { name: "Time" });
+    await userEvent.selectOptions(within(endTime).getByLabelText("Hour"), "10");
+    await userEvent.selectOptions(within(endTime).getByLabelText("AM or PM"), "am");
     await userEvent.click(within(sheet).getByRole("button", { name: "Suspend" }));
 
     expect(adminApi.act).toHaveBeenCalledWith("u1", "suspend", {

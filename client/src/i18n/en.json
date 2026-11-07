@@ -80,12 +80,45 @@
       "food": "Food Delivery",
       "service": "Uni Service"
     },
-    "empty": "You have no activities yet.",
-    "statusKey": "Status colours"
+    "empty": {
+      "active": "Nothing active right now.",
+      "ongoing": "Nothing is in progress.",
+      "history": "Finished activities will show here."
+    },
+    "featureFilter": "Service",
+    "roleFilter": "Whose",
+    "roles": {
+      "all": "All",
+      "requested": "Requested by me",
+      "accepted": "Accepted by me"
+    },
+    "tabs": {
+      "active": "Active",
+      "ongoing": "Ongoing",
+      "history": "History"
+    },
+    "comingLater": "This service is coming soon.",
+    "loadFailed": "Could not load your activity.",
+    "loadMore": "Load more",
+    "kind": {
+      "booking": "Seat booking"
+    },
+    "passengersBooked_one": "{{count}} passenger booked",
+    "passengersBooked_other": "{{count}} passengers booked",
+    "disputeLater": "Under admin review. Dispute details come in a later update.",
+    "actions": {
+      "details": "View details",
+      "createAgain": "Create again"
+    }
   },
   "upcoming": {
     "title": "Upcoming",
-    "empty": "Accepted activities will appear here, nearest first."
+    "empty": "Accepted activities will appear here, nearest first.",
+    "loadFailed": "Could not load upcoming activities.",
+    "startingNow": "Starting now",
+    "inMinutes": "in {{minutes}} min",
+    "inHours": "in {{hours}} h {{minutes}} min",
+    "inDays": "in {{days}} d {{hours}} h"
   },
   "inbox": {
     "title": "Inbox",
@@ -704,7 +737,29 @@
     "passwordChanged": "Password changed.",
     "setPasswordHint": "You sign in with Google. To also log in with a password, we'll email you a link to set one.",
     "sendSetupLink": "Email me a link",
-    "setupLinkSent": "Check your email for the link to set a password."
+    "setupLinkSent": "Check your email for the link to set a password.",
+    "open": "Open {{name}}'s profile",
+    "publicTitle": "Profile",
+    "notFound": "This profile is not available.",
+    "loadFailed": "Could not load this profile.",
+    "memberSince": "Member since {{date}}",
+    "batchOf": "Batch {{batch}}",
+    "badges": {
+      "VERIFIED_STUDENT": "Verified Student",
+      "VERIFIED_RIDER": "Verified Rider"
+    },
+    "stats": {
+      "title": "Ratings and reliability",
+      "rating": "Average rating",
+      "completionRate": "Completion rate",
+      "lateCancellationRate": "Late cancellations",
+      "none": "—"
+    },
+    "reviews": "Reviews",
+    "noReviews": "No reviews yet",
+    "vehicles": "Verified vehicles",
+    "openRides": "Open rides",
+    "noOpenRides": "No open ride requests or offers."
   },
   "addresses": {
     "title": "Saved Addresses",
@@ -1016,7 +1071,8 @@
         "other": "A ride was not marked.",
         "system": "A ride was not marked."
       }
-    }
+    },
+    "viewDetails": "View details"
   },
   "ride": {
     "title": "Ride",
@@ -1118,7 +1174,8 @@
       "editRequest": "Edit request",
       "editOffer": "Edit offer",
       "lockedHint": "This offer has bookings, so its details are locked. You can still add seats.",
-      "notActiveRider": "Only Active riders can offer rides. Open Drive with UniGo to become a rider or switch to Active."
+      "notActiveRider": "Only Active riders can offer rides. Open Drive with UniGo to become a rider or switch to Active.",
+      "copied": "Copied from your earlier post. Choose a new time and check the details."
     },
     "actions": {
       "accept": "Accept request",
@@ -1172,10 +1229,27 @@
       "open": "Open your booking",
       "seats": "Seats",
       "fewer": "One seat fewer",
-      "more": "One seat more"
+      "more": "One seat more",
+      "openOne": "Open booking"
     },
     "booking": {
       "title": "Booking"
     }
+  },
+  "contact": {
+    "phone": "Phone",
+    "phoneOf": "{{name}}'s phone",
+    "call": "Call {{phone}}",
+    "callShort": "Call"
+  },
+  "time": {
+    "date": "Date",
+    "time": "Time",
+    "hour": "Hour",
+    "minute": "Minute",
+    "period": "AM or PM",
+    "am": "AM",
+    "pm": "PM",
+    "any": "Any"
   }
 }

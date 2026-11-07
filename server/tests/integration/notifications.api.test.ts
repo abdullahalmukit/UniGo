@@ -38,6 +38,7 @@ describe("GET /api/notifications", () => {
       link: "/account",
       read: false,
       createdAt: expect.any(String),
+      activityId: null,
     });
     const second = await api().get(`/api/notifications?before=${first.body.nextCursor}`).set(bearer(user.accessToken));
     expect(second.body.notifications).toHaveLength(3);

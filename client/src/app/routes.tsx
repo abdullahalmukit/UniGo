@@ -58,6 +58,8 @@ export const routes: RouteObject[] = [
           { path: "account/blocked", element: <BlockedUsersPage /> },
           // Drive with UniGo (B1)
           { path: "drive", lazy: page(() => import("../features/rider/DrivePage"), (m) => m.DrivePage) },
+          // Public profiles (B3b-1 G); the server allows verified students only
+          { path: "u/:id", lazy: page(() => import("../features/profile/PublicProfilePage"), (m) => m.PublicProfilePage) },
           // Ride Sharing (B3a): verified students only, loaded per route (map and forms)
           {
             path: "ride",

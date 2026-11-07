@@ -1,5 +1,4 @@
 import {
-  CalendarClock,
   CalendarDays,
   CarFront,
   Handshake,
@@ -16,7 +15,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { featureList } from "../../app/feature-list";
-import { buttonStyles, EmptyState, Section } from "../../components/ui";
+import { Section } from "../../components/ui";
+import { HomeUpcoming } from "../upcoming/HomeUpcoming";
 import styles from "./HomePage.module.css";
 
 // `to`: the page it opens; the others arrive in later steps.
@@ -78,15 +78,7 @@ export function HomePage() {
           </Link>
         }
       >
-        <EmptyState
-          icon={CalendarClock}
-          text={t("home.upcomingEmpty")}
-          action={
-            <Link to="/services" className={buttonStyles.secondary}>
-              {t("home.browseServices")}
-            </Link>
-          }
-        />
+        <HomeUpcoming />
       </Section>
 
       <Section title={t("home.quickActionsTitle")}>

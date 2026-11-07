@@ -135,6 +135,10 @@ describe("Chat", () => {
     // Shown as text, never as HTML
     expect(screen.getByText("<b>Hi</b>")).toBeInTheDocument();
     expect(await screen.findByRole("link", { name: /Call \+8801711000000/ })).toHaveAttribute("href", "tel:+8801711000000");
+    // B3b-1: the number as text, View details and the profile link
+    expect(screen.getByText("+8801711000000")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "View details" })).toHaveAttribute("href", "/activity");
+    expect(screen.getByRole("link", { name: "Rafi Hasan" })).toHaveAttribute("href", "/u/user-other");
 
     act(() => fakeSocket.emit("message:new", message({ id: "m2", body: "Reached the gate" })));
     expect(await screen.findByText("Reached the gate")).toBeInTheDocument();
@@ -150,6 +154,7 @@ describe("Chat", () => {
     expect(await screen.findByText("This activity has ended, so the chat is read-only.")).toBeInTheDocument();
     expect(screen.queryByRole("textbox", { name: "Write a message" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /Call/ })).not.toBeInTheDocument();
+    expect(screen.queryByText("+8801711000000")).not.toBeInTheDocument();
   });
 
   it("fetches fresh links for an expired receipt photo instead of showing a broken image", async () => {

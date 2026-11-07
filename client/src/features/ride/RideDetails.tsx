@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { ConfirmSheet } from "../../components/ConfirmSheet";
+import { ContactRow } from "../../components/ContactRow";
 import { BottomSheet, FormAlert } from "../../components/form";
 import formStyles from "../../components/form.module.css";
 import { StatusChip } from "../../components/StatusChip";
@@ -30,6 +31,8 @@ import { useRiderStatus } from "./ride-hooks";
 import { ReasonField, RideActions } from "./RideActions";
 import { PersonRow, Route, taka, VehicleLine } from "./RideCard";
 import styles from "./ride.module.css";
+
+const TERMINAL = ["COMPLETED", "CANCELLED", "EXPIRED", "NOT_MARKED"];
 
 function useLoad<T>(load: () => Promise<T>) {
   const [value, setValue] = useState<T | null>(null);
@@ -90,6 +93,7 @@ export function RequestDetailPage() {
         <PersonRow person={request.passenger} caption={t("ride.role.passenger")} />
         {request.rider && <PersonRow person={request.rider} caption={t("ride.role.rider")} />}
         {request.vehicle && <VehicleLine vehicle={request.vehicle} />}
+        <ContactRow phone={request.phone} name={(request.role === "PASSENGER" ? request.rider : request.passenger)?.name} />
       </section>
 
       {isOpen && request.mine && (
@@ -115,6 +119,11 @@ export function RequestDetailPage() {
             <p className={styles.muted}>{t("ride.onlyRidersAccept")}</p>
           )}
         </div>
+      )}
+      {request.mine && TERMINAL.includes(request.status) && (
+        <Link to={`/ride/requests/new?from=${request.id}`} className={buttonStyles.secondary}>
+          {t("activity.actions.createAgain")}
+        </Link>
       )}
       {participant && !isOpen && (
         <RideActions
@@ -282,12 +291,24 @@ export function OfferDetailPage() {
           <h2 className={styles.sectionTitle}>{t("ride.bookings.title", { count: activeBookings.length })}</h2>
           {(offer.bookings ?? []).length === 0 && <p className={styles.muted}>{t("ride.bookings.none")}</p>}
           {(offer.bookings ?? []).map((booking) => (
-            <Link key={booking.activityId} to={`/ride/bookings/${booking.activityId}`} className={styles.row}>
-              {booking.passenger && <PersonRow person={booking.passenger} caption={t("ride.seatsCount", { count: booking.seatsBooked })} />}
-              <StatusChip status={booking.status} />
-            </Link>
+            <div key={booking.activityId} className={styles.bookingRow}>
+              <div className={styles.row}>
+                {booking.passenger && <PersonRow person={booking.passenger} caption={t("ride.seatsCount", { count: booking.seatsBooked })} />}
+                <StatusChip status={booking.status} />
+              </div>
+              <ContactRow phone={booking.phone} name={booking.passenger?.name} />
+              <Link to={`/ride/bookings/${booking.activityId}`} className={buttonStyles.secondary}>
+                {t("ride.bookings.openOne")}
+              </Link>
+            </div>
           ))}
         </section>
+      )}
+
+      {offer.mine && offer.status === "CLOSED" && activeBookings.length === 0 && (
+        <Link to={`/ride/offers/new?from=${offer.id}`} className={buttonStyles.secondary}>
+          {t("activity.actions.createAgain")}
+        </Link>
       )}
 
       {offer.mine && offer.status !== "CLOSED" && (
@@ -318,6 +339,7 @@ export function OfferDetailPage() {
             <span>{t("ride.bookings.yours", { count: myBooking.seatsBooked, amount: taka(myBooking.amount, i18n.language) })}</span>
             <StatusChip status={myBooking.status} />
           </div>
+          <ContactRow phone={myBooking.phone} name={offer.rider.name} />
           <Link to={`/ride/bookings/${myBooking.activityId}`} className={buttonStyles.secondary}>
             {t("ride.bookings.open")}
           </Link>
@@ -419,6 +441,7 @@ function BookingView({ booking, reload, language }: { booking: RideBooking; relo
           <span className={styles.amount}>{t("ride.total", { amount: taka(booking.amount, language) })}</span>
         </div>
         {booking.role === "RIDER" && booking.passenger && <PersonRow person={booking.passenger} caption={t("ride.role.passenger")} />}
+        <ContactRow phone={booking.phone} name={booking.role === "RIDER" ? booking.passenger?.name : booking.rider?.name} />
       </section>
       <RideActions
         activityId={booking.activityId}
