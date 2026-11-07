@@ -16,7 +16,9 @@ export type MiniProfile = {
   university: { name: string; shortName: string | null } | null;
   department: string | null;
   isVerifiedRider: boolean;
+  // Filled by the server (B3b-2); null means "New"
   rating: number | null;
+  ratingCount?: number;
   completionRate: number | null;
   badges: string[];
 };

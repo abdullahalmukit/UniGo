@@ -511,6 +511,7 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | Licence expiry reminder (30 and 7 days before) | Rider | In-app, email |
 | The other participant's account was restricted, suspended or banned | Other participant of each accepted activity | In-app, push, email |
 | Rider access changed (suspended, reinstated, suspension ended, Inactive because the licence expired) | Rider | In-app, email |
+| A review about me was published | Reviewee | In-app |
 
 Rules for all notifications:
 
@@ -526,13 +527,23 @@ Rules for all notifications:
 ### 15.1 Blind reviews
 
 - After an activity is COMPLETED, both users can give 1–5 stars and an optional comment, within 7 days.
-- A submitted review stays hidden until both have reviewed, or until the 7 days end; then reviews are published.
+- A submitted review stays hidden until both have reviewed, or until the 7 days end; then reviews are published, and each reviewee gets an in-app notification.
+- For a ride offer each booking is reviewed separately: the rider reviews each passenger.
 - One review per user per activity (per booking for seat-based posts). No edit or delete after submission; the admin can moderate.
 - No reviews for CANCELLED, EXPIRED or NOT_MARKED activities.
 
 ### 15.2 Profile stats and badges
 
-Average rating, total completed, completion rate (completed ÷ accepted, excluding NOT_MARKED), cancellation count and late cancellation rate. Badges: Verified Student, Verified Rider, Top Rated, Reliable.
+Average rating, total completed, completion rate, cancellation count and late cancellation rate. Badges: Verified Student, Verified Rider, Top Rated, Reliable.
+
+These are a person's own record, so on a profile:
+
+- **Accepted** = activities the person took part in after acceptance that finished as COMPLETED, or that the person cancelled. NOT_MARKED, activities still running, and cancellations made by the other user, the system or an admin are not counted.
+- **Completion rate** = completed ÷ accepted. **Late cancellation rate** = the person's late cancellations ÷ accepted. Below 5 accepted activities both show "New".
+- **Average rating** = average of published reviews that an admin has not hidden, with the number of reviews. Below 3 reviews it shows "New".
+- **Top Rated**: average rating at least 4.5 from at least 5 reviews. **Reliable**: completion rate at least 90%, late cancellation rate under 10%, at least 10 accepted activities.
+- A late cancellation rate of 10% or more shows a warning on the profile.
+- These figures and badges also appear on ride cards and detail pages. The platform KPIs in section 22.1 use their own definition.
 
 ### 15.3 Cancellation rules
 
@@ -571,6 +582,7 @@ Account states (ACTIVE, RESTRICTED, SUSPENDED, BANNED) and admin moderation acti
 UniGo does not process any payment in version 1; it only records what users agree.
 
 - Each activity (ride booking, food, service) stores amount, method (Cash, bKash, Nagad) and status (UNPAID, PAID).
+- The record is created on acceptance with the agreed amount (for a ride, the request's amount or the booking's amount). Either person chooses the method; only the person who receives the money (the rider for rides) marks it PAID, which cannot be undone by users. The Rider Dashboard's earnings record is the sum of PAID ride payments the rider received.
 - Carpool keeps one payment record per contract month (section 9.5).
 - Food records the food cost and the delivery charge separately.
 - Promos in version 1 are informational offers only.
@@ -746,8 +758,8 @@ Dependency rule: Ride Offer creation and Passenger Request acceptance are not co
 | --- | --- |
 | Match rate | Requests accepted ÷ requests created |
 | Time to accept | Average minutes from creation to acceptance |
-| Completion rate | Completed ÷ accepted (excluding NOT_MARKED) |
-| Late cancellation rate | Late cancellations ÷ accepted |
+| Completion rate | Completed ÷ accepted, across the whole platform (excluding NOT_MARKED). Unlike a profile's completion rate (section 15.2), every accepted activity counts, whoever cancelled it. |
+| Late cancellation rate | Late cancellations ÷ accepted (excluding NOT_MARKED), across the whole platform |
 | Dispute rate | Disputed ÷ completed + disputed |
 | User satisfaction | Average rating and pilot survey score |
 

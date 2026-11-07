@@ -298,7 +298,7 @@
     "INVALID_STATUS_CHANGE": "This action is not possible for the account's current status.",
     "STATUS_CHANGED": "This account changed in the meantime. Reload and try again.",
     "INVALID_DATES": "Check the dates: the start cannot be in the past and the end must be after the start.",
-    "ALREADY_REVIEWED": "Another admin has already reviewed this.",
+    "ALREADY_REVIEWED": "You have already reviewed this.",
     "CANNOT_REVIEW_OWN_VERIFICATION": "Another admin must review your own verification.",
     "VERIFICATION_NOT_FOUND": "This verification does not exist.",
     "UNIVERSITY_NAME_TAKEN": "A university with this name already exists.",
@@ -369,7 +369,14 @@
     "OFFER_CHANGED": "This offer changed a moment ago. Look at it again and book.",
     "AMOUNT_NOT_HIGHER": "Choose a higher amount.",
     "START_TOO_EARLY": "You can start the ride from 30 minutes before its time.",
-    "GEO_UNAVAILABLE": "Place search is not available right now. Try again in a moment."
+    "GEO_UNAVAILABLE": "Place search is not available right now. Try again in a moment.",
+    "REVIEW_NOT_ALLOWED": "Only completed activities can be reviewed.",
+    "REVIEW_WINDOW_CLOSED": "The 7 days to leave a review have ended.",
+    "PAYMENT_METHOD_REQUIRED": "Choose how it was paid first.",
+    "PAYMENT_ALREADY_PAID": "This payment is already marked paid.",
+    "PAYMENT_NOT_DUE": "This payment cannot be marked paid now.",
+    "NOT_PAYEE": "Only the person who receives the money can mark it paid.",
+    "REVIEW_ALREADY_HIDDEN": "This review is already hidden."
   },
   "verification": {
     "title": "Verify your student status",
@@ -456,7 +463,8 @@
       "subAreas": "Sub-Areas",
       "auditLog": "Audit Log",
       "riderRequests": "Rider Requests",
-      "fareSettings": "Fare Settings"
+      "fareSettings": "Fare Settings",
+      "rides": "Ride Sharing"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -699,6 +707,58 @@
       "save": "Save rate",
       "saved": "The new rate applies from now.",
       "history": "History"
+    },
+    "rides": {
+      "kinds": {
+        "requests": "Requests",
+        "offers": "Offers",
+        "bookings": "Bookings"
+      },
+      "search": "Search a person",
+      "status": "Status",
+      "date": "Date",
+      "empty": "No rides match these filters.",
+      "count_one": "{{count}} ride",
+      "count_other": "{{count}} rides",
+      "seats": "Seats {{seats}}",
+      "deleted": "Deleted by the creator",
+      "detailTitle": "Ride",
+      "offerTitle": "Ride offer",
+      "back": "Back to Ride Sharing",
+      "time": "Time",
+      "route": "Route",
+      "amount": "Amount",
+      "vehicle": "Vehicle",
+      "payment": "Payment",
+      "late": "Late cancellation",
+      "openOffer": "Open the offer",
+      "bookings": "Bookings",
+      "history": "Status history",
+      "actor": {
+        "USER": "User",
+        "ADMIN": "Admin",
+        "SYSTEM": "System"
+      },
+      "reason": "Reason: {{reason}}",
+      "reviews": "Reviews",
+      "reviewLine": "{{reviewer}} → {{reviewee}}: {{rating}}/5",
+      "published": "Published",
+      "notPublished": "Not published yet",
+      "hidden": "Hidden: {{reason}}",
+      "hide": "Hide review",
+      "hideTitle": "Hide this review?",
+      "cancel": "Cancel ride",
+      "cancelTitle": "Cancel this ride?",
+      "cancelHint": "Both people are told it was cancelled by UniGo. The reason stays in the status history and the Audit Log.",
+      "chatPrivate": "Chats stay private. Admins can read the chat of a disputed activity only (with disputes).",
+      "closeReasons": {
+        "DEPARTED": "Departed",
+        "CANCELLED_BY_RIDER": "Cancelled by the rider",
+        "STOPPED_BY_RIDER": "Bookings stopped by the rider",
+        "REMOVED_BY_RIDER": "Removed by the rider",
+        "ACCOUNT_MODERATED": "Account moderated",
+        "ADMIN_REMOVED": "Cancelled by an admin"
+      }
     }
   },
   "common": {
@@ -746,20 +806,26 @@
     "batchOf": "Batch {{batch}}",
     "badges": {
       "VERIFIED_STUDENT": "Verified Student",
-      "VERIFIED_RIDER": "Verified Rider"
+      "VERIFIED_RIDER": "Verified Rider",
+      "TOP_RATED": "Top Rated",
+      "RELIABLE": "Reliable"
     },
     "stats": {
       "title": "Ratings and reliability",
       "rating": "Average rating",
       "completionRate": "Completion rate",
       "lateCancellationRate": "Late cancellations",
-      "none": "—"
+      "reviewCount_one": "({{count}} review)",
+      "reviewCount_other": "({{count}} reviews)",
+      "counts": "{{completed}} completed · {{cancellations}} cancelled by them"
     },
     "reviews": "Reviews",
     "noReviews": "No reviews yet",
     "vehicles": "Verified vehicles",
     "openRides": "Open rides",
-    "noOpenRides": "No open ride requests or offers."
+    "noOpenRides": "No open ride requests or offers.",
+    "lateWarning": "This person has cancelled late several times.",
+    "moreReviews": "Show more reviews"
   },
   "addresses": {
     "title": "Saved Addresses",
@@ -901,7 +967,7 @@
       "activeCarpoolContracts": "Carpool contracts",
       "carpoolSessionCancellations": "Session cancellations",
       "earnings": "Earnings record",
-      "empty": "Your numbers appear here once you start driving."
+      "empty": "Earnings are the paid payments you received. Carpool counters start with Carpool."
     },
     "myVehicles": "My vehicles",
     "history": "Verification history",
@@ -1251,5 +1317,50 @@
     "am": "AM",
     "pm": "PM",
     "any": "Any"
+  },
+  "stats": {
+    "new": "New",
+    "ratingShort_one": "{{rating}} ({{count}} review)",
+    "ratingShort_other": "{{rating}} ({{count}} reviews)",
+    "completedShort": "{{rate}}% completed"
+  },
+  "payment": {
+    "title": "Payment",
+    "status": {
+      "UNPAID": "Unpaid",
+      "PAID": "Paid"
+    },
+    "methods": {
+      "CASH": "Cash",
+      "BKASH": "bKash",
+      "NAGAD": "Nagad"
+    },
+    "method": "How it is paid",
+    "noMethod": "Method not chosen",
+    "youReceive": "you receive",
+    "youPay": "you pay",
+    "markPaid": "Mark as paid",
+    "chooseFirst": "Choose how it was paid first.",
+    "noGateway": "UniGo does not take payments. Pay each other directly; this is only a record.",
+    "confirmTitle": "Mark this payment as paid?",
+    "confirmText": "Only mark it once you have received ৳{{amount}}. This cannot be undone.",
+    "marked": "Marked as paid."
+  },
+  "review": {
+    "title": "Review",
+    "leave": "Leave review",
+    "done": "You reviewed this.",
+    "rating": "Your rating",
+    "starsLabel_one": "{{count}} star",
+    "starsLabel_other": "{{count}} stars",
+    "comment": "Comment (optional)",
+    "pickStars": "Choose from 1 to 5 stars.",
+    "blindHint": "Your review stays hidden until the other person reviews too, or until 7 days after completion.",
+    "closes": "You can review until {{date}}.",
+    "send": "Send review",
+    "sent": "Review sent.",
+    "yours": "Your review",
+    "waiting": "The other person's review shows here once both have reviewed, or after 7 days.",
+    "closed": "The time to leave a review has ended."
   }
 }

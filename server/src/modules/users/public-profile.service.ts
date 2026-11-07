@@ -2,14 +2,16 @@ import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { offerSelect, offerView, requestSelect, requestView } from "../ride/ride.views.js";
 import { toPublicVehicle } from "../vehicles/vehicles.js";
+import { listUserReviews } from "../reviews/reviews.service.js";
 import { isBlockedBetween } from "./blocks.service.js";
+import { userStats } from "./stats.service.js";
 import { photoLink } from "./photo.js";
 
 // A person's public profile (proposal 8.3, B3b-1 G). Opened by verified
 // students from ride cards, detail pages, the chat header and Activity. Never
 // a phone number or an email. Blocked users (either way) and BANNED accounts
-// answer "not found" (Q3). Rating, completion rate, late cancellation rate
-// and reviews are filled in by B3b-2.
+// answer "not found" (Q3). Stats, badges and the latest published reviews
+// come from B3b-2 (users/stats.service.ts, reviews/reviews.service.ts).
 
 const notFound = () => new AppError(404, "PROFILE_NOT_FOUND", "This profile is not available");
 
@@ -53,9 +55,7 @@ export async function getPublicProfile(viewerId: string, userId: string, now = n
       : Promise.resolve([]),
   ]);
 
-  const badges: string[] = [];
-  if (user.studentVerificationStatus === "VERIFIED") badges.push("VERIFIED_STUDENT");
-  if (user.isVerifiedRider) badges.push("VERIFIED_RIDER");
+  const [stats, reviews] = await Promise.all([userStats(userId), listUserReviews(userId, 1)]);
 
   return {
     id: user.id,
@@ -65,11 +65,19 @@ export async function getPublicProfile(viewerId: string, userId: string, now = n
     department: user.profile?.department ?? null,
     batch: user.profile?.batch ?? null,
     memberSince: user.createdAt,
-    badges,
+    badges: stats.badges,
     vehicles: user.isVerifiedRider ? user.vehicles.map(toPublicVehicle) : [],
-    // B3b-2
-    stats: { rating: null, completed: null, completionRate: null, lateCancellationRate: null },
-    reviews: [] as unknown[],
+    stats: {
+      rating: stats.rating,
+      reviewCount: stats.reviewCount,
+      completed: stats.completed,
+      cancellations: stats.cancellations,
+      completionRate: stats.completionRate,
+      lateCancellationRate: stats.lateCancellationRate,
+      lateCancellationWarning: stats.lateCancellationWarning,
+    },
+    reviews: reviews.reviews,
+    moreReviews: reviews.hasMore,
     openRides: [
       ...(await Promise.all(requests.map((row) => requestView(row, viewerId)))),
       ...(await Promise.all(offers.map((row) => offerView(row, viewerId)))),

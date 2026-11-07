@@ -15,6 +15,8 @@ import {
 } from "../subareas/subareas.admin.service.js";
 import { rules } from "../../config/rules.js";
 import { listFareSettings, setRatePerKm } from "../ride/fare.service.js";
+import { adminCancelActivity, adminCancelOffer, getAdminRideActivity, getAdminRideOffer, listAdminRides } from "../ride/ride.admin.service.js";
+import { hideReview } from "../reviews/reviews.service.js";
 import { listAuditLogs } from "./audit-log.service.js";
 import { getDashboard } from "./dashboard.service.js";
 import { actionSchemas, applyAccountAction, type AccountAction, type ActionInput } from "./moderation.service.js";
@@ -107,4 +109,44 @@ const auditQuery = z.object({
 
 adminRouter.get("/audit-logs", superAdminOnly, async (req, res) => {
   res.json(await listAuditLogs(parseInput(auditQuery, req.query)));
+});
+
+// ---- Ride Sharing (B3b-2): Moderators and Super Admins (Q3) ------------------
+
+const ridesQuery = z.object({
+  kind: z.enum(["requests", "offers", "bookings"]).default("requests"),
+  status: z.enum(["OPEN", "ACCEPTED", "IN_PROGRESS", "DISPUTED", "COMPLETED", "CANCELLED", "EXPIRED", "NOT_MARKED", "FULL", "CLOSED"]).optional(),
+  q: optionalText,
+  date: z.iso.date().optional(),
+  subAreaId: z.uuid().optional(),
+  page,
+});
+const adminReason = z.object({ reason: z.string().trim().min(rules.admin.reason.minLength).max(rules.admin.reason.maxLength) });
+const hideReason = z.object({ reason: z.string().trim().min(rules.reviews.hideReason.minLength).max(rules.reviews.hideReason.maxLength) });
+
+adminRouter.get("/rides", async (req, res) => {
+  res.json(await listAdminRides(parseInput(ridesQuery, req.query)));
+});
+
+adminRouter.get("/rides/offers/:id", async (req, res) => {
+  res.json({ offer: await getAdminRideOffer(id(req.params.id)) });
+});
+
+adminRouter.get("/rides/activities/:id", async (req, res) => {
+  res.json({ ride: await getAdminRideActivity(id(req.params.id)) });
+});
+
+adminRouter.post("/rides/activities/:id/cancel", validateBody(adminReason), async (req, res) => {
+  res.json({ ride: await adminCancelActivity(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+adminRouter.post("/rides/offers/:id/cancel", validateBody(adminReason), async (req, res) => {
+  res.json({ offer: await adminCancelOffer(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+// ---- Reviews (B3b-2): hide with a reason, audited -------------------------------
+
+adminRouter.post("/reviews/:id/hide", validateBody(hideReason), async (req, res) => {
+  await hideReview(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof hideReason>).reason, req.ip);
+  res.status(204).end();
 });

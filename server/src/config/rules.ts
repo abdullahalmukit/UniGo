@@ -52,9 +52,29 @@ export const rules = {
   },
 
   reviews: {
+    // A review can be written this long after completion; then both are published
     window: 7 * DAY,
     minStars: 1,
     maxStars: 5,
+    commentMaxLength: 500,
+    pageSize: 20,
+    hideReason: { minLength: 3, maxLength: 500 },
+  },
+
+  // B3b-2: profile stats and badges (proposal 15.2, B3b-2 decisions)
+  stats: {
+    // Below these counts the profile shows "New" instead of a number
+    minReviewsForRating: 3,
+    minAcceptedForRates: 5,
+    topRated: { minRating: 4.5, minReviews: 5 },
+    reliable: { minCompletionRate: 0.9, maxLateCancellationRate: 0.1, minAccepted: 10 },
+    // The profile warns about repeated late cancellations at this rate (15.3)
+    lateCancellationWarning: 0.1,
+  },
+
+  // B3b-2: payment records (proposal 16); UniGo never processes payments
+  payments: {
+    methods: ["CASH", "BKASH", "NAGAD"],
   },
 
   uploads: {

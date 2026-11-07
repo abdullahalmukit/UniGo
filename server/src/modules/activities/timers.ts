@@ -16,6 +16,8 @@ export type TimerSubject = {
   completionRequestedAt: Date | null;
   // B2c reminders: a service request without a time (false) gets none
   blocksTime?: boolean;
+  // B3b-2: blind reviews are published 7 days after completion
+  completedAt?: Date | null;
 };
 
 // B2c: the 30-minute reminder (proposal section 14) for these types; carpool
@@ -57,6 +59,10 @@ export function timerJobsFor(activity: TimerSubject, now = new Date()): TimerJob
     jobs.push(
       job("activity-auto-complete", activity.id, new Date(activity.completionRequestedAt.getTime() + rules.activity.autoCompleteAfter)),
     );
+  }
+  // B3b-2: publish the blind reviews when the review window ends
+  if (activity.status === "COMPLETED" && activity.completedAt) {
+    jobs.push(job("review-publish", activity.id, new Date(activity.completedAt.getTime() + rules.reviews.window)));
   }
   // B2c: reminders, only while ACCEPTED and only if still ahead (an activity
   // accepted after its reminder time gets none).

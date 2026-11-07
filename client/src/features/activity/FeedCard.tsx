@@ -69,6 +69,12 @@ export function FeedCard({
         <PersonRow person={item.otherPerson} caption={item.kind === "RIDE_BOOKING" || item.role === "REQUESTED" ? t("ride.role.rider") : t("ride.role.passenger")} />
       )}
       <ContactRow phone={item.phone} name={item.otherPerson?.name} />
+      {item.payment && (
+        <span className={styles.meta}>
+          <ToneChip tone={item.payment.status === "PAID" ? "green" : "amber"} label={t(`payment.status.${item.payment.status}`)} />
+          <span>{item.payment.method ? t(`payment.methods.${item.payment.method}`) : t("payment.noMethod")}</span>
+        </span>
+      )}
 
       {isOffer && mode === "activity" && item.bookings.length > 0 && (
         <ul className={styles.bookings} aria-label={t("ride.bookings.title", { count: item.bookings.length })}>
@@ -142,6 +148,12 @@ function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void })
   if (TERMINAL.includes(item.status)) {
     return (
       <div className={styles.actions}>
+        {item.review === "CAN_REVIEW" && (
+          <Link to={`${itemPath(item)}#review`} className={buttonStyles.primary}>
+            {t("review.leave")}
+          </Link>
+        )}
+        {item.review === "REVIEWED" && <p className={styles.note}>{t("review.done")}</p>}
         {open}
         {item.kind === "RIDE_REQUEST" && item.role === "REQUESTED" && (
           <Link to={`/ride/requests/new?from=${item.id}`} className={buttonStyles.secondary}>

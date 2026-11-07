@@ -1,3 +1,4 @@
+import { rules } from "../../config/rules.js";
 import type { ActivityStatus, PostStatus, Prisma } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { participantPhones } from "../users/contact.js";
@@ -41,6 +42,11 @@ export type FeedItem = {
   otherPerson: Awaited<ReturnType<typeof miniProfile>> | null;
   phone: string | null;
   chatId: string | null;
+  // B3b-2: the payment record (none for an offer itself)
+  payment: { amount: number; method: string | null; status: "UNPAID" | "PAID"; payee: "ME" | "OTHER" } | null;
+  // B3b-2: "CAN_REVIEW" while a completed activity can still be reviewed by
+  // the viewer, "REVIEWED" once they have, otherwise null
+  review: "CAN_REVIEW" | "REVIEWED" | null;
   // Offers: the rider's bookings on it
   bookings: {
     activityId: string;
@@ -56,6 +62,10 @@ export type FeedItem = {
 const requestFeedSelect = {
   id: true,
   status: true,
+  completedAt: true,
+  paymentRecord: { select: { amount: true, method: true, status: true, payeeId: true } },
+  reviews: { select: { reviewerId: true } },
+
   subStatus: true,
   startTime: true,
   creatorId: true,
@@ -81,6 +91,10 @@ const requestFeedSelect = {
 const bookingFeedSelect = {
   id: true,
   status: true,
+  completedAt: true,
+  paymentRecord: { select: { amount: true, method: true, status: true, payeeId: true } },
+  reviews: { select: { reviewerId: true } },
+
   subStatus: true,
   startTime: true,
   creatorId: true,
@@ -176,6 +190,8 @@ async function offerItems(userId: string, rows: OfferRow[]): Promise<FeedItem[]>
         otherPerson: null,
         phone: null,
         chatId: null,
+        payment: null,
+        review: null,
         bookings,
         activeBookings: bookings.filter((b) => RUNNING.includes(b.status)).length,
       };
@@ -186,7 +202,24 @@ async function offerItems(userId: string, rows: OfferRow[]): Promise<FeedItem[]>
 type RequestRow = Prisma.ActivityGetPayload<{ select: typeof requestFeedSelect }>;
 type BookingRow = Prisma.ActivityGetPayload<{ select: typeof bookingFeedSelect }>;
 
-async function activityItems(userId: string, requests: RequestRow[], bookings: BookingRow[]): Promise<FeedItem[]> {
+type Extras = {
+  status: ActivityStatus;
+  completedAt: Date | null;
+  paymentRecord: { amount: Prisma.Decimal; method: string | null; status: "UNPAID" | "PAID"; payeeId: string } | null;
+  reviews: { reviewerId: string }[];
+};
+
+function extras(row: Extras, userId: string, now: Date) {
+  const p = row.paymentRecord;
+  const reviewed = row.reviews.some((r) => r.reviewerId === userId);
+  const open = row.status === "COMPLETED" && row.completedAt !== null && now.getTime() < row.completedAt.getTime() + rules.reviews.window;
+  return {
+    payment: p ? { amount: Number(p.amount), method: p.method, status: p.status, payee: p.payeeId === userId ? ("ME" as const) : ("OTHER" as const) } : null,
+    review: reviewed ? ("REVIEWED" as const) : open ? ("CAN_REVIEW" as const) : null,
+  };
+}
+
+async function activityItems(userId: string, requests: RequestRow[], bookings: BookingRow[], now = new Date()): Promise<FeedItem[]> {
   const phones = await participantPhones(userId, [
     ...requests.map((r) => ({ otherId: r.creatorId === userId ? r.accepterId : r.creatorId, status: r.status })),
     ...bookings.map((b) => ({ otherId: b.creatorId, status: b.status })),
@@ -212,6 +245,7 @@ async function activityItems(userId: string, requests: RequestRow[], bookings: B
         otherPerson: other ? await miniProfile(other) : null,
         phone: phones[i] ?? null,
         chatId: row.chat?.id ?? null,
+        ...extras(row, userId, now),
         bookings: [],
         activeBookings: 0,
       };
@@ -236,6 +270,7 @@ async function activityItems(userId: string, requests: RequestRow[], bookings: B
         otherPerson: await miniProfile(row.creator),
         phone: phones[requests.length + i] ?? null,
         chatId: row.chat?.id ?? null,
+        ...extras(row, userId, now),
         bookings: [],
         activeBookings: 0,
       };

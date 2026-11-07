@@ -23,6 +23,7 @@ import { boundingBox, distanceKm, type LatLng } from "../geo/distance.js";
 import { queueSubAreaNotification } from "../notifications/sub-area.service.js";
 import { activeBlocker, currentLicenceExpiry } from "../riders/rider-status.js";
 import { blockedUserIds, isBlockedBetween } from "../users/blocks.service.js";
+import { createPaymentRecord } from "../payments/payments.service.js";
 import { participantPhone, participantPhones } from "../users/contact.js";
 import { seatLimits } from "../vehicles/vehicles.js";
 import { routeDistanceKm } from "./fare.service.js";
@@ -246,7 +247,11 @@ export async function acceptRideRequest(riderId: string, activityId: string, veh
       const request = await tx.rideRequest.findUniqueOrThrow({ where: { activityId }, select: { passengerCount: true } });
       await usableVehicle(tx, riderId, vehicleId, request.passengerCount);
       await assertNoOwnOpenOfferNear(tx, riderId, activity.startTime);
-      await tx.rideRequest.update({ where: { activityId }, data: { vehicleId } });
+    },
+    afterTake: async (tx) => {
+      const request = await tx.rideRequest.update({ where: { activityId }, data: { vehicleId }, select: { offeredAmount: true } });
+      // B3b-2: the payment record, with the request's amount; the rider receives it
+      await createPaymentRecord(tx, { activityId, amount: request.offeredAmount, payeeId: riderId });
     },
   });
   return requestView(await loadRequest(activityId), riderId);
@@ -493,9 +498,12 @@ export async function bookRideOffer(passengerId: string, offerId: string, seats:
     },
     afterCreate: async (tx, created) => {
       const { farePerSeat } = await tx.rideOffer.findUniqueOrThrow({ where: { id: offerId }, select: { farePerSeat: true } });
+      const amount = farePerSeat.mul(seats);
       await tx.rideBooking.create({
-        data: { activityId: created.id, rideOfferId: offerId, seatsBooked: seats, amount: farePerSeat.mul(seats) },
+        data: { activityId: created.id, rideOfferId: offerId, seatsBooked: seats, amount },
       });
+      // B3b-2: the payment record, with the booking's amount; the rider receives it
+      await createPaymentRecord(tx, { activityId: created.id, amount, payeeId: offer.riderId });
     },
   });
   return getRideBooking(passengerId, activity.id);

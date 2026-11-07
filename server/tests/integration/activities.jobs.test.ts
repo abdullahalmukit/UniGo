@@ -134,8 +134,8 @@ describe("ride offer closing and the sweeper", () => {
     const untouched = await createActivity({ creatorId: user.id, startTime: fromNow(HOUR) });
     await createRideOffer(user.id, { departureTime: fromNow(-MINUTE) });
 
-    expect(await runActivitySweep()).toEqual({ expired: 1, notMarked: 1, autoCompleted: 1, rideOffersClosed: 1, remindersSent: 0, notificationsDelivered: 0 });
-    expect(await runActivitySweep()).toEqual({ expired: 0, notMarked: 0, autoCompleted: 0, rideOffersClosed: 0, remindersSent: 0, notificationsDelivered: 0 });
+    expect(await runActivitySweep()).toEqual({ expired: 1, notMarked: 1, autoCompleted: 1, rideOffersClosed: 1, remindersSent: 0, notificationsDelivered: 0, reviewsPublished: 0 });
+    expect(await runActivitySweep()).toEqual({ expired: 0, notMarked: 0, autoCompleted: 0, rideOffersClosed: 0, remindersSent: 0, notificationsDelivered: 0, reviewsPublished: 0 });
 
     expect((await storedActivity(expired.id)).status).toBe("EXPIRED");
     expect((await storedActivity(notMarked.id)).status).toBe("NOT_MARKED");

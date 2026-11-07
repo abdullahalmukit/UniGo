@@ -63,6 +63,8 @@ export const CATALOGUE: Record<NotificationType, CatalogueEntry> = {
   LICENCE_EXPIRY_REMINDER: { recipients: "Rider", channels: IN_APP_EMAIL, email: "ACCOUNT" },
   PARTICIPANT_ACCOUNT_LOCKED: { recipients: "Other participant", channels: IN_APP_PUSH_EMAIL, email: "ACTIVITY" },
   RIDER_ACCESS_CHANGED: { recipients: "Rider", channels: IN_APP_EMAIL, email: "ACCOUNT" },
+  // B3b-2 (Q1): a review about the user was published
+  REVIEW_PUBLISHED: { recipients: "Reviewee", channels: IN_APP },
 };
 
 // Values stored with a notification to build its text in the recipient's
@@ -89,6 +91,8 @@ export type NotificationData = {
   expiresOn?: string;
   days?: number;
   subAreaName?: string;
+  // B3b-2: the user a link opens (a published review opens the reviewee's profile)
+  userId?: string;
   // Announcements written by an admin
   title?: string;
   body?: string;

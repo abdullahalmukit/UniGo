@@ -330,3 +330,21 @@ a.person:hover .personName {
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
 }
+
+/* B3b-2: rating, completion rate and badges in a mini profile */
+.stats {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.badge {
+  padding: 0 var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}

@@ -58,6 +58,8 @@ function item(overrides: Partial<FeedItem> = {}): FeedItem {
     otherPerson: person("rider-1", "Karim Rider"),
     phone: "+8801711000000",
     chatId: "c1",
+    payment: { amount: 150, method: null, status: "UNPAID", payee: "OTHER" },
+    review: null,
     bookings: [],
     activeBookings: 0,
     ...overrides,

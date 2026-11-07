@@ -1,0 +1,141 @@
+/* Payment card, reviews and stats (B3b-2). Colours only from theme tokens. */
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.title {
+  margin: 0;
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+}
+
+.amount {
+  margin: 0;
+  font-weight: var(--weight-bold);
+}
+
+.methods {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-2);
+}
+
+.method {
+  min-height: var(--tap-target);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  cursor: pointer;
+}
+
+.method[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  font-weight: var(--weight-bold);
+}
+
+.method:disabled {
+  cursor: not-allowed;
+}
+
+.note {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.form {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.textarea {
+  width: 100%;
+  min-height: 80px;
+  padding: var(--space-2) var(--space-3);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  resize: vertical;
+}
+
+.starPicker {
+  display: flex;
+  gap: var(--space-1);
+}
+
+.starButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  border: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.stars {
+  display: inline-flex;
+  gap: 2px;
+}
+
+.starOn {
+  color: var(--color-accent);
+  fill: var(--color-accent);
+}
+
+.starOff {
+  color: var(--color-text-muted);
+}
+
+.review {
+  display: grid;
+  gap: var(--space-1);
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--color-border);
+}
+
+.reviewer {
+  font-weight: var(--weight-bold);
+}
+
+.comment {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.statLine {
+  display: inline-flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-2);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+}
+
+.badge {
+  padding: 1px var(--space-2);
+  border-radius: var(--radius-pill);
+  background: var(--color-accent-soft);
+  color: var(--color-text);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}

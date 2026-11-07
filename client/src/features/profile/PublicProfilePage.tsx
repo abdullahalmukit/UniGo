@@ -5,6 +5,9 @@ import { useParams } from "react-router";
 import { Avatar } from "../../components/Avatar";
 import { FormAlert } from "../../components/form";
 import { ToneChip } from "../../components/StatusChip";
+import { buttonStyles } from "../../components/ui";
+import { getUserReviews, type Review } from "../activity/extras-api";
+import { ReviewItem } from "../activity/ReviewPanel";
 import { api, ApiError } from "../../lib/api";
 import { formatDate } from "../../lib/dates";
 import { SkeletonList, SubPageHeader } from "../account/SubPage";
@@ -20,28 +23,46 @@ export type PublicProfile = {
   department: string | null;
   batch: string | null;
   memberSince: string;
-  badges: ("VERIFIED_STUDENT" | "VERIFIED_RIDER")[];
+  badges: ("VERIFIED_STUDENT" | "VERIFIED_RIDER" | "TOP_RATED" | "RELIABLE")[];
   vehicles: PublicVehicle[];
-  stats: { rating: number | null; completed: number | null; completionRate: number | null; lateCancellationRate: number | null };
-  reviews: unknown[];
+  // null means "New" (B3b-2, rules.stats)
+  stats: {
+    rating: number | null;
+    reviewCount: number;
+    completed: number;
+    cancellations: number;
+    completionRate: number | null;
+    lateCancellationRate: number | null;
+    lateCancellationWarning: boolean;
+  };
+  reviews: Review[];
+  moreReviews: boolean;
   openRides: RideItem[];
   isMe: boolean;
 };
 
 export const getPublicProfile = (id: string) => api<{ profile: PublicProfile }>(`/users/${encodeURIComponent(id)}/profile`).then((r) => r.profile);
 
-// A person's public profile (proposal 8.3, B3b-1 G). Never a phone or email.
-// Rating, completion rate, late cancellation rate and reviews arrive in B3b-2.
+// A person's public profile (proposal 8.3 and 15.2, B3b-1 G, B3b-2). Never a
+// phone or email. Stats show "New" until there is enough history.
 export function PublicProfilePage() {
   const { id = "" } = useParams();
   const { t, i18n } = useTranslation();
   const [profile, setProfile] = useState<PublicProfile | null>(null);
   const [error, setError] = useState<"NOT_FOUND" | "FAILED" | null>(null);
+  const [moreReviews, setMoreReviews] = useState<Review[]>([]);
+  const [reviewPage, setReviewPage] = useState(1);
+  const [hasMoreReviews, setHasMoreReviews] = useState(false);
 
   const load = useCallback(() => {
     setError(null);
     getPublicProfile(id)
-      .then(setProfile)
+      .then((value) => {
+        setProfile(value);
+        setMoreReviews([]);
+        setReviewPage(1);
+        setHasMoreReviews(value.moreReviews);
+      })
       .catch((failure) => setError(failure instanceof ApiError && failure.status === 404 ? "NOT_FOUND" : "FAILED"));
   }, [id]);
   useEffect(load, [load]);
@@ -56,7 +77,14 @@ export function PublicProfilePage() {
   }
 
   const university = profile.university?.shortName ?? profile.university?.name;
-  const dash = t("profile.stats.none");
+  const isNew = t("stats.new");
+  const percent = (value: number | null) => (value === null ? isNew : `${Math.round(value * 100)}%`);
+  const loadMoreReviews = async () => {
+    const next = await getUserReviews(profile.id, reviewPage + 1);
+    setMoreReviews((current) => [...current, ...next.reviews]);
+    setReviewPage(next.page);
+    setHasMoreReviews(next.hasMore);
+  };
   return (
     <div className={styles.page}>
       <SubPageHeader title={t("profile.publicTitle")} back="/" />
@@ -84,20 +112,32 @@ export function PublicProfilePage() {
           <div>
             <dt>{t("profile.stats.rating")}</dt>
             <dd>
-              <Star aria-hidden size={16} /> {profile.stats.rating ?? dash}
+              <Star aria-hidden size={16} /> {profile.stats.rating === null ? isNew : profile.stats.rating.toLocaleString(i18n.language === "bn" ? "bn-BD" : "en")}
+              <span className={styles.muted}> {t("profile.stats.reviewCount", { count: profile.stats.reviewCount })}</span>
             </dd>
           </div>
           <div>
             <dt>{t("profile.stats.completionRate")}</dt>
-            <dd>{profile.stats.completionRate ?? dash}</dd>
+            <dd>{percent(profile.stats.completionRate)}</dd>
           </div>
           <div>
             <dt>{t("profile.stats.lateCancellationRate")}</dt>
-            <dd>{profile.stats.lateCancellationRate ?? dash}</dd>
+            <dd>{percent(profile.stats.lateCancellationRate)}</dd>
           </div>
         </dl>
+        <p className={styles.muted}>{t("profile.stats.counts", { completed: profile.stats.completed, cancellations: profile.stats.cancellations })}</p>
+        {profile.stats.lateCancellationWarning && <FormAlert tone="info">{t("profile.lateWarning")}</FormAlert>}
         <h3 className={styles.subTitle}>{t("profile.reviews")}</h3>
-        <p className={styles.muted}>{t("profile.noReviews")}</p>
+        {profile.reviews.length === 0 ? (
+          <p className={styles.muted}>{t("profile.noReviews")}</p>
+        ) : (
+          [...profile.reviews, ...moreReviews].map((review) => <ReviewItem key={review.id} review={review} />)
+        )}
+        {hasMoreReviews && (
+          <button type="button" className={buttonStyles.secondary} onClick={() => void loadMoreReviews()}>
+            {t("profile.moreReviews")}
+          </button>
+        )}
       </section>
 
       {profile.vehicles.length > 0 && (

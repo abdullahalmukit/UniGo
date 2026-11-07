@@ -17,7 +17,8 @@ export const personSelect = {
 
 type Person = Prisma.UserGetPayload<{ select: typeof personSelect }>;
 
-// The mini profile on a ride card. Rating, completion rate and badges come in B3b.
+// The mini profile on a ride card. Rating, completion rate and badges are
+// filled in for a whole answer at once by fillPersonStats() (B3b-2).
 export async function miniProfile(user: Person) {
   return {
     id: user.id,
@@ -26,8 +27,9 @@ export async function miniProfile(user: Person) {
     university: user.university,
     department: user.profile?.department ?? null,
     isVerifiedRider: user.isVerifiedRider,
-    rating: null,
-    completionRate: null,
+    rating: null as number | null,
+    ratingCount: 0,
+    completionRate: null as number | null,
     badges: [] as string[],
   };
 }

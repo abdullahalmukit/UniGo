@@ -1,4 +1,4 @@
-import { ArrowLeft, CarFront, Coins, GraduationCap, IdCard, LayoutDashboard, MapPin, Menu, ScrollText, Users, X } from "lucide-react";
+import { ArrowLeft, Car, CarFront, Coins, GraduationCap, IdCard, LayoutDashboard, MapPin, Menu, ScrollText, Users, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, Outlet, useLocation } from "react-router";
@@ -12,6 +12,7 @@ const items = [
   { to: "/admin/verifications", labelKey: "admin.nav.verifications", icon: IdCard, end: false, superAdminOnly: false },
   { to: "/admin/rider-requests", labelKey: "admin.nav.riderRequests", icon: CarFront, end: false, superAdminOnly: false },
   { to: "/admin/users", labelKey: "admin.nav.users", icon: Users, end: false, superAdminOnly: false },
+  { to: "/admin/rides", labelKey: "admin.nav.rides", icon: Car, end: false, superAdminOnly: false },
   { to: "/admin/universities", labelKey: "admin.nav.universities", icon: GraduationCap, end: false, superAdminOnly: true },
   { to: "/admin/sub-areas", labelKey: "admin.nav.subAreas", icon: MapPin, end: false, superAdminOnly: true },
   { to: "/admin/fare-settings", labelKey: "admin.nav.fareSettings", icon: Coins, end: false, superAdminOnly: true },

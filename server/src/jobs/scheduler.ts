@@ -18,7 +18,9 @@ export type TimerJobName =
   | "activity-reminder"
   | "carpool-session-reminder"
   | "sub-area-notify"
-  | "notification-deliver";
+  | "notification-deliver"
+  // B3b-2
+  | "review-publish";
 
 export type TimerJob = {
   name: TimerJobName;

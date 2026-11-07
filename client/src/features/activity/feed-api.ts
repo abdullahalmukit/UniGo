@@ -34,6 +34,9 @@ export type FeedItem = {
   otherPerson: MiniProfile | null;
   phone: string | null;
   chatId: string | null;
+  // B3b-2
+  payment: { amount: number; method: string | null; status: "UNPAID" | "PAID"; payee: "ME" | "OTHER" } | null;
+  review: "CAN_REVIEW" | "REVIEWED" | null;
   bookings: FeedBooking[];
   activeBookings: number;
 };

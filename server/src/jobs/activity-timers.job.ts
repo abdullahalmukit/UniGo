@@ -3,6 +3,7 @@ import { prisma } from "../lib/prisma.js";
 import { transitionActivity } from "../modules/activities/engine.js";
 import { NOT_COMPLETION_REQUESTED, NOT_MARKED_TYPES, OPEN_REQUEST_TYPES } from "../modules/activities/transitions.js";
 import { deliverNotification } from "../modules/notifications/notify.service.js";
+import { publishOverdueReviews } from "../modules/reviews/reviews.service.js";
 import { sendMissedReminders } from "./reminders.job.js";
 
 // Handlers of the delayed activity jobs and the safety-net sweeper
@@ -103,8 +104,10 @@ export async function runActivitySweep(now = new Date()) {
   // lost delivery job left PENDING.
   const remindersSent = await sendMissedReminders(now);
   const notificationsDelivered = await deliverStaleNotifications(now);
+  // B3b-2: blind reviews whose 7 days ended but whose job was lost
+  const reviewsPublished = await publishOverdueReviews(now);
 
-  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count, remindersSent, notificationsDelivered };
+  return { expired, notMarked, autoCompleted, rideOffersClosed: offers.count, remindersSent, notificationsDelivered, reviewsPublished };
 }
 
 // A row still PENDING this long after it was written lost its job (Redis

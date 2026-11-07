@@ -1,4 +1,5 @@
 import { Router } from "express";
+import { fillPersonStats } from "../users/stats.service.js";
 import { z } from "zod";
 import { rules } from "../../config/rules.js";
 import { authenticate, authUser } from "../../middleware/authenticate.js";
@@ -40,11 +41,11 @@ activityFeedRouter.get("/", async (req, res) => {
   const q = parseInput(activityQuery, req.query);
   const items = await itemsFor(q.feature, () => rideActivity(authUser(req).id, q.tab, q.role));
   const size = rules.feed.pageSize;
-  res.json({ items: items.slice((q.page - 1) * size, q.page * size), page: q.page, hasMore: items.length > q.page * size });
+  res.json(await fillPersonStats({ items: items.slice((q.page - 1) * size, q.page * size), page: q.page, hasMore: items.length > q.page * size }));
 });
 
 upcomingRouter.get("/", async (req, res) => {
   const q = parseInput(upcomingQuery, req.query);
   const items = await itemsFor(q.feature, () => rideUpcoming(authUser(req).id, q.role));
-  res.json({ items: items.slice(0, q.limit) });
+  res.json(await fillPersonStats({ items: items.slice(0, q.limit) }));
 });

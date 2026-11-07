@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useParams } from "react-router";
 import { ConfirmSheet } from "../../components/ConfirmSheet";
 import { ContactRow } from "../../components/ContactRow";
+import { PaymentCard } from "../activity/PaymentCard";
+import { ReviewPanel } from "../activity/ReviewPanel";
 import { BottomSheet, FormAlert } from "../../components/form";
 import formStyles from "../../components/form.module.css";
 import { StatusChip } from "../../components/StatusChip";
@@ -120,6 +122,8 @@ export function RequestDetailPage() {
           )}
         </div>
       )}
+      {participant && request.status !== "OPEN" && <PaymentCard activityId={request.id} />}
+      {participant && request.status === "COMPLETED" && <ReviewPanel activityId={request.id} />}
       {request.mine && TERMINAL.includes(request.status) && (
         <Link to={`/ride/requests/new?from=${request.id}`} className={buttonStyles.secondary}>
           {t("activity.actions.createAgain")}
@@ -443,6 +447,8 @@ function BookingView({ booking, reload, language }: { booking: RideBooking; relo
         {booking.role === "RIDER" && booking.passenger && <PersonRow person={booking.passenger} caption={t("ride.role.passenger")} />}
         <ContactRow phone={booking.phone} name={booking.role === "RIDER" ? booking.passenger?.name : booking.rider?.name} />
       </section>
+      <PaymentCard activityId={booking.activityId} />
+      {booking.status === "COMPLETED" && <ReviewPanel activityId={booking.activityId} />}
       <RideActions
         activityId={booking.activityId}
         status={booking.status}

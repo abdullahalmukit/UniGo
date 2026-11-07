@@ -91,6 +91,10 @@ export const routes: RouteObject[] = [
       { path: "rider-requests/:id", lazy: page(() => import("../features/admin/AdminRiderApplicationPage"), (m) => m.AdminRiderApplicationPage) },
       { path: "users", lazy: page(() => import("../features/admin/AdminUsersPage"), (m) => m.AdminUsersPage) },
       { path: "users/:id", lazy: page(() => import("../features/admin/AdminUserPage"), (m) => m.AdminUserPage) },
+      // Ride Sharing (B3b-2): Moderators and Super Admins
+      { path: "rides", lazy: page(() => import("../features/admin/AdminRidesPage"), (m) => m.AdminRidesPage) },
+      { path: "rides/activities/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideActivityPage) },
+      { path: "rides/offers/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideOfferPage) },
       {
         lazy: page(() => import("../features/admin/AdminLayout"), (m) => m.RequireSuperAdmin),
         children: [

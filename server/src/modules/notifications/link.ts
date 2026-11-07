@@ -7,6 +7,8 @@ import type { NotificationData } from "./catalogue.js";
 export function notificationLink(type: NotificationType, data: NotificationData | null | undefined, activityId?: string | null): string {
   const d = data ?? {};
   const chat = d.chatId ? `/inbox/${encodeURIComponent(d.chatId)}` : null;
+  // B3b-2: a published review opens the user's own profile
+  if (type === "REVIEW_PUBLISHED") return d.userId ? `/u/${encodeURIComponent(d.userId)}` : "/account";
   // B3a: ride notifications open the ride's own page
   if (activityId && type !== "NEW_CHAT_MESSAGE") {
     if (d.activityType === "RIDE_REQUEST") return `/ride/requests/${encodeURIComponent(activityId)}`;

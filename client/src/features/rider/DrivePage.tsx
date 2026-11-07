@@ -274,7 +274,7 @@ function RiderHome({
 }
 
 function Dashboard() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const [data, setData] = useState<RiderDashboard | null>(null);
 
   useEffect(() => {
@@ -284,7 +284,8 @@ function Dashboard() {
   }, []);
 
   if (!data) return null;
-  const percent = (value: number | null) => (value === null ? "—" : `${Math.round(value * 100)}%`);
+  // "New" until there is enough history (B3b-2, rules.stats)
+  const percent = (value: number | null) => (value === null ? t("stats.new") : `${Math.round(value * 100)}%`);
   const counters: [string, string | number][] = [
     ["totalRides", data.totalRides],
     ["accepted", data.accepted],
@@ -292,10 +293,10 @@ function Dashboard() {
     ["cancelled", data.cancelled],
     ["completionRate", percent(data.completionRate)],
     ["lateCancellationRate", percent(data.lateCancellationRate)],
-    ["rating", data.rating === null ? "—" : data.rating.toFixed(1)],
+    ["rating", data.rating === null ? t("stats.new") : data.rating.toFixed(1)],
     ["activeCarpoolContracts", data.activeCarpoolContracts],
     ["carpoolSessionCancellations", data.carpoolSessionCancellations],
-    ["earnings", `৳${data.earnings}`],
+    ["earnings", `৳${data.earnings.toLocaleString(i18n.language === "bn" ? "bn-BD" : "en")}`],
   ];
   return (
     <Section title={t("rider.dashboard.title")}>

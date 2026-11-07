@@ -112,6 +112,7 @@ const EN: Record<OwnTemplates, Template> = {
     title: "Your driving licence expires soon",
     body: `Your driving licence expires on ${f.date} (in ${f.days} days). Send a re-verification with your renewed licence from Drive with UniGo to keep driving.`,
   }),
+  REVIEW_PUBLISHED: (_d, f) => ({ title: "You have a new review", body: `${f.name} reviewed your ${f.activity}. See it on your profile.` }),
   PARTICIPANT_ACCOUNT_LOCKED: (_d, f) => ({
     title: `Update on your ${f.activity}`,
     body: `${f.name}'s account is under a moderation action and may not be able to take part. The activity stays as it is; you can cancel it from its page if you need to.`,
@@ -183,6 +184,7 @@ const BN: Record<OwnTemplates, Template> = {
     title: "আপনার ড্রাইভিং লাইসেন্সের মেয়াদ শীঘ্রই শেষ হবে",
     body: `আপনার ড্রাইভিং লাইসেন্সের মেয়াদ ${f.date} তারিখে শেষ হবে (${f.days} দিন বাকি)। চালানো চালিয়ে যেতে Drive with UniGo থেকে নবায়ন করা লাইসেন্স দিয়ে পুনঃযাচাই পাঠান।`,
   }),
+  REVIEW_PUBLISHED: (_d, f) => ({ title: "আপনি একটি নতুন রিভিউ পেয়েছেন", body: `${f.name} আপনার ${f.activity} নিয়ে রিভিউ দিয়েছেন। আপনার প্রোফাইলে দেখুন।` }),
   PARTICIPANT_ACCOUNT_LOCKED: (_d, f) => ({
     title: `আপনার ${f.activity} সম্পর্কে আপডেট`,
     body: `${f.name}-এর অ্যাকাউন্টের ওপর মডারেশন ব্যবস্থা চলছে, তাই তিনি হয়তো অংশ নিতে পারবেন না। অ্যাক্টিভিটিটি যেমন আছে তেমনই থাকবে; প্রয়োজনে এর পেজ থেকে বাতিল করতে পারেন।`,

@@ -1,4 +1,4 @@
-import { BadgeCheck, CircleDot, MapPin, Users } from "lucide-react";
+import { BadgeCheck, CircleDot, MapPin, Star, Users } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { Avatar } from "../../components/Avatar";
@@ -48,6 +48,7 @@ export function PersonRow({ person, caption, link = true }: { person: MiniProfil
           {person.isVerifiedRider && <BadgeCheck aria-label={t("ride.verifiedRider")} size={16} />}
         </span>
         <span className={styles.muted}>{[caption, university, person.department].filter(Boolean).join(" · ")}</span>
+        <PersonStats person={person} />
       </span>
     </>
   );
@@ -57,6 +58,26 @@ export function PersonRow({ person, caption, link = true }: { person: MiniProfil
     </Link>
   ) : (
     <div className={styles.person}>{content}</div>
+  );
+}
+
+// Rating ("New" below 3 reviews), completion rate ("New" below 5) and the
+// earned badges (B3b-2).
+export function PersonStats({ person }: { person: MiniProfile }) {
+  const { t, i18n } = useTranslation();
+  const earned = person.badges.filter((badge) => badge === "TOP_RATED" || badge === "RELIABLE");
+  return (
+    <span className={styles.stats}>
+      <span>
+        <Star aria-hidden size={13} /> {person.rating === null ? t("stats.new") : t("stats.ratingShort", { rating: person.rating.toLocaleString(i18n.language === "bn" ? "bn-BD" : "en"), count: person.ratingCount ?? 0 })}
+      </span>
+      {person.completionRate !== null && <span>{t("stats.completedShort", { rate: Math.round(person.completionRate * 100) })}</span>}
+      {earned.map((badge) => (
+        <span key={badge} className={styles.badge}>
+          {t(`profile.badges.${badge}`)}
+        </span>
+      ))}
+    </span>
   );
 }
 

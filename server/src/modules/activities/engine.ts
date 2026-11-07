@@ -32,6 +32,8 @@ export const engineActivitySelect = {
   accepterId: true,
   completionRequestedById: true,
   completionRequestedAt: true,
+  // B3b-2: the review window and the 7-day publish job start here
+  completedAt: true,
   startTime: true,
   blocksTime: true,
   conflictGroupId: true,
@@ -163,6 +165,7 @@ export async function applyTransition(
     subStatus,
     ...(data.completionRequestedAt instanceof Date && { completionRequestedAt: now, completionRequestedById: actorId }),
     ...(action === "DELETE" && { deletedAt: now }),
+    ...(status === "COMPLETED" && { completedAt: now }),
   };
   return {
     before: activity,
@@ -240,6 +243,9 @@ export type AcceptOptions = {
   data?: Prisma.ActivityUncheckedUpdateManyInput;
   // Feature checks that run with both users locked (e.g. Active rider, seats)
   check?: (tx: Tx, activity: EngineActivity) => Promise<void>;
+  // Feature rows written only once this transaction has taken the item
+  // (B3b-2: the payment record), so a lost race writes nothing
+  afterTake?: (tx: Tx, activity: EngineActivity) => Promise<void>;
 };
 
 // Accepting an OPEN request (CLAUDE.md 5.2, 5.5, 5.7; B2a decision 5).
@@ -273,6 +279,7 @@ export async function acceptActivity(activityId: string, accepterId: string, opt
       data: { status: "ACCEPTED", subStatus: rule.to.subStatus ?? null, accepterId, acceptedAt: now, ...options.data },
     });
     if (taken.count === 0) throw alreadyTaken();
+    if (options.afterTake) await options.afterTake(tx, activity);
 
     if (activity.blocksTime) {
       await assertNoTimeConflict(tx, {

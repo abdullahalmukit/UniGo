@@ -170,6 +170,8 @@ enum RideOfferCloseReason {
   REMOVED_BY_RIDER
   // The rider's account was restricted, suspended or banned
   ACCOUNT_MODERATED
+  // B3b-2: an admin cancelled it; its unfinished bookings were cancelled
+  ADMIN_REMOVED
 }
 
 enum CarpoolContractStatus {
@@ -228,6 +230,8 @@ enum NotificationType {
   PARTICIPANT_ACCOUNT_LOCKED
   // B2c: rider access suspended, reinstated, suspension ended, or set Inactive for an expired licence
   RIDER_ACCESS_CHANGED
+  // B3b-2: a review about the user was published (in-app only)
+  REVIEW_PUBLISHED
 }
 
 enum NotificationChannel {
@@ -387,7 +391,9 @@ model User {
   noShowReportsReviewed        NoShowReport[]          @relation("NoShowReviewer")
   supportRequests              SupportRequest[]        @relation("SupportRequester")
   supportRequestsHandled       SupportRequest[]        @relation("SupportHandler")
-  paymentsMarked               PaymentRecord[]
+  paymentsMarked               PaymentRecord[]         @relation("PaymentMarkedBy")
+  // B3b-2: payments this user receives (the rider for rides)
+  paymentsReceived             PaymentRecord[]         @relation("PaymentPayee")
   auditLogs                    AuditLog[]              @relation("AuditAdmin")
   auditLogsAbout               AuditLog[]              @relation("AuditTargetUser")
 
@@ -1271,6 +1277,8 @@ model Review {
 
   @@unique([activityId, reviewerId])
   @@index([revieweeId, publishedAt])
+  // B3b-2: the publish job and the reviews of one activity
+  @@index([activityId, publishedAt])
   @@index([reviewerId])
   @@index([hiddenById])
   @@map("reviews")
@@ -1432,13 +1440,18 @@ model PaymentRecord {
   status         PaymentStatus  @default(UNPAID)
   paidAt         DateTime?      @map("paid_at")
   markedPaidById String?        @map("marked_paid_by_id") @db.Char(36)
+  // B3b-2: who receives the money; only they can mark it PAID
+  payeeId        String         @map("payee_id") @db.Char(36)
   createdAt      DateTime       @default(now()) @map("created_at")
   updatedAt      DateTime       @updatedAt @map("updated_at")
 
   activity     Activity @relation(fields: [activityId], references: [id])
-  markedPaidBy User?    @relation(fields: [markedPaidById], references: [id])
+  markedPaidBy User?    @relation("PaymentMarkedBy", fields: [markedPaidById], references: [id])
+  payee        User     @relation("PaymentPayee", fields: [payeeId], references: [id])
 
   @@index([status])
+  // Earnings: PAID records a user received
+  @@index([payeeId, status])
   @@index([markedPaidById])
   @@map("payment_records")
 }

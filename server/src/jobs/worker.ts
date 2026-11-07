@@ -4,6 +4,7 @@ import { runAccountStatusJob } from "./account-status.job.js";
 import { runActivitySweep, runAutoCompleteJob, runCloseRideOfferJob, runExpireJob, runNotMarkedJob } from "./activity-timers.job.js";
 import { deliverNotification } from "../modules/notifications/notify.service.js";
 import { runSubAreaNotifyJob } from "../modules/notifications/sub-area.service.js";
+import { publishReviews } from "../modules/reviews/reviews.service.js";
 import { runLicenceReminderJob } from "./licence-reminder.job.js";
 import { runReminderJob } from "./reminders.job.js";
 import { closeTimerQueue, createRedisConnection, defaultJobOptions, QUEUE_NAME } from "./scheduler.js";
@@ -36,6 +37,9 @@ export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> 
       return runSubAreaNotifyJob(id);
     case "licence-reminder":
       return runLicenceReminderJob();
+    // B3b-2
+    case "review-publish":
+      return publishReviews(id);
     case "notification-deliver": {
       // Retried with backoff; the last attempt records FAILED on the row.
       const attempts = job.opts.attempts ?? 1;

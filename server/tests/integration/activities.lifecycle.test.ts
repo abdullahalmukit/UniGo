@@ -30,7 +30,8 @@ describe("lifecycle endpoints", () => {
     const confirmed = await post(`/${ride.id}/confirm-completion`, rider.accessToken);
     expect(confirmed.status).toBe(200);
     expect(confirmed.body.activity.status).toBe("COMPLETED");
-    expect(scheduledJobs.size).toBe(0);
+    // Only the B3b-2 job that publishes the blind reviews after 7 days
+    expect([...scheduledJobs.values()].map((job) => job.name)).toEqual(["review-publish"]);
     stop();
 
     const stored = await storedActivity(ride.id);

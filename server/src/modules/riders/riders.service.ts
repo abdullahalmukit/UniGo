@@ -1,4 +1,5 @@
 import { rules } from "../../config/rules.js";
+import { riderRideCounts, userStats } from "../users/stats.service.js";
 import { Prisma, type RiderDocumentType, type VehicleType } from "../../generated/prisma/client.js";
 import { deletePrivateFile, putPrivateFile } from "../../lib/private-storage.js";
 import { prisma } from "../../lib/prisma.js";
@@ -292,17 +293,41 @@ export async function getRiderOverview(userId: string) {
 export async function getRiderDashboard(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { isVerifiedRider: true } });
   if (!user.isVerifiedRider) throw new AppError(403, "NOT_A_RIDER", ACTIVE_MESSAGES.NOT_A_RIDER);
+  // B3b-2: the rider's side of rides: requests they accepted and bookings on their offers
+  const riderSide = {
+    deletedAt: null,
+    OR: [
+      { type: "RIDE_REQUEST" as const, accepterId: userId },
+      { type: "RIDE_BOOKING" as const, creatorId: userId },
+    ],
+  };
+  const [byStatus, counts, stats, earnings] = await Promise.all([
+    prisma.activity.groupBy({ by: ["status"], where: riderSide, _count: { _all: true } }),
+    riderRideCounts(userId),
+    userStats(userId),
+    prisma.paymentRecord.aggregate({
+      where: { payeeId: userId, status: "PAID", activity: { type: { in: ["RIDE_REQUEST", "RIDE_BOOKING"] } } },
+      _sum: { amount: true },
+    }),
+  ]);
+  const count = (statuses: string[]) => byStatus.filter((row) => statuses.includes(row.status)).reduce((sum, row) => sum + row._count._all, 0);
+  // Same rules as the profile (B3b-2 Q2), on the rider's rides only
+  const accepted = counts.completed + counts.cancelled;
+  const enough = accepted >= rules.stats.minAcceptedForRates;
   return {
-    totalRides: 0,
-    accepted: 0,
-    completed: 0,
-    cancelled: 0,
-    completionRate: null as number | null,
-    lateCancellationRate: null as number | null,
-    rating: null as number | null,
+    totalRides: count(["ACCEPTED", "IN_PROGRESS", "DISPUTED", "COMPLETED", "CANCELLED", "NOT_MARKED"]),
+    accepted: count(["ACCEPTED", "IN_PROGRESS", "DISPUTED"]),
+    completed: count(["COMPLETED"]),
+    cancelled: count(["CANCELLED"]),
+    completionRate: enough ? Math.round((counts.completed / accepted) * 10000) / 10000 : null,
+    lateCancellationRate: enough ? Math.round((counts.late / accepted) * 10000) / 10000 : null,
+    rating: stats.rating,
+    ratingCount: stats.reviewCount,
+    // Carpool counters arrive with B6
     activeCarpoolContracts: 0,
     carpoolSessionCancellations: 0,
-    earnings: 0,
+    // Sum of PAID ride payments the rider received
+    earnings: Number(earnings._sum.amount ?? 0),
   };
 }
 
