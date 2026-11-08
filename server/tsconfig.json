@@ -1,14 +1,12 @@
 {
+  // For the editor and `npm run typecheck`: the source plus the seed scripts,
+  // Prisma config and tests, so VS Code type-checks them with these settings
+  // and picks up a regenerated Prisma client. The build uses tsconfig.build.json
+  // (src only).
+  "extends": "./tsconfig.build.json",
   "compilerOptions": {
-    "target": "ES2023",
-    "module": "NodeNext",
-    "moduleResolution": "NodeNext",
-    "rootDir": "src",
-    "outDir": "dist",
-    "strict": true,
-    "skipLibCheck": true,
-    "forceConsistentCasingInFileNames": true,
-    "types": ["node"]
+    "rootDir": ".",
+    "noEmit": true
   },
-  "include": ["src"]
+  "include": ["src", "prisma/**/*.ts", "prisma.config.ts", "tests", "vitest.config.ts"]
 }

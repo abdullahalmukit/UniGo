@@ -13,8 +13,11 @@ server/storage/
 # Prisma client is generated on install
 server/src/generated/
 
-# Editors and OS
-.vscode/
+# Editors and OS (the shared VS Code workspace settings and extension
+# recommendations are committed; anything else in .vscode stays local)
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
 .idea/
 .DS_Store
 Thumbs.db
