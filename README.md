@@ -76,6 +76,7 @@ The test run applies the migrations to it automatically.
 npm run dev
 ```
 
+- `npm run dev`, `npm test`, `npm run typecheck -w server` and `npm run build` regenerate the Prisma client first, and `server/tsconfig.json` also covers the seed scripts and tests, so VS Code shows current Prisma types without restarting the TS server (with TypeScript 7, install the recommended "TypeScript 7" extension, `TypeScriptTeam.native-preview`).
 - API: http://localhost:4000 (health check: http://localhost:4000/api/health)
 - Client: http://localhost:5173 (calls the API through the Vite proxy at `/api`)
 - Real-time chat uses Socket.IO on the API port under `/api/socket`; the Vite proxy forwards it (WebSocket) like the REST API.
