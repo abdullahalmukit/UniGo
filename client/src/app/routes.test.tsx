@@ -21,6 +21,14 @@ vi.mock("../lib/api", async (importOriginal) => ({
 // No Google button in these tests.
 vi.mock("../lib/google-identity", () => ({ googleClientId: undefined, loadGoogleIdentity: vi.fn() }));
 
+// Content API: return one spotlight item so the Spotlight section renders on /
+vi.mock("../features/content/content-api", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../features/content/content-api")>()),
+  getSpotlight: vi.fn().mockResolvedValue([
+    { id: "s1", title: null, mediaType: "IMAGE", mediaUrl: "https://cdn.test/a.jpg", linkUrl: null, linkLabel: null, startsAt: "2026-01-01T00:00:00Z", expiresAt: null, sortOrder: 0, isActive: true, createdAt: "2026-01-01T00:00:00Z", updatedAt: "2026-01-01T00:00:00Z" },
+  ]),
+}));
+
 function renderAt(path: string) {
   const router = createMemoryRouter(routes, { initialEntries: [path] });
   render(

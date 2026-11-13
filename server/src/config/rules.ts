@@ -19,6 +19,8 @@ export const rules = {
 
   activity: {
     conflictWindow: 90 * MINUTE,
+    // B3a-1: An OPEN request stays open for 15 minutes after start time before expiring
+    expiryGracePeriod: 15 * MINUTE,
     autoCompleteAfter: 24 * HOUR,
     notMarkedAfterStart: 6 * HOUR,
     lateCancellationBeforeStart: 60 * MINUTE,
@@ -199,6 +201,47 @@ export const rules = {
     perUser: { window: HOUR, max: 5 },
   },
 
+  // B7: disputes and complaints
+  disputes: {
+    reasonMinLength: 3,
+    reasonMaxLength: 200,
+    descriptionMinLength: 10,
+    descriptionMaxLength: 2000,
+    maxEvidenceFiles: 5,
+    evidenceFolder: "dispute-evidence" as const,
+    kinds: ["COMPLETION_DISPUTE", "COMPLAINT", "EARLY_TERMINATION"] as const,
+    pageSize: 20,
+  },
+
+  // B7: food requester no-show reports
+  noShow: {
+    descriptionMinLength: 10,
+    descriptionMaxLength: 2000,
+    maxEvidenceFiles: 5,
+    evidenceFolder: "noshow-evidence" as const,
+    pageSize: 20,
+  },
+
+  // B7: support requests and app feedback
+  support: {
+    messageMinLength: 5,
+    messageMaxLength: 2000,
+    screenshotFolder: "support-screenshots" as const,
+    categories: [
+      "ACCOUNT",
+      "VERIFICATION",
+      "RIDE",
+      "CARPOOL",
+      "FOOD",
+      "SERVICE",
+      "PAYMENT",
+      "TECHNICAL",
+      "APP_FEEDBACK",
+      "OTHER",
+    ] as const,
+    pageSize: 20,
+  },
+
   // B2b: Socket.IO
   socket: {
     // Served under /api so the same proxy and origin as the REST API work
@@ -243,6 +286,18 @@ export const rules = {
     pageSize: 30,
     // Receipt photo: the chat image rules (B2b decision 10)
     receiptFolder: "food-receipts" as const,
+  },
+
+  service: {
+    offeredAmount: { min: 10, max: 10000 },
+    estimatedBudget: { min: 10, max: 10000 },
+    serviceTitleMaxLength: 150,
+    taskTitleMaxLength: 150,
+    descriptionMaxLength: 2000,
+    instructionsMaxLength: 1000,
+    addressMaxLength: 255,
+    quantity: { min: 1, max: 50 },
+    pageSize: 30,
   },
 
   // B3b-1: Activity and Upcoming (proposal 12.2, 12.3)

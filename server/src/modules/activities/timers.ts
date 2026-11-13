@@ -50,7 +50,9 @@ const job = (name: TimerJobName, id: string, runAt: Date): TimerJob => ({
 export function timerJobsFor(activity: TimerSubject, now = new Date()): TimerJob[] {
   const jobs: TimerJob[] = [];
   if (activity.status === "OPEN" && includes(EXPIRING_TYPES, activity.type)) {
-    jobs.push(job("activity-expire", activity.id, activity.startTime));
+    // B3a-1: Expire after the 15-minute grace period has passed
+    const expireTime = new Date(activity.startTime.getTime() + rules.activity.expiryGracePeriod);
+    jobs.push(job("activity-expire", activity.id, expireTime));
   }
   if (activity.status === "ACCEPTED" && includes(NOT_MARKED_TYPES, activity.type) && activity.subStatus !== "COMPLETION_REQUESTED") {
     jobs.push(job("activity-not-marked", activity.id, new Date(activity.startTime.getTime() + rules.activity.notMarkedAfterStart)));

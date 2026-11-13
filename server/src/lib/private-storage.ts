@@ -20,7 +20,16 @@ const EXTENSIONS: Record<AllowedMimeType, string> = {
 
 const MIME_BY_EXTENSION: Record<string, AllowedMimeType> = { jpg: "image/jpeg", png: "image/png", pdf: "application/pdf" };
 
-export type PrivateFolder = "student-id-cards" | "profile-photos" | "rider-documents" | "vehicle-photos" | "chat-images" | "food-receipts";
+export type PrivateFolder =
+  | "student-id-cards"
+  | "profile-photos"
+  | "rider-documents"
+  | "vehicle-photos"
+  | "chat-images"
+  | "food-receipts"
+  | "dispute-evidence"
+  | "noshow-evidence"
+  | "support-screenshots";
 
 // "<folder>/<uuid>.<ext>" is the only shape a key can have, so a key can never
 // point outside the storage folder.

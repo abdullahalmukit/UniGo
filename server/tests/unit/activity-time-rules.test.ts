@@ -86,10 +86,24 @@ describe("other time rules", () => {
 describe("delayed jobs for an activity", () => {
   const activity = { id: "a1", type: "FOOD" as const, subStatus: null, startTime: base, completionRequestedAt: null };
 
-  it("expires an OPEN request at its start time", () => {
+  it("expires an OPEN request 15 minutes after its start time (grace period B3a-1)", () => {
     const [job] = timerJobsFor({ ...activity, status: "OPEN" });
-    expect(job).toMatchObject({ name: "activity-expire", runAt: base, data: { id: "a1" } });
-    expect(job.jobId).toBe(`activity-expire-a1-${base.getTime()}`);
+    const expectedRunAt = plus(rules.activity.expiryGracePeriod);
+    expect(job).toMatchObject({ name: "activity-expire", runAt: expectedRunAt, data: { id: "a1" } });
+    expect(job.jobId).toBe(`activity-expire-a1-${expectedRunAt.getTime()}`);
+  });
+
+  it("calculates 15-minute grace cutoff correctly for accept and listing queries (B3a-1)", () => {
+    expect(rules.activity.expiryGracePeriod).toBe(15 * 60 * 1000);
+    const now = new Date("2026-11-07T06:10:00.000Z"); // 10 minutes after base start time
+    const graceCutoff = new Date(now.getTime() - rules.activity.expiryGracePeriod); // 05:55:00
+    // Request started at 06:00:00 is >= 05:55:00 (inside 15-min grace window)
+    expect(base >= graceCutoff).toBe(true);
+
+    const pastGrace = new Date("2026-11-07T06:16:00.000Z"); // 16 minutes after base start time
+    const pastGraceCutoff = new Date(pastGrace.getTime() - rules.activity.expiryGracePeriod); // 06:01:00
+    // Request started at 06:00:00 is < 06:01:00 (past 15-min grace window)
+    expect(base < pastGraceCutoff).toBe(true);
   });
 
   it("closes an ACCEPTED activity as NOT_MARKED 6 hours after start", () => {

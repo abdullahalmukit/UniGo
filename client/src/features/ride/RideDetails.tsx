@@ -5,6 +5,8 @@ import { ConfirmSheet } from "../../components/ConfirmSheet";
 import { ContactRow } from "../../components/ContactRow";
 import { PaymentCard } from "../activity/PaymentCard";
 import { ReviewPanel } from "../activity/ReviewPanel";
+import { RaiseDisputeSheet } from "../activity/RaiseDisputeSheet";
+import { ReportSheet } from "../activity/ReportSheet";
 import { BottomSheet, FormAlert } from "../../components/form";
 import formStyles from "../../components/form.module.css";
 import { StatusChip } from "../../components/StatusChip";
@@ -435,6 +437,10 @@ export function BookingDetailPage() {
 
 function BookingView({ booking, reload, language }: { booking: RideBooking; reload: () => void; language: string }) {
   const { t } = useTranslation();
+  const [disputeSheet, setDisputeSheet] = useState(false);
+  const [reportSheet, setReportSheet] = useState(false);
+  const active = ["ACCEPTED", "IN_PROGRESS", "DISPUTED"].includes(booking.status);
+  const other = booking.role === "RIDER" ? booking.passenger : booking.rider;
   return (
     <div className={styles.narrow}>
       <SubPageHeader title={t("ride.booking.title")} back={`/ride/offers/${booking.offer.id}`} action={<StatusChip status={booking.status} />} />
@@ -456,6 +462,30 @@ function BookingView({ booking, reload, language }: { booking: RideBooking; relo
         completionRequestedBy={booking.completionRequestedBy}
         chatId={booking.chatId}
         onChanged={reload}
+      />
+      {active && booking.status !== "DISPUTED" && (
+        <div className={styles.actions}>
+          <button type="button" className={buttonStyles.secondary} onClick={() => setDisputeSheet(true)}>
+            {t("dispute.raise")}
+          </button>
+          {other && (
+            <button type="button" className={buttonStyles.secondary} onClick={() => setReportSheet(true)}>
+              {t("report.title")}
+            </button>
+          )}
+        </div>
+      )}
+      <RaiseDisputeSheet
+        activityId={booking.activityId}
+        open={disputeSheet}
+        onClose={() => setDisputeSheet(false)}
+        onRaised={reload}
+      />
+      <ReportSheet
+        open={reportSheet}
+        onClose={() => setReportSheet(false)}
+        activityId={booking.activityId}
+        reportedUserId={other?.id}
       />
     </div>
   );

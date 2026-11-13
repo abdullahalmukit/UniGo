@@ -147,6 +147,9 @@ export const askApproval = (id: string, amount: number) => api<One>(`/food/reque
 export const decideApproval = (id: string, approvalId: string, approve: boolean) =>
   api<One>(`/food/requests/${enc(id)}/budget-approvals/${enc(approvalId)}/${approve ? "approve" : "reject"}`, { method: "POST" });
 
+export const reportFoodNoShow = (id: string, description: string) =>
+  api<{ id: string }>(`/food/requests/${enc(id)}/no-show`, { method: "POST", body: { description } });
+
 // The receipt photo and the actual cost (multipart)
 export function uploadReceipt(id: string, file: Blob, actualCost: number) {
   const form = new FormData();

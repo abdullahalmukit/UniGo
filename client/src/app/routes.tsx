@@ -39,6 +39,7 @@ export const routes: RouteObject[] = [
     children: [
       { index: true, element: <HomePage /> },
       { path: "services", element: <AllServicesPage /> },
+      { path: "promos", lazy: page(() => import("../features/content/PromosPage"), (m) => m.PromosPage) },
       {
         element: <RequireAuth />,
         children: [
@@ -56,6 +57,11 @@ export const routes: RouteObject[] = [
           { path: "account/sub-areas", element: <MySubAreasPage /> },
           { path: "account/notifications", element: <NotificationSettingsPage /> },
           { path: "account/blocked", element: <BlockedUsersPage /> },
+          // Support Requests (B7) — client side
+          { path: "account/support", lazy: page(() => import("../features/account/SupportPage"), (m) => m.SupportPage) },
+          { path: "account/support/:id", lazy: page(() => import("../features/account/SupportPage"), (m) => m.SupportDetailPage) },
+          // Promos (B8) — client side
+          { path: "account/promos", lazy: page(() => import("../features/content/PromosPage"), (m) => m.PromosPage) },
           // Drive with UniGo (B1)
           { path: "drive", lazy: page(() => import("../features/rider/DrivePage"), (m) => m.DrivePage) },
           // Public profiles (B3b-1 G); the server allows verified students only
@@ -98,6 +104,17 @@ export const routes: RouteObject[] = [
               { path: "bookings/:id", lazy: page(() => import("../features/carpool/CarpoolDetails"), (m) => m.CarpoolBookingPage) },
             ],
           },
+          // Uni Service (B5): verified students only, loaded per route
+          {
+            path: "service",
+            lazy: page(() => import("../features/service/ServiceCard"), (m) => m.ServiceGate),
+            children: [
+              { index: true, lazy: page(() => import("../features/service/ServicePage"), (m) => m.ServicePage) },
+              { path: "requests/new", lazy: page(() => import("../features/service/ServiceForm"), (m) => m.ServiceFormPage) },
+              { path: "requests/:id", lazy: page(() => import("../features/service/ServiceDetails"), (m) => m.ServiceDetailPage) },
+              { path: "requests/:id/edit", lazy: page(() => import("../features/service/ServiceForm"), (m) => m.ServiceFormPage) },
+            ],
+          },
         ],
       },
       { path: "*", element: <NotFoundPage /> },
@@ -121,6 +138,22 @@ export const routes: RouteObject[] = [
       // Food (B4): Moderators and Super Admins
       { path: "food", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodPage) },
       { path: "food/:id", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodDetailPage) },
+      // Uni Service (B5): Moderators and Super Admins
+      { path: "services", lazy: page(() => import("../features/admin/AdminServicePage"), (m) => m.AdminServicePage) },
+      { path: "services/:id", lazy: page(() => import("../features/admin/AdminServicePage"), (m) => m.AdminServiceDetailPage) },
+      // Disputes & Complaints (B7)
+      { path: "disputes", lazy: page(() => import("../features/admin/AdminDisputesPage"), (m) => m.AdminDisputesPage) },
+      { path: "disputes/:id", lazy: page(() => import("../features/admin/AdminDisputesPage"), (m) => m.AdminDisputeDetailPage) },
+      // Food No-Show Reports (B7)
+      { path: "no-shows", lazy: page(() => import("../features/admin/AdminNoShowPage"), (m) => m.AdminNoShowPage) },
+      { path: "no-shows/:id", lazy: page(() => import("../features/admin/AdminNoShowPage"), (m) => m.AdminNoShowDetailPage) },
+      // Support Requests (B7)
+      { path: "support", lazy: page(() => import("../features/admin/AdminSupportPage"), (m) => m.AdminSupportPage) },
+      { path: "support/:id", lazy: page(() => import("../features/admin/AdminSupportPage"), (m) => m.AdminSupportDetailPage) },
+      // Content (B8): Spotlight, Promos, Banners
+      { path: "spotlight", lazy: page(() => import("../features/admin/AdminSpotlightPage"), (m) => m.AdminSpotlightPage) },
+      { path: "promos", lazy: page(() => import("../features/admin/AdminPromosPage"), (m) => m.AdminPromosPage) },
+      { path: "banners", lazy: page(() => import("../features/admin/AdminBannersPage"), (m) => m.AdminBannersPage) },
       {
         lazy: page(() => import("../features/admin/AdminLayout"), (m) => m.RequireSuperAdmin),
         children: [

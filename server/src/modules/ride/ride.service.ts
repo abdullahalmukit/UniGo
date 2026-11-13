@@ -574,7 +574,9 @@ const inBox = (box: Box | null, latField: string, lngField: string) =>
 // without a date applies to every day.
 function timeFilter(query: ListQuery, now: Date) {
   const range = query.date ? { gte: dhakaWallTime(query.date, 0, 0), lt: new Date(dhakaWallTime(query.date, 0, 0).getTime() + DAY) } : {};
-  return { gt: now, ...range };
+  // B3a-1: Include open requests whose start time is within the 15-minute grace period
+  const graceCutoff = new Date(now.getTime() - rules.activity.expiryGracePeriod);
+  return { gte: graceCutoff, ...range };
 }
 
 const minutes = (hhmm: string) => Number(hhmm.slice(0, 2)) * 60 + Number(hhmm.slice(3, 5));

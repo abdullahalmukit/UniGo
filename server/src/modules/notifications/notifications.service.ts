@@ -76,3 +76,17 @@ export async function removeAllPushSubscriptions(userId: string) {
   await prisma.pushSubscription.deleteMany({ where: { userId } });
   await prisma.user.updateMany({ where: { id: userId }, data: { pushEnabled: false } });
 }
+
+// Lightweight fire-and-forget notification helper used by dispute/no-show
+// resolution. Silently swallows errors so it never breaks the main flow.
+export async function queueNotification(_input: {
+  type: string;
+  recipientId: string;
+  actorUserId?: string;
+  activityId?: string;
+  text: string;
+  path?: string;
+}): Promise<void> {
+  // No-op: in-app notifications for these events will be wired up in a
+  // future sprint when the catalogue entries are added.
+}

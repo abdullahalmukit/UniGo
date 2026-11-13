@@ -27,7 +27,7 @@ export const isAdminRole = (role: Role | null) => role === "MODERATOR" || role =
 
 // Loads data for a page and reloads it on demand.
 export function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
-  const [state, setState] = useState<{ status: "loading" } | { status: "error" } | { status: "ready"; data: T }>({
+  const [state, setState] = useState<{ status: "loading" } | { status: "error"; message?: string } | { status: "ready"; data: T }>({
     status: "loading",
   });
   const run = useCallback(load, deps);
@@ -35,8 +35,10 @@ export function useLoad<T>(load: () => Promise<T>, deps: unknown[]) {
   const reload = useCallback(async () => {
     try {
       setState({ status: "ready", data: await run() });
-    } catch {
-      setState({ status: "error" });
+    } catch (err) {
+      console.error("[useLoad] failed:", err);
+      const message = err instanceof Error ? err.message : String(err);
+      setState({ status: "error", message });
     }
   }, [run]);
 
@@ -62,7 +64,7 @@ export function Loaded<T>({
   if (state.status === "error") {
     return (
       <div className={styles.stack}>
-        <FormAlert>{t("admin.loadFailed")}</FormAlert>
+        <FormAlert>{t("admin.loadFailed")}{state.message ? `: ${state.message}` : ""}</FormAlert>
         <button type="button" className={buttonStyles.secondary} onClick={reload}>
           {t("admin.retry")}
         </button>
@@ -244,10 +246,12 @@ export function ConfirmSheet({
 
   return (
     <BottomSheet title={title} open={open} onClose={close}>
-      <div className={styles.stack}>
-        {children}
-        {error && <FormAlert>{error}</FormAlert>}
-        <div className={styles.row}>
+      <div style={{ display: "flex", flexDirection: "column", minHeight: 0, maxHeight: "calc(72vh - 64px)" }}>
+        <div style={{ overflowY: "auto", flex: 1, paddingRight: "4px", minHeight: 0, display: "grid", gap: "var(--space-3)" }}>
+          {children}
+          {error && <FormAlert>{error}</FormAlert>}
+        </div>
+        <div className={styles.row} style={{ flexShrink: 0, paddingTop: "12px", marginTop: "12px", borderTop: "1px solid var(--color-border)" }}>
           <button type="button" className={buttonStyles.secondary} onClick={close}>
             {t("admin.cancel")}
           </button>
@@ -266,6 +270,12 @@ export const toIso = (value: string) => (value ? new Date(value).toISOString() :
 // One translated message for a failed admin request.
 export function adminError(failure: unknown, t: TFunction) {
   if (failure instanceof ApiError && failure.code === "VALIDATION_ERROR") {
+    if (failure.fields && Object.keys(failure.fields).length > 0) {
+      const details = Object.entries(failure.fields)
+        .map(([k, v]) => `${k}: ${Array.isArray(v) ? v.join(", ") : v}`)
+        .join("; ");
+      return `${t("admin.errors.invalid")} (${details})`;
+    }
     return failure.fields?.reason ? t("admin.errors.reason") : t("admin.errors.invalid");
   }
   const errors = formErrors(failure, t);

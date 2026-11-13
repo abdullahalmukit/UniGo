@@ -2,175 +2,168 @@
 
 # UniGo
 
-University-only, peer-to-peer PWA for verified students: Ride Sharing, Carpool, Food Delivery and Uni Service.
+University-only, peer-to-peer Progressive Web App (PWA) for verified students across universities: Ride Sharing, Carpool, Food Delivery and Uni Service.
 
 - Product specification: [`docs/UniGo-Proposal-v1.1.md`](docs/UniGo-Proposal-v1.1.md)
 - Build rules and order: [`CLAUDE.md`](CLAUDE.md)
 
-## Project layout
+---
 
-| Folder | What it is |
+## 🚀 Features
+
+### 1. Multi-University Verification & Auth
+- University domain email verification (OTP code) or Student ID card upload reviewed by Admin.
+- NID, Driving Licence & Vehicle verification for verified student riders.
+- JWT Access (15 min in memory) + Refresh Token rotation (30 days httpOnly cookie).
+- Google OAuth 2.0 Sign-In and Forgot Password with 15-minute single-use secure reset link.
+
+### 2. Four Core Services
+- **Ride Sharing (বাইক ও কার রাইড):** Passenger requests and rider seat offers. 90-minute conflict checking, seat counting, suggested fare based on OSRM driving distance.
+- **Carpool (সাপ্তাহিক কারপুল):** Weekly recurring rides with contracts, seat holds, and session generations.
+- **Food Delivery (ফুড ডেলিভারি):** Student-to-student meal delivery. Confirmed order details, over-budget chat approvals, and receipt upload.
+- **Uni Service (ক্যাম্পাস সার্ভিস):** Help in 7 fixed campus categories (Shopping, Parcels, Pharmacy, Academic Docs, Warranty/Repair, Financial/Admin, Custom).
+
+### 3. Common Activity Engine & Grace Periods
+- Finite state engine: `OPEN` ➜ `ACCEPTED` ➜ `IN_PROGRESS` ➜ `COMPLETED` (or `CANCELLED`, `EXPIRED`, `NOT_MARKED`, `DISPUTED`).
+- **15-Minute Expiry Grace Period (B3a-1):** Open requests remain available for 15 minutes after scheduled start time before expiring.
+- **Late Cancellation Window:** Cancellations within 60 minutes of start time are flagged as late cancellations and tracked in profile statistics.
+- **Two-Step Completion:** One user marks completion requested, the other confirms (or auto-completed in 24 hours).
+- **Global Time-Conflict Check:** 90-minute atomic conflict prevention across all features.
+
+### 4. Content & Marketing (B8)
+- **Campus Spotlight:** Interactive circular story cards with animated ring, full-screen viewer modal, auto-progress, and localStorage seen-tracking (`unigo_seen_stories`).
+- **Promos:** Informational promotional vouchers and campus discounts with one-click code copy and toast notification.
+- **Banners:** Dynamic promotional carousel on Home with direct in-app or external links.
+
+### 5. Trust, Safety & Disputes (B7)
+- **Disputes & Complaints:** Formal dispute resolution for rides, food, and services. Freezes auto-completion until admin decision.
+- **No-Show Reports:** Food accepter reporting for requesters who fail to appear.
+- **In-Chat User Reports:** Report harassment, scam, or offensive content directly from chat.
+- **Blind Reviews:** 1–5 stars and comments, published only when both parties submit or after 7 days.
+- **Support Requests & Feedback:** In-app help desk with screenshots, category routing, and admin resolution.
+
+### 6. Full Admin Control Panel
+- **Dashboard & Moderation:** User account restrictions, suspensions, and bans with required reasons.
+- **Student & Rider Approvals:** Document verification with 5-minute signed secure preview links.
+- **Audit Log:** Complete immutable history of all administrative actions.
+- **Content Management:** Full CRUD management for Spotlight, Promos, and Banners.
+
+---
+
+## 🔑 Default Admin Credentials
+
+- **Admin URL:** [http://localhost:5173/admin](http://localhost:5173/admin)
+- **Email:** `admin@unigo.local`
+- **Password:** `Admin1234`
+
+---
+
+## 🛠 Tech Stack
+
+| Layer | Technology |
 | --- | --- |
-| `client/` | React + Vite PWA (router, layouts, theme, Bangla/English, API client) |
-| `server/` | Express REST API + Prisma (MySQL) |
-| `docs/` | Proposal / specification |
+| **Frontend** | React 19, TypeScript, Vite, CSS Modules, PWA, Lucide Icons |
+| **Backend** | Node.js, Express, TypeScript, Prisma ORM |
+| **Database** | MySQL 8 (`utf8mb4_unicode_ci`) |
+| **Queue & Jobs** | Redis + BullMQ (activity sweeps, expiry, auto-complete) |
+| **Realtime** | Socket.IO (instant chat, live status updates, notifications) |
+| **i18n & Theme** | Bangla (`bn`) + English (`en`), Light + Dark themes |
+| **Maps & Geo** | Leaflet, OpenStreetMap, Nominatim proxy with 1 req/sec rate limit |
 
-## Requirements
+---
+
+## 💻 Requirements
 
 - Node.js 22 or newer
 - MySQL 8 running locally
-- Redis running locally for background jobs (BullMQ). On Windows use [Memurai](https://www.memurai.com/), which runs as a service on port 6379. Set `REDIS_URL` in `server/.env` (default `redis://localhost:6379`). Tests do not need Redis.
-- For Web Push, a VAPID key pair in `server/.env` (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT`); make one with `npx web-push generate-vapid-keys`. Required in production; without it in development push is off and in-app and email notifications still work. Tests do not need it.
+- Redis (e.g., Memurai on Windows) running on port 6379
 
-## First-time setup
+---
 
-1. Install everything (root, client and server):
+## 📦 Setup & Installation
 
+1. **Install dependencies:**
    ```bash
    npm install
    ```
 
-2. Create the database in MySQL. It **must** use the `utf8mb4` character set with the `utf8mb4_unicode_ci` collation (needed for Bangla text and emoji):
-
-   ```sql
-   CREATE DATABASE unigo CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-   ```
-
-3. Copy the example env files. In `server/.env`, fill in your MySQL user and password, two different JWT secrets (at least 32 characters each), a third different secret for private file links (`FILE_SIGNING_SECRET`) and your Google OAuth web client ID (`GOOGLE_CLIENT_ID`). Optionally set `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` to get a Super Admin account from the seed:
-
+2. **Configure environment:**
    ```bash
    cp server/.env.example server/.env
    cp client/.env.example client/.env
    ```
+   Set your MySQL credentials and JWT secrets in `server/.env`.
 
-   Generate each secret with:
-
-   ```bash
-   node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
-   ```
-
-4. Create the tables and add the two placeholder universities (Test University A and B) used for trying registration by hand:
-
+3. **Database migration & seed:**
    ```bash
    npm run db:migrate -w server
    npm run db:seed -w server
    ```
 
-### Test database (integration tests)
-
-The integration tests run against a separate MySQL database whose name must end in `_test`. **Every test empties it**, so never point it at real data.
-
-1. Create it:
-
-   ```sql
-   CREATE DATABASE unigo_test CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+4. **Start development servers:**
+   ```bash
+   npm run dev
    ```
+   - Client: [http://localhost:5173](http://localhost:5173)
+   - Server API: [http://localhost:4000](http://localhost:4000)
 
-2. Copy `server/.env.test.example` to `server/.env.test` (gitignored) and set its `DATABASE_URL`.
+---
 
-The test run applies the migrations to it automatically.
-
-## Running
+## 🧪 Testing & Build
 
 ```bash
-npm run dev
+# Run client tests (260 passing unit & component tests)
+npm test -w client
+
+# Run server unit tests (198 passing unit tests)
+npm run test:unit -w server
+
+# Build production bundles (0 TypeScript errors)
+npm run build
 ```
 
-- `npm run dev`, `npm test`, `npm run typecheck -w server` and `npm run build` regenerate the Prisma client first, and `server/tsconfig.json` also covers the seed scripts and tests, so VS Code shows current Prisma types without restarting the TS server (with TypeScript 7, install the recommended "TypeScript 7" extension, `TypeScriptTeam.native-preview`).
-- API: http://localhost:4000 (health check: http://localhost:4000/api/health)
-- Client: http://localhost:5173 (calls the API through the Vite proxy at `/api`)
-- Real-time chat uses Socket.IO on the API port under `/api/socket`; the Vite proxy forwards it (WebSocket) like the REST API.
-- Background jobs run inside the API process: activity expiry, NOT_MARKED, auto-complete, ride offer closing, a safety-net sweep every minute and the account-status job. Without Redis the API still serves requests, but no job runs until Redis is back.
+---
 
-## Other scripts
+## 📁 Repository Structure
 
-| Command | What it does |
-| --- | --- |
-| `npm test` | Run the client tests and all server tests (unit + integration; needs MySQL and `server/.env.test`) |
-| `npm test -w client` | Client tests only (Vitest + jsdom, no server needed) |
-| `npm run test:unit -w server` | Unit tests only (no database) |
-| `npm run test:integration -w server` | Integration tests only, against the test database |
-| `npm run build` | Build server (`server/dist`) and client (`client/dist`) |
-| `npm run typecheck -w server` / `-w client` | Type-check one app |
-| `npm run db:migrate -w server` | Create and apply migrations to the dev database |
-| `npm run db:seed -w server` | Add the dev-only placeholder universities and, if `SEED_ADMIN_EMAIL` and `SEED_ADMIN_PASSWORD` are set, a Super Admin account |
-| `npm run db:seed:dev-chat -w server` | Development only (refuses unless `NODE_ENV=development`): two verified demo students with an active food delivery chat and a finished Uni Service chat, to try Inbox and chat by hand. Set `DEV_DEMO_PASSWORD` in `server/.env` first; run `db:seed` before it |
-| `npm run db:generate -w server` | Regenerate the Prisma client after editing the schema |
-
-## Client
-
-| Path | Who | Page |
-| --- | --- | --- |
-| `/` | everyone | Home |
-| `/services` | everyone | All Services |
-| `/login`, `/register`, `/forgot-password`, `/reset-password` | everyone | Auth pages (simple layout: full logo, language switch, "Back to Home") |
-| `/register/google` | after Google sign-in | Phone, university and name for a new Google user |
-| `/verify-student` | logged in | "Verify your student status" (the real verification comes in A6) |
-| `/activity`, `/upcoming`, `/inbox`, `/notifications`, `/account` | logged in | Placeholders; guests go to `/login?next=…` |
-
-- **Google sign-in:** set `VITE_GOOGLE_CLIENT_ID` in `client/.env` to the same OAuth web client ID as the server's `GOOGLE_CLIENT_ID`, and add the site's address (for example `http://localhost:5173`) to the client's Authorised JavaScript origins in Google Cloud Console.
-
-- **Layout:** below 768 px a top bar and bottom tabs (Home, Activity, Upcoming, All Services, Inbox); from 768 px one top navbar with content about 1100 px wide.
-- **Theme:** Light (default), Dark or System, from the tokens in `client/src/styles/tokens.css` (light and dark values, all WCAG AA, checked by `tokens.test.ts`). Saved in localStorage as `unigo.theme` and applied before the first paint.
-- **Language:** Bangla or English, detected from the browser (English if it is not Bangla), saved as `unigo.language`. Every UI string is in `client/src/i18n/en.json` and `bn.json`.
-- **API calls:** use `api()` from `client/src/lib/api.ts`. The access token stays in memory; on a 401 the client refreshes once and retries once. Only one refresh runs at a time across all open tabs, and the other tabs reuse its token (`client/src/lib/session.ts`).
-- **Logo, icons and service pictures:** the sources are in `client/brand/` (the two UniGo logo files and the four service pictures in `brand/services/`; see `client/CREDITS.md`). Every file the app uses (transparent logo, wordmark, dark logo, favicon, PWA icons, the service pictures at 1x and 2x) is built from them:
-
-  ```bash
-  npm install --no-save sharp
-  node client/scripts/build-brand-assets.mjs
-  ```
-
-## Health check
-
-`GET /api/health`
-
-- `200 { "status": "ok", "database": "up", "uptime", "timestamp" }`
-- `503 { "status": "degraded", "database": "down", ... }` when MySQL cannot be reached
-
-## Auth API
-
-| Method | Path | Needs | What it does |
-| --- | --- | --- | --- |
-| GET | `/api/universities` | — | `{ universities: [{ id, name, shortName }] }`: active universities, by name |
-| POST | `/api/auth/register` | — | `{ name, phone, email, universityId, password, language?, theme? }` → 201 with `{ user, accessToken, accessTokenExpiresAt }` and the refresh cookie |
-| POST | `/api/auth/login` | — | `{ email, password }` → same response as register |
-| POST | `/api/auth/refresh` | refresh cookie | Rotates the refresh token and returns a new access token |
-| POST | `/api/auth/logout` | refresh cookie | Ends this session (204) |
-| POST | `/api/auth/logout-all` | access token | Ends every session at once (204) |
-| GET | `/api/auth/me` | access token | `{ user }`: the caller's own account |
-| POST | `/api/auth/forgot-password` | — | `{ email }` → always 202 with the same message; emails a reset link if the account exists |
-| POST | `/api/auth/reset-password` | — | `{ token, password }` → 204; ends every session |
-| POST | `/api/auth/google` | — | `{ idToken }` → a session, or `{ needsRegistration, signupToken, email, name }`, or 409 `GOOGLE_LINK_REQUIRES_PASSWORD` with `linkToken` |
-| POST | `/api/auth/google/register` | — | `{ signupToken, name, phone, universityId, language?, theme? }` → 201 with a session |
-| POST | `/api/auth/google/link` | — | `{ linkToken, password }` → a session, with Google now linked |
-
-- The access token goes in `Authorization: Bearer <token>` and lasts 15 minutes. Keep it in memory, not in storage.
-- The refresh token is only ever in the `unigo_refresh` cookie (httpOnly, `SameSite=Lax`, path `/api/auth`, Secure in production). It lasts 30 days and changes on every refresh. Reusing an old one ends that whole login session, so the client must not send two refresh calls at the same time.
-- Rate limits: login 10 per 15 min per IP and email, register 5 per hour per IP, refresh 30 per 15 min per IP, forgot password 3 per hour per email plus 10 per hour per IP, reset password 10 per 15 min per IP, Google endpoints 10 per 15 min per IP.
-- The reset link is `CLIENT_URL/reset-password#token=…`; the reset page reads the token from the URL fragment and posts it to `/api/auth/reset-password`.
-
-## Email
-
-- **Development:** every email, reset links included, is printed to the server console. Set `EMAIL_TRANSPORT=smtp` and the `SMTP_*` values in `server/.env` to send real email instead.
-- **Tests:** emails go to an in-memory outbox; nothing is printed or sent.
-- **Production:** always SMTP. The server refuses to start without `SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD` and `MAIL_FROM`.
-- Emails are written in the user's language (Bangla or English); the texts are in `server/src/modules/email/templates.ts`.
-
-## Error shape
-
-Every API error uses one shape:
-
-```json
-{ "error": { "code": "NOT_FOUND", "message": "No route for GET /api/nope" } }
 ```
-
-`VALIDATION_ERROR` also lists the problem with each field:
-
-```json
-{ "error": { "code": "VALIDATION_ERROR", "message": "Some fields are invalid", "fields": { "phone": ["Enter a Bangladesh mobile number, for example 01712345678"] } } }
+UniGo/
+├── client/                           # React frontend PWA
+│   ├── src/
+│   │   ├── app/                      # Router & application providers
+│   │   ├── components/               # UI components (Avatar, Sheets, Chips, Forms)
+│   │   ├── features/
+│   │   │   ├── account/              # Profile, settings, addresses, support
+│   │   │   ├── activity/             # Feed, upcoming, dispute & report modals
+│   │   │   ├── admin/                # Complete admin back-office panel
+│   │   │   ├── all-services/         # Unified campus request feed
+│   │   │   ├── auth/                 # Sign in, register, student verification
+│   │   │   ├── content/              # Promos page
+│   │   │   ├── food/                 # Food delivery feature
+│   │   │   ├── home/                 # Spotlight stories, banners, quick actions
+│   │   │   ├── inbox/                # Real-time chat & socket connection
+│   │   │   ├── ride/                 # Ride sharing requests & offers
+│   │   │   ├── rider/                # Rider onboarding & driver dashboard
+│   │   │   └── service/              # Uni Service category requests
+│   │   ├── i18n/                     # bn.json & en.json translations
+│   │   └── styles/                   # Design tokens & CSS variables
+├── server/                           # Express REST API
+│   ├── prisma/                       # Schema, migrations, and seeds
+│   └── src/
+│       ├── config/                   # Central business rules (rules.ts)
+│       ├── jobs/                     # BullMQ recurring & timer workers
+│       ├── middleware/               # Auth, role check, rate limiting, validation
+│       └── modules/                  # Modular domain services and routes
+│           ├── activities/           # Central state machine & time rules
+│           ├── admin/                # Admin dashboards & audit logs
+│           ├── all-requests/         # Cross-service unified request queries
+│           ├── chat/                 # Real-time messaging
+│           ├── content/              # Spotlight, promo, and banner service
+│           ├── disputes/             # Dispute filing & resolution engine
+│           ├── food/                 # Food delivery & no-show handling
+│           ├── notifications/        # In-app, web push & email notifications
+│           ├── ride/                 # Ride matching, fares, and bookings
+│           ├── service/              # Uni Service operations
+│           └── support/              # Help desk & customer support
+└── docs/                             # Architecture specifications & proposal
 ```
-
-Some codes carry extra values the client needs, next to `code` and `message` (for example `GOOGLE_LINK_REQUIRES_PASSWORD` carries `linkToken` and `email`).
-
-Auth error codes: `VALIDATION_ERROR`, `EMAIL_TAKEN`, `PHONE_TAKEN`, `UNIVERSITY_NOT_FOUND`, `INVALID_CREDENTIALS`, `UNAUTHENTICATED`, `TOKEN_EXPIRED`, `INVALID_REFRESH_TOKEN`, `ACCOUNT_SUSPENDED`, `ACCOUNT_BANNED`, `ACCOUNT_RESTRICTED`, `NOT_VERIFIED`, `FORBIDDEN`, `RATE_LIMITED`, `INVALID_RESET_TOKEN`, `INVALID_GOOGLE_TOKEN`, `GOOGLE_EMAIL_NOT_VERIFIED`, `GOOGLE_LINK_REQUIRES_PASSWORD`, `GOOGLE_ACCOUNT_CONFLICT`, `INVALID_GOOGLE_STEP_TOKEN`.

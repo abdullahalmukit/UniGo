@@ -212,12 +212,15 @@ export async function listFood(viewerId: string, query: ListQuery, now = new Dat
     query.deliveryLat !== undefined && query.deliveryLng !== undefined ? boundingBox({ lat: query.deliveryLat, lng: query.deliveryLng }, query.radiusKm) : null;
   const day = query.date ? { gte: dhakaWallTime(query.date, 0, 0), lt: new Date(dhakaWallTime(query.date, 0, 0).getTime() + DAY) } : {};
 
+  // B3a-1: Include open requests whose expected delivery is within the 15-minute grace period
+  const graceCutoff = new Date(now.getTime() - rules.activity.expiryGracePeriod);
+
   const rows = await prisma.activity.findMany({
     where: {
       type: "FOOD",
       status: "OPEN",
       deletedAt: null,
-      startTime: { gt: now, ...day },
+      startTime: { gte: graceCutoff, ...day },
       ...(blocked.length > 0 && { creatorId: { notIn: blocked } }),
       foodRequest: {
         ...(query.subAreaId && { subAreaId: query.subAreaId }),

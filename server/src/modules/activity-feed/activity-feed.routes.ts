@@ -7,6 +7,7 @@ import { parseInput } from "../../middleware/validate.js";
 import { carpoolActivity, carpoolUpcoming } from "../carpool/carpool.feed.js";
 import { foodActivity, foodUpcoming } from "../food/food.feed.js";
 import { rideActivity, rideUpcoming, type FeedItem } from "../ride/ride.feed.js";
+import { serviceActivity, serviceUpcoming } from "../service/service.feed.js";
 
 // Activity (proposal 12.2) and Upcoming (12.3) across every feature. Ride
 // Sharing (B3), Food (B4) and Carpool (B6a) are built; Service adds its items
@@ -34,14 +35,20 @@ const upcomingQuery = z.object({
   limit: z.coerce.number().int().min(1).max(rules.feed.upcomingMax).default(rules.feed.upcomingMax),
 });
 
-type Loaders = { ride: () => Promise<FeedItem[]>; food: () => Promise<FeedItem[]>; carpool: () => Promise<FeedItem[]> };
+type Loaders = {
+  ride: () => Promise<FeedItem[]>;
+  food: () => Promise<FeedItem[]>;
+  carpool: () => Promise<FeedItem[]>;
+  service: () => Promise<FeedItem[]>;
+};
 
-// The features that have items so far (Ride B3, Food B4, Carpool B6a), merged by time.
+// The features that have items (Ride B3, Food B4, Carpool B6a, Service B5), merged by time.
 async function itemsFor(featureName: z.infer<typeof feature>, load: Loaders, newestFirst: boolean) {
   const parts = await Promise.all([
     featureName === "all" || featureName === "ride" ? load.ride() : [],
     featureName === "all" || featureName === "food" ? load.food() : [],
     featureName === "all" || featureName === "carpool" ? load.carpool() : [],
+    featureName === "all" || featureName === "service" ? load.service() : [],
   ]);
   return parts.flat().sort((a, b) => (newestFirst ? b.time.getTime() - a.time.getTime() : a.time.getTime() - b.time.getTime()));
 }
@@ -55,6 +62,7 @@ activityFeedRouter.get("/", async (req, res) => {
       ride: () => rideActivity(userId, q.tab, q.role),
       food: () => foodActivity(userId, q.tab, q.role),
       carpool: () => carpoolActivity(userId, q.tab, q.role),
+      service: () => serviceActivity(userId, q.tab, q.role),
     },
     q.tab === "history",
   );
@@ -67,7 +75,12 @@ upcomingRouter.get("/", async (req, res) => {
   const userId = authUser(req).id;
   const items = await itemsFor(
     q.feature,
-    { ride: () => rideUpcoming(userId, q.role), food: () => foodUpcoming(userId, q.role), carpool: () => carpoolUpcoming(userId, q.role) },
+    {
+      ride: () => rideUpcoming(userId, q.role),
+      food: () => foodUpcoming(userId, q.role),
+      carpool: () => carpoolUpcoming(userId, q.role),
+      service: () => serviceUpcoming(userId, q.role),
+    },
     false,
   );
   res.json(await fillPersonStats({ items: items.slice(0, q.limit) }));

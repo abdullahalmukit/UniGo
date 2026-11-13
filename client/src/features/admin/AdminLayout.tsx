@@ -1,4 +1,4 @@
-import { ArrowLeft, Car, CarFront, Coins, GraduationCap, IdCard, LayoutDashboard, MapPin, Menu, ScrollText, Users, UtensilsCrossed, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Briefcase, Car, CarFront, Coins, Flag, GraduationCap, IdCard, Image, LayoutDashboard, MapPin, Menu, MessageSquare, ScrollText, TicketPercent, Users, UtensilsCrossed, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, Outlet, useLocation } from "react-router";
@@ -14,6 +14,14 @@ const items = [
   { to: "/admin/users", labelKey: "admin.nav.users", icon: Users, end: false, superAdminOnly: false },
   { to: "/admin/rides", labelKey: "admin.nav.rides", icon: Car, end: false, superAdminOnly: false },
   { to: "/admin/food", labelKey: "admin.nav.food", icon: UtensilsCrossed, end: false, superAdminOnly: false },
+  { to: "/admin/services", labelKey: "admin.nav.services", icon: Briefcase, end: false, superAdminOnly: false },
+  { to: "/admin/disputes", labelKey: "admin.nav.disputes", icon: AlertTriangle, end: false, superAdminOnly: false },
+  { to: "/admin/no-shows", labelKey: "admin.nav.noShows", icon: Flag, end: false, superAdminOnly: false },
+  { to: "/admin/support", labelKey: "admin.nav.support", icon: MessageSquare, end: false, superAdminOnly: false },
+  // Content (B8)
+  { to: "/admin/spotlight", labelKey: "admin.nav.spotlight", icon: Image, end: false, superAdminOnly: false },
+  { to: "/admin/promos", labelKey: "admin.nav.promos", icon: TicketPercent, end: false, superAdminOnly: false },
+  { to: "/admin/banners", labelKey: "admin.nav.banners", icon: Image, end: false, superAdminOnly: false },
   { to: "/admin/universities", labelKey: "admin.nav.universities", icon: GraduationCap, end: false, superAdminOnly: true },
   { to: "/admin/sub-areas", labelKey: "admin.nav.subAreas", icon: MapPin, end: false, superAdminOnly: true },
   { to: "/admin/fare-settings", labelKey: "admin.nav.fareSettings", icon: Coins, end: false, superAdminOnly: true },

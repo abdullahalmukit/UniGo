@@ -16,9 +16,13 @@ import { runCarpoolSweep } from "../modules/carpool/carpool.jobs.js";
 const SYSTEM = { type: "SYSTEM" } as const;
 const ago = (now: Date, ms: number) => new Date(now.getTime() - ms);
 
-// An OPEN item that reached its start time with no accepter (5.6).
+// An OPEN item that reached its start time + grace period with no accepter (5.6, B3a-1).
 export async function runExpireJob(activityId: string, now = new Date()) {
-  const outcome = await transitionActivity(activityId, "EXPIRE", SYSTEM, { now, quiet: true, where: { startTime: { lte: now } } });
+  const outcome = await transitionActivity(activityId, "EXPIRE", SYSTEM, {
+    now,
+    quiet: true,
+    where: { startTime: { lte: ago(now, rules.activity.expiryGracePeriod) } },
+  });
   return outcome !== null;
 }
 
@@ -63,7 +67,12 @@ export async function runActivitySweep(now = new Date()) {
   const ids = (rows: { id: string }[]) => rows.map((row) => row.id);
 
   const toExpire = await prisma.activity.findMany({
-    where: { type: { in: [...EXPIRING_TYPES] }, status: "OPEN", deletedAt: null, startTime: { lte: now } },
+    where: {
+      type: { in: [...EXPIRING_TYPES] },
+      status: "OPEN",
+      deletedAt: null,
+      startTime: { lte: ago(now, rules.activity.expiryGracePeriod) },
+    },
     select: { id: true },
     take,
   });

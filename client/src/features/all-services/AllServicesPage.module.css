@@ -55,3 +55,299 @@
     grid-template-columns: repeat(4, 1fr);
   }
 }
+
+/* --- All Service Requests Feed --- */
+
+.feedSection {
+  margin-top: var(--space-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.sectionHeader {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-1);
+}
+
+.sectionTitle {
+  font-size: var(--text-heading);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+  margin: 0;
+}
+
+.sectionSubtitle {
+  font-size: var(--text-body);
+  color: var(--color-text-muted);
+  margin: 0;
+}
+
+.feedControls {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.searchBar {
+  position: relative;
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+.searchIcon {
+  position: absolute;
+  left: var(--space-3);
+  color: var(--color-text-muted);
+  pointer-events: none;
+}
+
+.searchInput {
+  width: 100%;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-3) 0 calc(var(--space-3) + 24px);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-body);
+  transition: border-color 0.15s ease;
+}
+
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.chips {
+  display: flex;
+  gap: var(--space-2);
+  overflow-x: auto;
+  padding-bottom: var(--space-1);
+}
+
+.chip {
+  flex: none;
+  min-height: var(--tap-target);
+  padding: 0 var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-text);
+  font: inherit;
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chip[aria-pressed="true"] {
+  border-color: var(--color-accent);
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.requestsGrid {
+  display: grid;
+  gap: var(--space-4);
+}
+
+@media (min-width: 768px) {
+  .requestsGrid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1200px) {
+  .requestsGrid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.requestCard {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.requestCard:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.cardHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.featureBadge {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-1);
+  padding: 2px 10px;
+  border-radius: var(--radius-pill);
+  font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+}
+
+.badgeRide {
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+}
+
+.badgeFood {
+  background: rgba(245, 158, 11, 0.15);
+  color: #d97706;
+}
+
+.badgeCarpool {
+  background: rgba(99, 102, 241, 0.15);
+  color: #6366f1;
+}
+
+.badgeService {
+  background: rgba(16, 185, 129, 0.15);
+  color: #059669;
+}
+
+.timeTag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+.routeContainer {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  border-top: 1px dashed var(--color-border);
+  border-bottom: 1px dashed var(--color-border);
+}
+
+.routeRow {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-size: var(--text-body);
+}
+
+.pickupDot {
+  color: var(--color-accent);
+  flex-shrink: 0;
+}
+
+.destDot {
+  color: #ef4444;
+  flex-shrink: 0;
+}
+
+.addressText {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
+}
+
+.itemPreview {
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.cardFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+  margin-top: auto;
+  padding-top: var(--space-2);
+}
+
+.creatorInfo {
+  display: flex;
+  align-items: center;
+  gap: var(--space-2);
+}
+
+.creatorDetails {
+  display: flex;
+  flex-direction: column;
+}
+
+.creatorName {
+  font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.creatorUniv {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.amountBox {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.amountValue {
+  font-size: var(--text-body);
+  font-weight: var(--weight-bold);
+  color: var(--color-accent);
+}
+
+.amountLabel {
+  font-size: 11px;
+  color: var(--color-text-muted);
+}
+
+.cardAction {
+  margin-top: var(--space-2);
+}
+
+.actionBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--tap-target);
+  border: 1px solid var(--color-accent);
+  border-radius: var(--radius-control);
+  background: transparent;
+  color: var(--color-accent);
+  font-weight: var(--weight-medium);
+  font-size: var(--text-body);
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+
+.actionBtn:hover {
+  background: var(--color-accent);
+  color: var(--color-on-accent);
+}
+
+.loadMoreContainer {
+  display: flex;
+  justify-content: center;
+  padding-top: var(--space-4);
+}

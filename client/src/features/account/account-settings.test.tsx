@@ -112,10 +112,12 @@ describe("Account & Settings", () => {
       ["Notifications", "/account/notifications"],
       ["Blocked Users", "/account/blocked"],
       ["Drive with UniGo", "/drive"],
+      ["Promos", "/promos"],
+      ["Support Request", "/account/support"],
     ]) {
       expect(menu.getByRole("link", { name })).toHaveAttribute("href", href);
     }
-    for (const name of ["Payment Methods", "Promos", "Support Request", "Policy", "Rate Us"]) {
+    for (const name of ["Payment Methods", "Policy", "Rate Us"]) {
       const item = screen.getByText(name).closest("li")!;
       expect(within(item).getByText("Coming soon")).toBeInTheDocument();
       expect(within(item).queryByRole("link")).toBeNull();
