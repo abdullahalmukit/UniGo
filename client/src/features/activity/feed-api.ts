@@ -19,8 +19,8 @@ export type FeedBooking = {
 };
 
 export type FeedItem = {
-  feature: "RIDE" | "FOOD" | "CARPOOL";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION";
+  feature: "RIDE" | "FOOD" | "CARPOOL" | "SERVICE";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION" | "SERVICE";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   status: ActivityStatus | PostStatus;
@@ -103,5 +103,6 @@ export function itemPath(item: Pick<FeedItem, "kind" | "id" | "carpool">) {
   if (item.kind === "RIDE_OFFER") return `/ride/offers/${id}`;
   if (item.kind === "RIDE_BOOKING") return `/ride/bookings/${id}`;
   if (item.kind === "FOOD") return `/food/requests/${id}`;
+  if (item.kind === "SERVICE") return `/service/requests/${id}`;
   return `/ride/requests/${id}`;
 }

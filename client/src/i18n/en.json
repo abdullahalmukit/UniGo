@@ -56,20 +56,29 @@
       "rateUs": "Rate Us"
     },
     "spotlightTitle": "UniGo Spotlight",
+    "bannersTitle": "Announcements & Offers",
     "spotlight": {
       "sample": "Coming soon",
       "offers": "Campus offers",
       "events": "Events this week",
       "news": "UniGo news",
       "safety": "Ride safety tips",
-      "partners": "New partners"
+      "partners": "New partners",
+      "viewStory": "View story",
+      "visitLink": "Learn more"
     }
   },
   "services": {
     "title": "All Services",
     "create": "Create",
     "browse": "Browse",
-    "comingSoon": "Coming soon"
+    "comingSoon": "Coming soon",
+    "requestsTitle": "All Open Requests",
+    "requestsSubtitle": "Browse and accept requests across all university services",
+    "searchPlaceholder": "Search requests by area, route, notes...",
+    "viewDetails": "View Details",
+    "emptyRequests": "No open requests match your filter right now",
+    "loadMore": "Load More"
   },
   "activity": {
     "title": "Activity",
@@ -503,7 +512,14 @@
       "riderRequests": "Rider Requests",
       "fareSettings": "Fare Settings",
       "rides": "Ride Sharing",
-      "food": "Food"
+      "food": "Food",
+      "services": "Uni Service",
+      "disputes": "Disputes",
+      "noShows": "No-Show Reports",
+      "support": "Support",
+      "spotlight": "Spotlight",
+      "promos": "Promos",
+      "banners": "Banners"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -809,11 +825,247 @@
       "back": "Back to Food",
       "cancel": "Cancel order",
       "openReceipt": "Open receipt"
+    },
+    "services": {
+      "search": "Search a person or title",
+      "empty": "No service requests found.",
+      "count_one": "{{count}} service request",
+      "count_other": "{{count}} service requests",
+      "detailTitle": "Service request",
+      "back": "Back to Uni Service",
+      "category": "Category",
+      "taskTitle": "Task title",
+      "description": "Description",
+      "destination": "Destination",
+      "pickup": "Pickup",
+      "preferredDate": "Preferred date",
+      "anyTime": "any time",
+      "offeredAmount": "Offered amount",
+      "estimatedBudget": "Estimated budget",
+      "amount": "Amount",
+      "budget": "Budget",
+      "subArea": "Sub-area",
+      "itemDetails": "Item details",
+      "itemDetailsLabel": "Item details",
+      "instructions": "Instructions",
+      "instructionsLabel": "Instructions",
+      "creator": "Requester",
+      "accepter": "Accepter",
+      "created": "Created",
+      "startedAt": "Started at",
+      "completedAt": "Completed at",
+      "referenceImage": "Open reference image",
+      "openImage": "Open reference image",
+      "cancel": "Cancel service request",
+      "cancelTitle": "Cancel this service request?"
+    },
+    "disputes": {
+      "search": "Search by reason or name",
+      "empty": "No disputes found.",
+      "count_one": "{{count}} dispute",
+      "count_other": "{{count}} disputes",
+      "detailTitle": "Dispute",
+      "back": "Back to disputes",
+      "kind": "Type",
+      "kinds": {
+        "COMPLAINT": "Complaint",
+        "COMPLETION_DISPUTE": "Completion dispute"
+      },
+      "status": {
+        "OPEN": "Open",
+        "UNDER_REVIEW": "Under review",
+        "RESOLVED": "Resolved"
+      },
+      "activityType": "Activity",
+      "description": "Description",
+      "statusBefore": "Status when raised",
+      "raisedBy": "Raised by",
+      "against": "Against",
+      "createdAt": "Reported",
+      "finalStatus": "Final status",
+      "decisionNote": "Decision note",
+      "evidence": "Evidence",
+      "openEvidence": "Open evidence image",
+      "resolve": "Resolve dispute",
+      "resolveTitle": "Resolve this dispute",
+      "decision": "Decision",
+      "decisions": {
+        "RESOLVE_COMPLETED": "Mark as Completed",
+        "RESOLVE_CANCELLED": "Mark as Cancelled"
+      },
+      "moderationAction": "Moderation action (optional)",
+      "noAction": "No action",
+      "actionReason": "Action reason",
+      "suspensionDays": "Suspension length (days)",
+      "chatNote": "Admins can read the chat for disputed activities."
+    },
+    "noShows": {
+      "empty": "No No-Show reports found.",
+      "count_one": "{{count}} report",
+      "count_other": "{{count}} reports",
+      "detailTitle": "No-Show Report",
+      "back": "Back to No-Show reports",
+      "reporter": "Reporter (accepter)",
+      "reported": "Reported (requester)",
+      "description": "Description",
+      "createdAt": "Reported",
+      "resolutionNote": "Resolution note",
+      "openEvidence": "Open evidence image",
+      "resolve": "Resolve",
+      "resolveTitle": "Resolve this No-Show report",
+      "decision": "Decision",
+      "decisions": {
+        "RESOLVED": "Resolved — No-Show confirmed",
+        "DISMISSED": "Dismissed — No-Show not confirmed"
+      },
+      "status": {
+        "OPEN": "Open",
+        "UNDER_REVIEW": "Under review",
+        "RESOLVED": "Resolved",
+        "DISMISSED": "Dismissed"
+      }
+    },
+    "support": {
+      "category": "Category",
+      "empty": "No support requests found.",
+      "count_one": "{{count}} request",
+      "count_other": "{{count}} requests",
+      "detailTitle": "Support request",
+      "back": "Back to support",
+      "from": "From",
+      "message": "Message",
+      "createdAt": "Submitted",
+      "reply": "Admin reply",
+      "repliedBy": "Replied by",
+      "openScreenshot": "Open screenshot",
+      "replyButton": "Send reply",
+      "replyTitle": "Reply to this request",
+      "replyLabel": "Reply",
+      "send": "Send",
+      "categories": {
+        "RIDE": "Ride Sharing",
+        "FOOD": "Food Delivery",
+        "CARPOOL": "Carpool",
+        "SERVICE": "Uni Service",
+        "ACCOUNT": "Account",
+        "VERIFICATION": "Verification",
+        "PAYMENT": "Payment",
+        "TECHNICAL": "Technical Issue",
+        "SAFETY": "Safety",
+        "APP_FEEDBACK": "App Feedback",
+        "OTHER": "Other"
+      },
+      "status": {
+        "OPEN": "Open",
+        "IN_PROGRESS": "In progress",
+        "RESOLVED": "Resolved",
+        "CLOSED": "Closed"
+      }
+    },
+    "content": {
+      "spotlight": "Spotlight",
+      "promos": "Promos",
+      "banners": "Banners",
+      "title": "Title",
+      "mediaType": "Media type",
+      "mediaUrl": "Media URL",
+      "linkUrl": "Link URL",
+      "linkLabel": "Link label",
+      "startsAt": "Starts at",
+      "endsAt": "Ends at",
+      "expiresAt": "Expires at",
+      "sortOrder": "Sort order",
+      "isActive": "Active",
+      "promoCode": "Promo code",
+      "description": "Description",
+      "imageUrl": "Image URL",
+      "add": "Add",
+      "edit": "Edit",
+      "delete": "Delete",
+      "deleteConfirm": "Delete this item?",
+      "saved": "Saved.",
+      "deleted": "Deleted.",
+      "noItems": "No items yet.",
+      "IMAGE": "Image",
+      "VIDEO": "Video",
+      "active": "Active",
+      "inactive": "Inactive"
     }
+  },
+  "support": {
+    "newRequest": "New support request",
+    "myRequests": "My previous requests",
+    "selectCategory": "Select a category…",
+    "describeIssue": "Describe your issue",
+    "messagePlaceholder": "Tell us what's happening…",
+    "submit": "Send request",
+    "noRequests": "No requests yet.",
+    "status": "Status",
+    "awaitingReply": "Awaiting admin reply…"
   },
   "common": {
     "cancel": "Cancel",
-    "back": "Back"
+    "back": "Back",
+    "sending": "Sending…"
+  },
+  "promos": {
+    "title": "Promos & Offers",
+    "empty": "No active promotions at the moment.",
+    "loadFailed": "Could not load promotions.",
+    "active": "Active",
+    "copyCode": "Copy code",
+    "codeCopied": "Promo code copied to clipboard!",
+    "validUntil": "Valid until {{date}}"
+  },
+  "noShow": {
+    "report": "Report No-Show",
+    "sheetTitle": "Report No-Show",
+    "description": "What happened?",
+    "descriptionHint": "Describe the situation — e.g. the requester did not show up to receive the food.",
+    "descriptionRequired": "Please describe what happened.",
+    "submit": "Submit Report",
+    "submitted": "No-show reported successfully.",
+    "alreadyReported": "A no-show report is already open for this request."
+  },
+  "dispute": {
+    "raise": "Raise a dispute",
+    "raiseTitle": "Raise a dispute or complaint",
+    "kind": "Type",
+    "kinds": {
+      "COMPLAINT": "Complaint",
+      "COMPLETION_DISPUTE": "Completion dispute"
+    },
+    "reason": "Reason",
+    "reasonHint": "Brief summary (3–200 characters)",
+    "reasonTooShort": "Give a reason of at least 3 characters.",
+    "description": "Details",
+    "descriptionHint": "Full description (3–2000 characters)",
+    "descriptionTooShort": "Give a description of at least 3 characters.",
+    "submit": "Submit dispute",
+    "raised": "Your dispute has been submitted.",
+    "status": {
+      "OPEN": "Open",
+      "UNDER_REVIEW": "Under review",
+      "RESOLVED": "Resolved"
+    }
+  },
+  "report": {
+    "title": "Report user",
+    "reason": "Reason",
+    "pickReason": "Choose a reason.",
+    "description": "Details (optional)",
+    "descriptionRequired": "Describe the problem (required for Other)",
+    "submit": "Submit report",
+    "submitted": "Your report has been submitted.",
+    "reasons": {
+      "HARASSMENT": "Harassment",
+      "INAPPROPRIATE_CONTENT": "Inappropriate content",
+      "SPAM": "Spam",
+      "SCAM_OR_FRAUD": "Scam or fraud",
+      "SAFETY_CONCERN": "Safety concern",
+      "FAKE_PROFILE": "Fake profile or identity",
+      "OTHER": "Other"
+    }
   },
   "profile": {
     "title": "Profile",
@@ -1560,6 +1812,95 @@
       "overBudget": "The cost is above the confirmed price. Ask the requester to approve it first.",
       "alt": "Receipt photo",
       "cost": "Cost ৳{{amount}}"
+    }
+  },
+  "service": {
+    "title": "Uni Service",
+    "newRequest": "Request service",
+    "detailTitle": "Uni Service request",
+    "verifyFirst": "Verify your student status to use Uni Service.",
+    "tabs": {
+      "available": "All Available",
+      "mine": "My Requests",
+      "accepted": "Accepted Requests"
+    },
+    "searchPlaceholder": "Search by service title, task or place...",
+    "empty": "No open service requests right now.",
+    "emptyFiltered": "No service requests match these filters.",
+    "loadFailed": "Could not load service requests.",
+    "notFound": "This service request was not found.",
+    "amount": "৳{{offered}}",
+    "amountWithBudget": "৳{{offered}} (+৳{{budget}} budget)",
+    "anyTime": "Any time",
+    "optionalDetailsTitle": "Additional details",
+    "itemDetailsLabel": "Item details",
+    "instructionsLabel": "Instructions",
+    "role": {
+      "requester": "Requester",
+      "accepter": "Service provider"
+    },
+    "categories": {
+      "SHOPPING_PURCHASING": "Shopping & Purchasing",
+      "PARCEL_DELIVERY": "Parcel & Delivery",
+      "PHARMACY_HEALTHCARE": "Pharmacy & Healthcare",
+      "DOCUMENT_ACADEMIC": "Document & Academic Services",
+      "WARRANTY_REPAIR": "Warranty & Repair Services",
+      "FINANCIAL_ADMINISTRATIVE": "Financial & Administrative Services",
+      "CUSTOM_OTHER": "Custom / Other Services"
+    },
+    "safety": {
+      "pharmacyTitle": "Pharmacy & Healthcare Safety Warning",
+      "pharmacyWarning": "Buying or collecting items only: no medical advice and no emergency help.",
+      "financialTitle": "Financial Security Warning",
+      "financialWarning": "Never share passwords, PINs or OTP codes in chat."
+    },
+    "form": {
+      "newTitle": "Request Uni Service",
+      "editTitle": "Edit service request",
+      "category": "Service Category",
+      "serviceTitle": "Service Title",
+      "serviceTitleHint": "e.g. Grocery Shopping, Lab Report, Medicine",
+      "taskTitle": "Task Summary",
+      "taskTitleHint": "e.g. Buy snacks from Agora and deliver to Hall 3",
+      "description": "Detailed Description",
+      "destination": "Destination / Delivery Location",
+      "hasPickup": "Add pickup location (if different)",
+      "pickup": "Pickup Location",
+      "subArea": "Sub-area (optional)",
+      "preferredDate": "Preferred Date",
+      "hasPreferredTime": "Specify preferred time",
+      "preferredTime": "Preferred Time",
+      "offeredAmount": "Offered Amount (৳)",
+      "hasBudget": "Requires budget for purchases",
+      "estimatedBudget": "Estimated Budget (৳)",
+      "itemDetails": "Item Details (optional)",
+      "itemDetailsHint": "e.g. 2 packs chips, 1 juice",
+      "quantity": "Quantity (optional)",
+      "instructions": "Special Instructions (optional)",
+      "post": "Post Service Request",
+      "save": "Save Changes",
+      "created": "Service request posted.",
+      "saved": "Service request updated."
+    },
+    "errors": {
+      "minAmount": "Must be at least ৳10"
+    },
+    "actions": {
+      "accept": "Accept request",
+      "acceptTitle": "Accept this service request?",
+      "acceptHint": "You will perform this task. A chat will open with the requester.",
+      "acceptedToast": "Request accepted. A chat is open.",
+      "start": "Start Service",
+      "startedToast": "Service started. Status is now In Progress.",
+      "deliver": "Delivered / Request Completion",
+      "deliveredToast": "Completion requested from the requester.",
+      "completedToast": "Service completed.",
+      "deleteTitle": "Delete this request?",
+      "deleteHint": "This open request will be permanently removed.",
+      "deletedToast": "Request deleted.",
+      "cancel": "Cancel service",
+      "cancelTitle": "Cancel this service?",
+      "cancelledToast": "Service cancelled."
     }
   },
   "carpool": {

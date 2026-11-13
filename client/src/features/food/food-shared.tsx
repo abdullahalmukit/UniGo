@@ -6,6 +6,7 @@ import { ConfirmSheet } from "../../components/ConfirmSheet";
 import formStyles from "../../components/form.module.css";
 import { useToast } from "../../components/toast";
 import { buttonStyles } from "../../components/ui";
+import { ApiError } from "../../lib/api";
 import { formErrors } from "../../lib/errors";
 import { cancelActivity, confirmCompletion, requestCompletion, type ActivityStatus, type CompletionBy } from "../ride/ride-api";
 import { ReasonField } from "../ride/RideActions";
@@ -109,13 +110,19 @@ export function FoodActions({
       toast.show(done);
       onChanged();
     } catch (failure) {
+      // If the transition is no longer valid, the page data is stale — reload
+      // silently so the user sees the updated state (e.g. already completed).
+      if (failure instanceof ApiError && (failure.code === "INVALID_TRANSITION" || failure.status === 409)) {
+        onChanged();
+        return;
+      }
       toast.show(errorText(failure, t), "error");
     } finally {
       setBusy(false);
     }
   };
 
-  const completionRequested = subStatus === "COMPLETION_REQUESTED";
+  const completionRequested = status === "IN_PROGRESS" && subStatus === "COMPLETION_REQUESTED";
   const collected = status === "IN_PROGRESS" && subStatus === "FOOD_COLLECTED";
   const active = status === "ACCEPTED" || status === "IN_PROGRESS" || status === "DISPUTED";
   const canCancel = status === "ACCEPTED" || (collected && role === "ACCEPTER");

@@ -1,4 +1,13 @@
 import { adminCancelFood, getAdminFood, listAdminFood } from "../food/food.admin.service.js";
+import { adminCancelService, getAdminService, listAdminServices } from "../service/service.admin.service.js";
+import { adminResolveDispute, getDispute, listAdminDisputes } from "../disputes/disputes.service.js";
+import { listDisputesQuery, resolveDisputeSchema, type ResolveDisputeInput } from "../disputes/disputes.validation.js";
+import { adminResolveNoShow, getAdminNoShow, listAdminNoShows } from "../food/food.noshow.service.js";
+import { adminReplySupport, getAdminSupportRequest, listAdminSupportRequests } from "../support/support.service.js";
+import { adminReplySupportSchema, listSupportQuery, type AdminReplySupportInput } from "../support/support.validation.js";
+import { prisma } from "../../lib/prisma.js";
+import { recordAudit } from "./audit-log.js";
+import { AppError } from "../../utils/app-error.js";
 import { Router } from "express";
 import { z } from "zod";
 import { authenticate, authUser } from "../../middleware/authenticate.js";
@@ -167,9 +176,202 @@ adminRouter.post("/food/:id/cancel", validateBody(adminReason), async (req, res)
   res.json({ food: await adminCancelFood(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
 });
 
+// ---- Uni Service (B5): View requests and remove policy-breaking requests ----------
+
+const serviceAdminQuery = z.object({
+  status: z.enum(["OPEN", "ACCEPTED", "IN_PROGRESS", "DISPUTED", "COMPLETED", "CANCELLED", "EXPIRED", "NOT_MARKED"]).optional(),
+  q: optionalText,
+  date: z.iso.date().optional(),
+  subAreaId: z.uuid().optional(),
+  categoryId: z.uuid().optional(),
+  page,
+});
+
+adminRouter.get("/services", async (req, res) => {
+  res.json(await listAdminServices(parseInput(serviceAdminQuery, req.query)));
+});
+
+adminRouter.get("/services/:id", async (req, res) => {
+  res.json({ service: await getAdminService(id(req.params.id)) });
+});
+
+adminRouter.post("/services/:id/cancel", validateBody(adminReason), async (req, res) => {
+  res.json({ service: await adminCancelService(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
 // ---- Reviews (B3b-2): hide with a reason, audited -------------------------------
 
 adminRouter.post("/reviews/:id/hide", validateBody(hideReason), async (req, res) => {
   await hideReview(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof hideReason>).reason, req.ip);
   res.status(204).end();
+});
+
+// ---- Disputes & Complaints (B7) ------------------------------------------------
+
+adminRouter.get("/disputes", async (req, res) => {
+  res.json(await listAdminDisputes(parseInput(listDisputesQuery, req.query)));
+});
+
+adminRouter.get("/disputes/:id", async (req, res) => {
+  res.json({ dispute: await getDispute(authUser(req).id, id(req.params.id)) });
+});
+
+adminRouter.post("/disputes/:id/resolve", validateBody(resolveDisputeSchema), async (req, res) => {
+  res.json({ dispute: await adminResolveDispute(authUser(req).id, id(req.params.id), req.body as ResolveDisputeInput, req.ip) });
+});
+
+// ---- Food No-Show Reports (B7) --------------------------------------------------
+
+const noShowQuery = z.object({
+  status: z.enum(["OPEN", "UNDER_REVIEW", "RESOLVED", "DISMISSED"]).optional(),
+  page,
+});
+
+adminRouter.get("/no-shows", async (req, res) => {
+  const { page: p, status: s } = parseInput(noShowQuery, req.query);
+  res.json(await listAdminNoShows(p, s));
+});
+
+adminRouter.get("/no-shows/:id", async (req, res) => {
+  res.json({ report: await getAdminNoShow(id(req.params.id)) });
+});
+
+const resolveNoShowSchema = z.object({
+  status: z.enum(["RESOLVED", "DISMISSED"]),
+  resolutionNote: z.string().trim().min(3).max(2000),
+  action: z.enum(["warn", "restrict", "suspend", "ban"]).optional(),
+  actionReason: z.string().trim().min(3).max(500).optional(),
+  suspensionDays: z.coerce.number().int().min(1).max(365).optional(),
+});
+
+adminRouter.post("/no-shows/:id/resolve", validateBody(resolveNoShowSchema), async (req, res) => {
+  res.json({ report: await adminResolveNoShow(authUser(req).id, id(req.params.id), req.body as z.infer<typeof resolveNoShowSchema>, req.ip) });
+});
+
+// ---- Support Requests & App Feedback (B7) ----------------------------------------
+
+adminRouter.get("/support", async (req, res) => {
+  res.json(await listAdminSupportRequests(parseInput(listSupportQuery, req.query)));
+});
+
+adminRouter.get("/support/:id", async (req, res) => {
+  res.json({ request: await getAdminSupportRequest(id(req.params.id)) });
+});
+
+adminRouter.post("/support/:id/reply", validateBody(adminReplySupportSchema), async (req, res) => {
+  res.json({ request: await adminReplySupport(authUser(req).id, id(req.params.id), req.body as AdminReplySupportInput, req.ip) });
+});
+
+// ---- Disputed Chat Access (Privacy Rule, Proposal 13, B7) -----------------------
+// Normally chats are private; admins can only read chats if the activity is DISPUTED
+// or has an open dispute or report. Access is recorded in Audit Log.
+
+adminRouter.get("/chats/:id/messages", async (req, res) => {
+  const chatId = id(req.params.id);
+  const adminId = authUser(req).id;
+  const chat = await prisma.chat.findUnique({
+    where: { id: chatId },
+    include: {
+      activity: {
+        select: {
+          id: true,
+          status: true,
+          creatorId: true,
+          accepterId: true,
+        },
+      },
+    },
+  });
+  if (!chat) throw new AppError(404, "CHAT_NOT_FOUND", "Chat not found");
+
+  const hasOpenDispute = await prisma.dispute.findFirst({
+    where: { activityId: chat.activityId, status: { in: ["OPEN", "UNDER_REVIEW"] } },
+  });
+  const hasOpenReport = await prisma.report.findFirst({
+    where: { activityId: chat.activityId, status: { in: ["OPEN", "UNDER_REVIEW"] } },
+  });
+
+  const isDisputed = chat.activity.status === "DISPUTED" || Boolean(hasOpenDispute) || Boolean(hasOpenReport);
+  if (!isDisputed) {
+    throw new AppError(403, "CHAT_IS_PRIVATE", "Admins may only read chats for disputed activities or open reports");
+  }
+
+  await recordAudit(prisma, {
+    adminId,
+    action: "DISPUTED_CHAT_READ",
+    targetType: "chat",
+    targetId: chatId,
+    targetUserId: chat.activity.creatorId,
+    newValue: { activityId: chat.activityId },
+    ipAddress: req.ip,
+  });
+
+  const messages = await prisma.message.findMany({
+    where: { chatId },
+    orderBy: { createdAt: "asc" },
+    take: 100,
+  });
+
+  res.json({ messages });
+});
+
+// ---- Fix Mistaken PAID Status (ভুল PAID ঠিক করা, B7) ----------------------------
+
+adminRouter.post("/payments/:id/correct-unpaid", validateBody(adminReason), async (req, res) => {
+  const paymentId = id(req.params.id);
+  const adminId = authUser(req).id;
+  const { reason } = req.body as z.infer<typeof adminReason>;
+
+  const payment = await prisma.paymentRecord.findUnique({ where: { id: paymentId } });
+  if (!payment) throw new AppError(404, "PAYMENT_NOT_FOUND", "Payment record not found");
+  if (payment.status !== "PAID") {
+    throw new AppError(400, "NOT_PAID", "This payment is not marked as PAID");
+  }
+
+  await prisma.paymentRecord.update({
+    where: { id: paymentId },
+    data: { status: "UNPAID", paidAt: null },
+  });
+
+  await recordAudit(prisma, {
+    adminId,
+    action: "PAYMENT_STATUS_CORRECTED",
+    targetType: "payment_record",
+    targetId: paymentId,
+    targetUserId: payment.payeeId,
+    oldValue: { status: "PAID" },
+    newValue: { status: "UNPAID", reason },
+    ipAddress: req.ip,
+  });
+
+  res.json({ success: true, message: "Payment status corrected to UNPAID" });
+});
+
+// ---- Clear Late Cancellation Flag (late flag মোছা, B7) ---------------------------
+
+adminRouter.post("/activities/:id/clear-late-flag", validateBody(adminReason), async (req, res) => {
+  const activityId = id(req.params.id);
+  const adminId = authUser(req).id;
+  const { reason } = req.body as z.infer<typeof adminReason>;
+
+  const activity = await prisma.activity.findUnique({ where: { id: activityId } });
+  if (!activity) throw new AppError(404, "ACTIVITY_NOT_FOUND", "Activity not found");
+
+  await prisma.activity.update({
+    where: { id: activityId },
+    data: { isLateCancellation: false },
+  });
+
+  await recordAudit(prisma, {
+    adminId,
+    action: "LATE_CANCELLATION_CLEARED",
+    targetType: "activity",
+    targetId: activityId,
+    targetUserId: activity.creatorId,
+    oldValue: { isLateCancellation: activity.isLateCancellation },
+    newValue: { isLateCancellation: false, reason },
+    ipAddress: req.ip,
+  });
+
+  res.json({ success: true, message: "Late cancellation flag cleared" });
 });

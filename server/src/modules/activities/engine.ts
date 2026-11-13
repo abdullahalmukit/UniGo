@@ -269,14 +269,15 @@ export async function acceptActivity(activityId: string, accepterId: string, opt
 
     if (activity.status !== "OPEN") throw alreadyTaken();
     const rule = checkTransition(activity, "ACCEPT", actor);
-    // Never rely on the expiry job: an item whose start has passed cannot be taken.
-    if (activity.startTime <= now) throw new AppError(409, "START_TIME_PASSED", "This item's start time has passed");
+    // Never rely on the expiry job: an item whose start + grace period has passed cannot be taken (B3a-1).
+    const graceCutoff = new Date(now.getTime() - rules.activity.expiryGracePeriod);
+    if (activity.startTime < graceCutoff) throw new AppError(409, "START_TIME_PASSED", "This item's start time has passed");
     await assertCanAccept(tx, accepterId, now);
     await assertNotBlocked(tx, activity.creatorId, accepterId);
     if (options.check) await options.check(tx, activity);
 
     const taken = await tx.activity.updateMany({
-      where: { id: activity.id, status: "OPEN", deletedAt: null, startTime: { gt: now } },
+      where: { id: activity.id, status: "OPEN", deletedAt: null, startTime: { gte: graceCutoff } },
       data: { status: "ACCEPTED", subStatus: rule.to.subStatus ?? null, accepterId, acceptedAt: now, ...options.data },
     });
     if (taken.count === 0) throw alreadyTaken();

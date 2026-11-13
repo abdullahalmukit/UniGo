@@ -14,6 +14,8 @@ import { formatRideTime } from "../../lib/dates";
 import { formErrors } from "../../lib/errors";
 import { SkeletonList, SubPageHeader } from "../account/SubPage";
 import { PaymentCard } from "../activity/PaymentCard";
+import { RaiseDisputeSheet } from "../activity/RaiseDisputeSheet";
+import { ReportSheet } from "../activity/ReportSheet";
 import { ReviewPanel } from "../activity/ReviewPanel";
 import { linkUrl } from "../inbox/chat-api";
 import { shrinkImage } from "../profile/shrink-image";
@@ -26,6 +28,7 @@ import {
   confirmOrder,
   decideApproval,
   getFood,
+  reportFoodNoShow,
   saveOrder,
   upgradeFood,
   uploadReceipt,
@@ -54,6 +57,9 @@ export function FoodDetailPage() {
   const [request, setRequest] = useState<FoodRequest | null>(null);
   const [error, setError] = useState<"NOT_FOUND" | "FAILED" | null>(null);
   const [sheet, setSheet] = useState<"accept" | "delete" | "upgrade" | null>(null);
+  const [disputeSheet, setDisputeSheet] = useState(false);
+  const [reportSheet, setReportSheet] = useState(false);
+  const [noShowSheet, setNoShowSheet] = useState(false);
 
   const reload = useCallback(() => {
     getFood(id)
@@ -175,7 +181,84 @@ export function FoodDetailPage() {
         }}
       />
       {sheet === "upgrade" && <UpgradeSheet request={request} onClose={() => setSheet(null)} onDone={setRequest} />}
+
+      {participant && !isOpen && ["ACCEPTED", "IN_PROGRESS", "DISPUTED"].includes(request.status) && request.status !== "DISPUTED" && (
+        <div className={styles.actions}>
+          <button type="button" className={buttonStyles.secondary} onClick={() => setDisputeSheet(true)}>
+            {t("dispute.raise")}
+          </button>
+          {other && (
+            <button type="button" className={buttonStyles.secondary} onClick={() => setReportSheet(true)}>
+              {t("report.title")}
+            </button>
+          )}
+          {request.role === "ACCEPTER" && request.status === "IN_PROGRESS" && (
+            <button type="button" className={buttonStyles.secondary} onClick={() => setNoShowSheet(true)}>
+              {t("noShow.report")}
+            </button>
+          )}
+        </div>
+      )}
+
+      <RaiseDisputeSheet
+        activityId={request.id}
+        open={disputeSheet}
+        onClose={() => setDisputeSheet(false)}
+        onRaised={reload}
+      />
+      <ReportSheet
+        open={reportSheet}
+        onClose={() => setReportSheet(false)}
+        activityId={request.id}
+        reportedUserId={other?.id}
+      />
+      {noShowSheet && (
+        <NoShowSheet
+          activityId={request.id}
+          onClose={() => setNoShowSheet(false)}
+          onDone={() => { setNoShowSheet(false); reload(); }}
+        />
+      )}
     </div>
+  );
+}
+
+function NoShowSheet({ activityId, onClose, onDone }: { activityId: string; onClose: () => void; onDone: () => void }) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [description, setDescription] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    if (!description.trim()) return setError(t("noShow.descriptionRequired"));
+    setBusy(true);
+    setError(null);
+    try {
+      await reportFoodNoShow(activityId, description.trim());
+      toast.show(t("noShow.submitted"));
+      onDone();
+    } catch (failure) {
+      setError(errorText(failure, t));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <BottomSheet title={t("noShow.sheetTitle")} open onClose={onClose}>
+      {error && <FormAlert>{error}</FormAlert>}
+      <p className={styles.muted}>{t("noShow.descriptionHint")}</p>
+      <TextAreaField label={t("noShow.description")} value={description} max={500} onChange={setDescription} />
+      <div className={formStyles.sheetButtons}>
+        <button type="button" className={buttonStyles.secondary} onClick={onClose}>
+          {t("common.cancel")}
+        </button>
+        <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void submit()}>
+          {t("noShow.submit")}
+        </button>
+      </div>
+    </BottomSheet>
   );
 }
 
@@ -241,8 +324,8 @@ function OrderPanel({ request, onChanged }: { request: FoodRequest; onChanged: (
         </h2>
         {order && (
           <span className={confirmed || (order.confirmedByMe && order.confirmedByOther) ? foodStyles.ok : foodStyles.waiting}>
-            {confirmed ? <CheckCircle2 aria-hidden size={16} /> : <Clock aria-hidden size={16} />}{" "}
-            {confirmed ? t("food.order.confirmed") : order.confirmedByMe ? t("food.order.waitingOther") : t("food.order.needsYou")}
+            {(confirmed || (order.confirmedByMe && order.confirmedByOther)) ? <CheckCircle2 aria-hidden size={16} /> : <Clock aria-hidden size={16} />}{" "}
+            {(confirmed || (order.confirmedByMe && order.confirmedByOther)) ? t("food.order.confirmed") : order.confirmedByMe ? t("food.order.waitingOther") : t("food.order.needsYou")}
           </span>
         )}
       </div>

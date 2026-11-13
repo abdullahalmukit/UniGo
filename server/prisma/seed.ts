@@ -26,6 +26,25 @@ for (const { name, shortName, domain } of universities) {
 
 console.log(`Seeded ${universities.length} test universities.`);
 
+const serviceCategories = [
+  { code: "SHOPPING_PURCHASING" as const, sortOrder: 1 },
+  { code: "PARCEL_DELIVERY" as const, sortOrder: 2 },
+  { code: "PHARMACY_HEALTHCARE" as const, sortOrder: 3 },
+  { code: "DOCUMENT_ACADEMIC" as const, sortOrder: 4 },
+  { code: "WARRANTY_REPAIR" as const, sortOrder: 5 },
+  { code: "FINANCIAL_ADMINISTRATIVE" as const, sortOrder: 6 },
+  { code: "CUSTOM_OTHER" as const, sortOrder: 7 },
+];
+
+for (const { code, sortOrder } of serviceCategories) {
+  await prisma.serviceCategory.upsert({
+    where: { code },
+    update: { sortOrder, isActive: true },
+    create: { code, sortOrder, isActive: true },
+  });
+}
+console.log(`Seeded ${serviceCategories.length} service categories.`);
+
 // The admin is not a student, so it stays UNVERIFIED. An existing account with
 // this email is promoted to SUPER_ADMIN; its password is not changed.
 if (env.SEED_ADMIN_EMAIL && env.SEED_ADMIN_PASSWORD) {

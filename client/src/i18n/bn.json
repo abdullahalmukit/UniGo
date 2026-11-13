@@ -56,20 +56,29 @@
       "rateUs": "রেটিং দিন"
     },
     "spotlightTitle": "UniGo স্পটলাইট",
+    "bannersTitle": "বিজ্ঞপ্তি ও অফার",
     "spotlight": {
       "sample": "শীঘ্রই আসছে",
       "offers": "ক্যাম্পাস অফার",
       "events": "এই সপ্তাহের ইভেন্ট",
       "news": "UniGo খবর",
       "safety": "নিরাপদ রাইডের টিপস",
-      "partners": "নতুন পার্টনার"
+      "partners": "নতুন পার্টনার",
+      "viewStory": "স্টোরি দেখুন",
+      "visitLink": "বিস্তারিত জানুন"
     }
   },
   "services": {
     "title": "সব সার্ভিস",
     "create": "তৈরি করুন",
     "browse": "দেখুন",
-    "comingSoon": "শীঘ্রই আসছে"
+    "comingSoon": "শীঘ্রই আসছে",
+    "requestsTitle": "সব ওপেন রিকোয়েস্ট",
+    "requestsSubtitle": "বিশ্ববিদ্যালয়ের সব সার্ভিসের রিকোয়েস্ট এক জায়গায় দেখুন ও অ্যাকসেপ্ট করুন",
+    "searchPlaceholder": "এলাকা, রুট বা বিবরণ দিয়ে খুঁজুন...",
+    "viewDetails": "বিস্তারিত দেখুন",
+    "emptyRequests": "বর্তমানে এই ফিল্টারে কোনো ওপেন রিকোয়েস্ট নেই",
+    "loadMore": "আরও দেখুন"
   },
   "activity": {
     "title": "অ্যাক্টিভিটি",
@@ -503,7 +512,14 @@
       "riderRequests": "রাইডার অনুরোধ",
       "fareSettings": "ভাড়া সেটিংস",
       "rides": "রাইড শেয়ারিং",
-      "food": "ফুড"
+      "food": "ফুড",
+      "services": "ইউনি সার্ভিস",
+      "disputes": "বিরোধ",
+      "noShows": "নো-শো রিপোর্ট",
+      "support": "সাপোর্ট",
+      "spotlight": "স্পটলাইট",
+      "promos": "প্রমো",
+      "banners": "ব্যানার"
     },
     "dashboard": {
       "totalUsers": "মোট ব্যবহারকারী",
@@ -809,11 +825,247 @@
       "back": "ফুডে ফিরে যান",
       "cancel": "অর্ডার বাতিল করুন",
       "openReceipt": "রসিদ খুলুন"
+    },
+    "services": {
+      "search": "কোনো ব্যক্তি বা শিরোনাম খুঁজুন",
+      "empty": "কোনো সার্ভিস অনুরোধ পাওয়া যায়নি।",
+      "count_one": "{{count}}টি সার্ভিস অনুরোধ",
+      "count_other": "{{count}}টি সার্ভিস অনুরোধ",
+      "detailTitle": "সার্ভিস অনুরোধ",
+      "back": "ইউনি সার্ভিসে ফিরে যান",
+      "category": "বিভাগ",
+      "taskTitle": "কাজের শিরোনাম",
+      "description": "বিবরণ",
+      "destination": "গন্তব্য",
+      "pickup": "পিকআপ",
+      "preferredDate": "পছন্দের তারিখ",
+      "anyTime": "যেকোনো সময়",
+      "offeredAmount": "প্রস্তাবিত পরিমাণ",
+      "estimatedBudget": "আনুমানিক বাজেট",
+      "amount": "পরিমাণ",
+      "budget": "বাজেট",
+      "subArea": "সাব-এরিয়া",
+      "itemDetails": "আইটেমের বিবরণ",
+      "itemDetailsLabel": "আইটেমের বিবরণ",
+      "instructions": "নির্দেশনা",
+      "instructionsLabel": "নির্দেশনা",
+      "creator": "অনুরোধকারী",
+      "accepter": "গ্রহণকারী",
+      "created": "তৈরি হয়েছে",
+      "startedAt": "শুরু হয়েছে",
+      "completedAt": "সম্পন্ন হয়েছে",
+      "referenceImage": "রেফারেন্স ছবি খুলুন",
+      "openImage": "রেফারেন্স ছবি খুলুন",
+      "cancel": "সার্ভিস অনুরোধ বাতিল করুন",
+      "cancelTitle": "এই সার্ভিস অনুরোধটি বাতিল করবেন?"
+    },
+    "disputes": {
+      "search": "কারণ বা নাম দিয়ে খুঁজুন",
+      "empty": "কোনো বিরোধ পাওয়া যায়নি।",
+      "count_one": "{{count}}টি বিরোধ",
+      "count_other": "{{count}}টি বিরোধ",
+      "detailTitle": "বিরোধ",
+      "back": "বিরোধে ফিরে যান",
+      "kind": "ধরন",
+      "kinds": {
+        "COMPLAINT": "অভিযোগ",
+        "COMPLETION_DISPUTE": "সম্পন্নতার বিরোধ"
+      },
+      "status": {
+        "OPEN": "খোলা",
+        "UNDER_REVIEW": "পর্যালোচনাধীন",
+        "RESOLVED": "সমাধান হয়েছে"
+      },
+      "activityType": "কার্যক্রম",
+      "description": "বিবরণ",
+      "statusBefore": "উত্থাপনের সময় স্ট্যাটাস",
+      "raisedBy": "উত্থাপনকারী",
+      "against": "বিরুদ্ধে",
+      "createdAt": "রিপোর্ট করা হয়েছে",
+      "finalStatus": "চূড়ান্ত স্ট্যাটাস",
+      "decisionNote": "সিদ্ধান্তের নোট",
+      "evidence": "প্রমাণ",
+      "openEvidence": "প্রমাণের ছবি খুলুন",
+      "resolve": "বিরোধ সমাধান করুন",
+      "resolveTitle": "এই বিরোধ সমাধান করুন",
+      "decision": "সিদ্ধান্ত",
+      "decisions": {
+        "RESOLVE_COMPLETED": "সম্পন্ন হিসেবে চিহ্নিত করুন",
+        "RESOLVE_CANCELLED": "বাতিল হিসেবে চিহ্নিত করুন"
+      },
+      "moderationAction": "মডারেশন পদক্ষেপ (ঐচ্ছিক)",
+      "noAction": "কোনো পদক্ষেপ নেই",
+      "actionReason": "পদক্ষেপের কারণ",
+      "suspensionDays": "স্থগিতকালের দৈর্ঘ্য (দিন)",
+      "chatNote": "অ্যাডমিনরা বিরোধিত কার্যক্রমের চ্যাট পড়তে পারবেন।"
+    },
+    "noShows": {
+      "empty": "কোনো নো-শো রিপোর্ট পাওয়া যায়নি।",
+      "count_one": "{{count}}টি রিপোর্ট",
+      "count_other": "{{count}}টি রিপোর্ট",
+      "detailTitle": "নো-শো রিপোর্ট",
+      "back": "নো-শো রিপোর্টে ফিরে যান",
+      "reporter": "রিপোর্টকারী (গ্রহণকারী)",
+      "reported": "রিপোর্টকৃত (অনুরোধকারী)",
+      "description": "বিবরণ",
+      "createdAt": "রিপোর্ট করা হয়েছে",
+      "resolutionNote": "সমাধানের নোট",
+      "openEvidence": "প্রমাণের ছবি খুলুন",
+      "resolve": "সমাধান করুন",
+      "resolveTitle": "এই নো-শো রিপোর্ট সমাধান করুন",
+      "decision": "সিদ্ধান্ত",
+      "decisions": {
+        "RESOLVED": "সমাধান হয়েছে — নো-শো নিশ্চিত",
+        "DISMISSED": "বাতিল — নো-শো অনিশ্চিত"
+      },
+      "status": {
+        "OPEN": "খোলা",
+        "UNDER_REVIEW": "পর্যালোচনাধীন",
+        "RESOLVED": "সমাধান হয়েছে",
+        "DISMISSED": "বাতিল"
+      }
+    },
+    "support": {
+      "category": "বিভাগ",
+      "empty": "কোনো সাপোর্ট অনুরোধ পাওয়া যায়নি।",
+      "count_one": "{{count}}টি অনুরোধ",
+      "count_other": "{{count}}টি অনুরোধ",
+      "detailTitle": "সাপোর্ট অনুরোধ",
+      "back": "সাপোর্টে ফিরে যান",
+      "from": "প্রেরক",
+      "message": "বার্তা",
+      "createdAt": "জমা দেওয়া হয়েছে",
+      "reply": "অ্যাডমিন উত্তর",
+      "repliedBy": "উত্তর দিয়েছেন",
+      "openScreenshot": "স্ক্রিনশট খুলুন",
+      "replyButton": "উত্তর পাঠান",
+      "replyTitle": "এই অনুরোধে উত্তর দিন",
+      "replyLabel": "উত্তর",
+      "send": "পাঠান",
+      "categories": {
+        "RIDE": "রাইড শেয়ারিং",
+        "FOOD": "ফুড ডেলিভারি",
+        "CARPOOL": "কারপুল",
+        "SERVICE": "ইউনি সার্ভিস",
+        "ACCOUNT": "অ্যাকাউন্ট",
+        "VERIFICATION": "যাচাইকরণ",
+        "PAYMENT": "পেমেন্ট",
+        "TECHNICAL": "কারিগরি সমস্যা",
+        "SAFETY": "নিরাপত্তা",
+        "APP_FEEDBACK": "অ্যাপ ফিডব্যাক",
+        "OTHER": "অন্যান্য"
+      },
+      "status": {
+        "OPEN": "খোলা",
+        "IN_PROGRESS": "প্রক্রিয়াধীন",
+        "RESOLVED": "সমাধান হয়েছে",
+        "CLOSED": "বন্ধ"
+      }
+    },
+    "content": {
+      "spotlight": "স্পটলাইট",
+      "promos": "প্রমো",
+      "banners": "ব্যানার",
+      "title": "শিরোনাম",
+      "mediaType": "মিডিয়ার ধরন",
+      "mediaUrl": "মিডিয়া URL",
+      "linkUrl": "লিঙ্ক URL",
+      "linkLabel": "লিঙ্কের লেবেল",
+      "startsAt": "শুরুর সময়",
+      "endsAt": "শেষের সময়",
+      "expiresAt": "মেয়াদ শেষের সময়",
+      "sortOrder": "সাজানোর ক্রম",
+      "isActive": "সক্রিয়",
+      "promoCode": "প্রমো কোড",
+      "description": "বিবরণ",
+      "imageUrl": "ছবির URL",
+      "add": "যোগ করুন",
+      "edit": "সম্পাদনা",
+      "delete": "মুছুন",
+      "deleteConfirm": "এই আইটেমটি মুছবেন?",
+      "saved": "সংরক্ষিত হয়েছে।",
+      "deleted": "মুছে ফেলা হয়েছে।",
+      "noItems": "এখনো কোনো আইটেম নেই।",
+      "IMAGE": "ছবি",
+      "VIDEO": "ভিডিও",
+      "active": "সক্রিয়",
+      "inactive": "নিষ্ক্রিয়"
     }
+  },
+  "support": {
+    "newRequest": "নতুন সাপোর্ট রিকোয়েস্ট",
+    "myRequests": "আমার আগের রিকোয়েস্ট",
+    "selectCategory": "ক্যাটাগরি বেছে নিন…",
+    "describeIssue": "সমস্যার বিবরণ দিন",
+    "messagePlaceholder": "কী হচ্ছে জানান…",
+    "submit": "রিকোয়েস্ট পাঠান",
+    "noRequests": "এখনো কোনো রিকোয়েস্ট নেই।",
+    "status": "অবস্থা",
+    "awaitingReply": "অ্যাডমিনের উত্তরের অপেক্ষায়…"
   },
   "common": {
     "cancel": "বাতিল",
-    "back": "পেছনে"
+    "back": "পেছনে",
+    "sending": "পাঠানো হচ্ছে…"
+  },
+  "promos": {
+    "title": "প্রোমো ও অফার",
+    "empty": "এই মুহূর্তে কোনো সক্রিয় প্রোমো নেই।",
+    "loadFailed": "প্রোমো লোড করা যায়নি।",
+    "active": "সক্রিয়",
+    "copyCode": "কোড কপি করুন",
+    "codeCopied": "প্রোমো কোড কপি করা হয়েছে!",
+    "validUntil": "মেয়াদ {{date}} পর্যন্ত"
+  },
+  "noShow": {
+    "report": "নো-শো রিপোর্ট করুন",
+    "sheetTitle": "নো-শো রিপোর্ট",
+    "description": "কী হয়েছিল?",
+    "descriptionHint": "পরিস্থিতি বর্ণনা করুন — যেমন, রিকোয়েস্টকারী খাবার নিতে আসেননি।",
+    "descriptionRequired": "অনুগ্রহ করে কী হয়েছিল তা বর্ণনা করুন।",
+    "submit": "রিপোর্ট জমা দিন",
+    "submitted": "নো-শো সফলভাবে রিপোর্ট করা হয়েছে।",
+    "alreadyReported": "এই অনুরোধের জন্য ইতিমধ্যে একটি নো-শো রিপোর্ট খোলা আছে।"
+  },
+  "dispute": {
+    "raise": "বিরোধ উত্থাপন করুন",
+    "raiseTitle": "বিরোধ বা অভিযোগ উত্থাপন করুন",
+    "kind": "ধরন",
+    "kinds": {
+      "COMPLAINT": "অভিযোগ",
+      "COMPLETION_DISPUTE": "সম্পন্নতার বিরোধ"
+    },
+    "reason": "কারণ",
+    "reasonHint": "সংক্ষিপ্ত সারসংক্ষেপ (৩–২০০ অক্ষর)",
+    "reasonTooShort": "কমপক্ষে ৩ অক্ষরের কারণ দিন।",
+    "description": "বিবরণ",
+    "descriptionHint": "পূর্ণ বিবরণ (৩–২০০০ অক্ষর)",
+    "descriptionTooShort": "কমপক্ষে ৩ অক্ষরের বিবরণ দিন।",
+    "submit": "বিরোধ জমা দিন",
+    "raised": "আপনার বিরোধ জমা দেওয়া হয়েছে।",
+    "status": {
+      "OPEN": "খোলা",
+      "UNDER_REVIEW": "পর্যালোচনাধীন",
+      "RESOLVED": "সমাধান হয়েছে"
+    }
+  },
+  "report": {
+    "title": "ব্যবহারকারী রিপোর্ট করুন",
+    "reason": "কারণ",
+    "pickReason": "একটি কারণ বেছে নিন।",
+    "description": "বিবরণ (ঐচ্ছিক)",
+    "descriptionRequired": "সমস্যার বিবরণ দিন (Other-এর জন্য আবশ্যক)",
+    "submit": "রিপোর্ট জমা দিন",
+    "submitted": "আপনার রিপোর্ট জমা দেওয়া হয়েছে।",
+    "reasons": {
+      "HARASSMENT": "হয়রানি",
+      "INAPPROPRIATE_CONTENT": "অনুপযুক্ত কন্টেন্ট",
+      "SPAM": "স্প্যাম",
+      "SCAM_OR_FRAUD": "প্রতারণা বা জালিয়াতি",
+      "SAFETY_CONCERN": "নিরাপত্তা উদ্বেগ",
+      "FAKE_PROFILE": "ভুয়া প্রোফাইল বা পরিচয়",
+      "OTHER": "অন্যান্য"
+    }
   },
   "profile": {
     "title": "প্রোফাইল",
@@ -1560,6 +1812,95 @@
       "overBudget": "খরচ নিশ্চিত করা দামের বেশি। আগে অনুরোধকারীর অনুমোদন নিন।",
       "alt": "রসিদের ছবি",
       "cost": "খরচ ৳{{amount}}"
+    }
+  },
+  "service": {
+    "title": "ইউনি সার্ভিস",
+    "newRequest": "সার্ভিস অনুরোধ করুন",
+    "detailTitle": "ইউনি সার্ভিস অনুরোধ",
+    "verifyFirst": "ইউনি সার্ভিস ব্যবহার করতে আপনার শিক্ষার্থী পরিচয় যাচাই করুন।",
+    "tabs": {
+      "available": "সব উপলব্ধ",
+      "mine": "আমার অনুরোধ",
+      "accepted": "গৃহীত অনুরোধ"
+    },
+    "searchPlaceholder": "কাজের নাম, শিরোনাম বা স্থান দিয়ে খুঁজুন...",
+    "empty": "এখন কোনো খোলা সার্ভিসের অনুরোধ নেই।",
+    "emptyFiltered": "এই ফিল্টারে কোনো সার্ভিসের অনুরোধ নেই।",
+    "loadFailed": "সার্ভিসের অনুরোধ লোড করা যায়নি।",
+    "notFound": "এই সার্ভিসের অনুরোধটি পাওয়া যায়নি।",
+    "amount": "৳{{offered}}",
+    "amountWithBudget": "৳{{offered}} (+৳{{budget}} বাজেট)",
+    "anyTime": "যেকোনো সময়",
+    "optionalDetailsTitle": "অতিরিক্ত তথ্য",
+    "itemDetailsLabel": "আইটেম বিবরণ",
+    "instructionsLabel": "নির্দেশনা",
+    "role": {
+      "requester": "অনুরোধকারী",
+      "accepter": "সার্ভিস দিচ্ছেন"
+    },
+    "categories": {
+      "SHOPPING_PURCHASING": "কেনাকাটা ও বাজার",
+      "PARCEL_DELIVERY": "পার্সেল ও ডেলিভারি",
+      "PHARMACY_HEALTHCARE": "ফার্মেসি ও স্বাস্থ্যসেবা",
+      "DOCUMENT_ACADEMIC": "ডকুমেন্ট ও অ্যাকাডেমিক কাজ",
+      "WARRANTY_REPAIR": "ওয়ারেন্টি ও মেরামত সেবা",
+      "FINANCIAL_ADMINISTRATIVE": "আর্থিক ও প্রশাসনিক কাজ",
+      "CUSTOM_OTHER": "অন্যান্য কাস্টম কাজ"
+    },
+    "safety": {
+      "pharmacyTitle": "ফার্মেসি ও স্বাস্থ্যসেবা সতর্কতা",
+      "pharmacyWarning": "শুধু জিনিসপত্র কেনা বা সংগ্রহের জন্য: কোনো চিকিৎসা পরামর্শ বা জরুরি সাহায্য নয়।",
+      "financialTitle": "আর্থিক নিরাপত্তা সতর্কতা",
+      "financialWarning": "চ্যাটে কখনো পাসওয়ার্ড, পিন (PIN) বা ওটিপি (OTP) কোড শেয়ার করবেন না।"
+    },
+    "form": {
+      "newTitle": "নতুন সার্ভিস অনুরোধ",
+      "editTitle": "সার্ভিস অনুরোধ সম্পাদনা",
+      "category": "সার্ভিস ক্যাটাগরি",
+      "serviceTitle": "সার্ভিসের নাম",
+      "serviceTitleHint": "যেমন: বাজার সদাই, ল্যাব রিপোর্ট, ওষুধ আনা",
+      "taskTitle": "কাজের শিরোনাম",
+      "taskTitleHint": "যেমন: আগোরা থেকে নাস্তা এনে ৩ নং হলে দেওয়া",
+      "description": "বিস্তারিত বিবরণ",
+      "destination": "গন্তব্য / পৌঁছানোর ঠিকানা",
+      "hasPickup": "পিকআপের নির্দিষ্ট ঠিকানা যোগ করুন",
+      "pickup": "পিকআপের ঠিকানা",
+      "subArea": "সাব-এরিয়া (ঐচ্ছিক)",
+      "preferredDate": "পছন্দের তারিখ",
+      "hasPreferredTime": "নির্দিষ্ট সময় উল্লেখ করুন",
+      "preferredTime": "পছন্দের সময়",
+      "offeredAmount": "অফার করা পারিশ্রমিক (৳)",
+      "hasBudget": "জিনিস কেনার বাজেট প্রয়োজন",
+      "estimatedBudget": "আনুমানিক বাজেট (৳)",
+      "itemDetails": "আইটেম বিবরণ (ঐচ্ছিক)",
+      "itemDetailsHint": "যেমন: ২ প্যাকেট চিপস, ১টি জুস",
+      "quantity": "পরিমাণ (ঐচ্ছিক)",
+      "instructions": "বিশেষ নির্দেশনা (ঐচ্ছিক)",
+      "post": "অনুরোধ পোস্ট করুন",
+      "save": "পরিবর্তন সংরক্ষণ করুন",
+      "created": "সার্ভিস অনুরোধ পোস্ট করা হয়েছে।",
+      "saved": "সার্ভিস অনুরোধ আপডেট করা হয়েছে।"
+    },
+    "errors": {
+      "minAmount": "কমপক্ষে ১০ টাকা হতে হবে"
+    },
+    "actions": {
+      "accept": "অনুরোধ গ্রহণ করুন",
+      "acceptTitle": "এই সার্ভিস অনুরোধটি গ্রহণ করতে চান?",
+      "acceptHint": "আপনি কাজটি সম্পন্ন করবেন। অনুরোধকারীর সাথে একটি চ্যাট শুরু হবে।",
+      "acceptedToast": "অনুরোধ গ্রহণ করা হয়েছে। চ্যাট চালু হয়েছে।",
+      "start": "সার্ভিস শুরু করুন",
+      "startedToast": "সার্ভিস শুরু হয়েছে। স্ট্যাটাস এখন চলমান।",
+      "deliver": "কাজ শেষ, সমাপ্তি অনুরোধ করুন",
+      "deliveredToast": "অনুরোধকারীর কাছে সমাপ্তির অনুমোদন চাওয়া হয়েছে।",
+      "completedToast": "সার্ভিস সম্পন্ন হয়েছে।",
+      "deleteTitle": "অনুরোধটি মুছে ফেলতে চান?",
+      "deleteHint": "এই খোলা অনুরোধটি স্থায়ীভাবে মুছে ফেলা হবে।",
+      "deletedToast": "অনুরোধটি মুছে ফেলা হয়েছে।",
+      "cancel": "সার্ভিস বাতিল করুন",
+      "cancelTitle": "সার্ভিসটি বাতিল করতে চান?",
+      "cancelledToast": "সার্ভিস বাতিল করা হয়েছে।"
     }
   },
   "carpool": {

@@ -5,7 +5,9 @@ import { requireCanAct, requireVerifiedStudent } from "../../middleware/authoriz
 import { singleImageUpload } from "../../middleware/upload.js";
 import { parseInput, validateBody } from "../../middleware/validate.js";
 import { AppError } from "../../utils/app-error.js";
+import { rules } from "../../config/rules.js";
 import { fillPersonStats } from "../users/stats.service.js";
+import { reportFoodNoShow } from "./food.noshow.service.js";
 import { confirmOrderDetails, decideBudgetApproval, requestBudgetApproval, saveOrderDetails, uploadReceipt } from "./food.order.service.js";
 import { acceptFoodRequest, createFoodRequest, foodConfig, getFoodRequest, listFood, loadFood, updateFoodRequest, upgradeFoodRequest } from "./food.service.js";
 import {
@@ -106,3 +108,14 @@ foodRouter.post(
     res.status(201).json(await fillPersonStats({ request: await uploadReceipt({ id: me(req) }, id(req.params.id), req.file!.buffer, actualCost) }));
   },
 );
+
+const noShowSchema = z.object({
+  description: z.string().trim().min(rules.noShow.descriptionMinLength).max(rules.noShow.descriptionMaxLength),
+  evidenceKeys: z.array(z.string().trim().min(1)).optional(),
+});
+
+foodRouter.post("/requests/:id/no-show", requireCanAct, validateBody(noShowSchema), async (req, res) => {
+  const { description, evidenceKeys } = req.body as z.infer<typeof noShowSchema>;
+  const report = await reportFoodNoShow(me(req), id(req.params.id), description, evidenceKeys);
+  res.status(201).json({ report });
+});

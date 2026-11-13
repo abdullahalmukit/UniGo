@@ -26,8 +26,13 @@ import { riderRouter } from "./modules/riders/riders.routes.js";
 import { carpoolRouter } from "./modules/carpool/carpool.routes.js";
 import { foodRouter } from "./modules/food/food.routes.js";
 import { rideRouter } from "./modules/ride/ride.routes.js";
+import { serviceRouter } from "./modules/service/service.routes.js";
+import { disputesRouter } from "./modules/disputes/disputes.routes.js";
+import { supportRouter } from "./modules/support/support.routes.js";
 import { meRouter } from "./modules/users/me.routes.js";
 import { verificationRouter } from "./modules/verification/verification.routes.js";
+import { allRequestsRouter } from "./modules/all-requests/all-requests.routes.js";
+import { adminContentRouter, contentRouter } from "./modules/content/content.routes.js";
 
 export const app = express();
 
@@ -35,7 +40,9 @@ export const app = express();
 registerNotificationListeners();
 
 app.use(helmet());
-app.use(cors({ origin: env.CLIENT_URL, credentials: true }));
+// Allow both 5173 and 5174 in dev (Vite picks 5174 when 5173 is busy)
+const allowedOrigins = [env.CLIENT_URL, env.CLIENT_URL.replace("5173", "5174"), env.CLIENT_URL.replace("5174", "5173")];
+app.use(cors({ origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)), credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());
 
@@ -51,12 +58,17 @@ app.use("/api/activities", activityExtrasRouter);
 app.use("/api/rides", rideRouter);
 app.use("/api/food", foodRouter);
 app.use("/api/carpool", carpoolRouter);
+app.use("/api/service", serviceRouter);
+app.use("/api/services/requests", allRequestsRouter);
+app.use("/api/all-requests", allRequestsRouter);
 app.use("/api/activity", activityFeedRouter);
 app.use("/api/upcoming", upcomingRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/geo", geoRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/reports", reportsRouter);
+app.use("/api/disputes", disputesRouter);
+app.use("/api/support", supportRouter);
 app.use("/api/notifications", notificationsRouter);
 app.use("/api/push", pushRouter);
 app.use("/api/verification", verificationRouter);
@@ -65,6 +77,8 @@ app.use("/api/admin/student-verifications", adminStudentVerificationsRouter);
 app.use("/api/admin/universities", adminUniversitiesRouter);
 app.use("/api/admin/rider-applications", adminRiderApplicationsRouter);
 app.use("/api/admin/riders", adminRidersRouter);
+app.use("/api/content", contentRouter);
+app.use("/api/admin/content", adminContentRouter);
 app.use("/api/admin", adminRouter);
 
 app.use(notFound);

@@ -26,9 +26,9 @@ export const CANDIDATES = 300;
 const place = (address: string, lat: Prisma.Decimal, lng: Prisma.Decimal) => ({ address, lat: Number(lat), lng: Number(lng) });
 
 export type FeedItem = {
-  // B4: food requests join the feed (food.feed.ts); B6a: carpool (carpool.feed.ts)
-  feature: "RIDE" | "FOOD" | "CARPOOL";
-  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION";
+  // B4: food requests join the feed (food.feed.ts); B5: service; B6a: carpool (carpool.feed.ts)
+  feature: "RIDE" | "FOOD" | "CARPOOL" | "SERVICE";
+  kind: "RIDE_REQUEST" | "RIDE_OFFER" | "RIDE_BOOKING" | "FOOD" | "CARPOOL_POST" | "CARPOOL_BOOKING" | "CARPOOL_SESSION" | "SERVICE";
   id: string;
   role: "REQUESTED" | "ACCEPTED";
   // An activity status, or a post status (OPEN, FULL, CLOSED) for an offer

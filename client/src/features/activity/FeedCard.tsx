@@ -34,6 +34,7 @@ function kindLabel(item: FeedItem, t: (key: string) => string) {
   if (item.kind === "CARPOOL_SESSION") return t("carpool.kind.session");
   if (item.kind === "RIDE_OFFER") return t("ride.kind.offer");
   if (item.kind === "RIDE_BOOKING") return t("activity.kind.booking");
+  if (item.kind === "SERVICE") return t("service.detailTitle");
   return t("ride.kind.request");
 }
 

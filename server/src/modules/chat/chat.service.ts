@@ -395,3 +395,19 @@ export async function markChatRead(userId: string, chatId: string, upTo?: string
 export async function assertChatParticipant(userId: string, chatId: string) {
   await chatForParticipant(userId, chatId);
 }
+
+// Post a system-generated message into a chat (e.g., dispute raised, resolved).
+// Used by disputes and other server-side events that need to notify chat participants.
+export async function postSystemMessage(
+  chatId: string,
+  data: { code: string; text: string; metadata?: Record<string, unknown> },
+) {
+  return prisma.$transaction(async (tx) => {
+    return insertMessage(tx, chatId, {
+      senderId: null,
+      kind: "SYSTEM",
+      body: data.text,
+      systemCode: data.code,
+    });
+  });
+}

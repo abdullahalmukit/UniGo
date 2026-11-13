@@ -27,8 +27,8 @@ const menu: { key: string; to?: string }[] = [
   { key: "paymentMethods" },
   { key: "notifications", to: "/account/notifications" },
   { key: "blocked", to: "/account/blocked" },
-  { key: "promos" },
-  { key: "support" },
+  { key: "promos", to: "/promos" },
+  { key: "support", to: "/account/support" },
   { key: "policy" },
   { key: "rateUs" },
 ];
