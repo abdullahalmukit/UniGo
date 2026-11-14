@@ -16,11 +16,43 @@ async function seedSampleRequests() {
   }
 
   // 2. Demo users
-  const a = await prisma.user.findUnique({ where: { email: "demo.chat.a@example.com" } });
-  const b = await prisma.user.findUnique({ where: { email: "demo.chat.b@example.com" } });
+  let a = await prisma.user.findUnique({ where: { email: "demo.chat.a@example.com" } });
+  let b = await prisma.user.findUnique({ where: { email: "demo.chat.b@example.com" } });
   if (!a || !b) {
-    console.error("Demo users not found. Run db:seed:dev-chat first.");
-    return;
+    const university = await prisma.university.findFirst({ where: { isActive: true }, orderBy: { name: "asc" } });
+    if (!university) {
+      console.error("No university found. Please run `npm run db:seed -w server` first.");
+      return;
+    }
+    const { hashPassword } = await import("../src/modules/auth/password.js");
+    const demoHash = await hashPassword("Demo1234");
+    if (!a) {
+      a = await prisma.user.create({
+        data: {
+          email: "demo.chat.a@example.com",
+          phone: "+8801700000101",
+          passwordHash: demoHash,
+          universityId: university.id,
+          role: "USER",
+          isStudentVerified: true,
+          profile: { create: { fullName: "Demo Student A" } },
+        },
+      });
+    }
+    if (!b) {
+      b = await prisma.user.create({
+        data: {
+          email: "demo.chat.b@example.com",
+          phone: "+8801700000102",
+          passwordHash: demoHash,
+          universityId: university.id,
+          role: "USER",
+          isStudentVerified: true,
+          isRiderVerified: true,
+          profile: { create: { fullName: "Demo Student B" } },
+        },
+      });
+    }
   }
 
   const now = new Date();

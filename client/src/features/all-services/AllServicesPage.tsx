@@ -153,7 +153,15 @@ export function AllServicesPage() {
         ) : items === null ? (
           <SkeletonList rows={3} />
         ) : items.length === 0 ? (
-          <EmptyState icon={SearchX} text={t("services.emptyRequests")} />
+          <EmptyState
+            icon={SearchX}
+            text={t("services.emptyRequests")}
+            action={
+              <Link to="/service/requests/new" className={buttonStyles.secondary} style={{ marginTop: "12px" }}>
+                + {t("service.newRequest")}
+              </Link>
+            }
+          />
         ) : (
           <>
             <div className={styles.requestsGrid}>

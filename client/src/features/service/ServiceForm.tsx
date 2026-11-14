@@ -156,7 +156,7 @@ function ServiceForm({ existing, template }: { existing: ServiceRequest | null; 
           >
             {categories.map((cat) => (
               <option key={cat.id} value={cat.id}>
-                {categoryLabel(cat.code, t)}
+                {categoryLabel(cat.code, t, cat.name)}
               </option>
             ))}
           </select>

@@ -1,5 +1,7 @@
 import { adminCancelFood, getAdminFood, listAdminFood } from "../food/food.admin.service.js";
 import { adminCancelService, getAdminService, listAdminServices } from "../service/service.admin.service.js";
+import { listServiceCategories } from "../service/service.service.js";
+import { addCustomCategory, deleteCustomCategory } from "../service/custom-categories.js";
 import { adminResolveDispute, getDispute, listAdminDisputes } from "../disputes/disputes.service.js";
 import { listDisputesQuery, resolveDisputeSchema, type ResolveDisputeInput } from "../disputes/disputes.validation.js";
 import { adminResolveNoShow, getAdminNoShow, listAdminNoShows } from "../food/food.noshow.service.js";
@@ -197,6 +199,41 @@ adminRouter.get("/services/:id", async (req, res) => {
 
 adminRouter.post("/services/:id/cancel", validateBody(adminReason), async (req, res) => {
   res.json({ service: await adminCancelService(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+// Categories (Uni Service): list, add custom category, delete custom category
+adminRouter.get("/services/categories/all", async (_req, res) => {
+  res.json({ categories: await listServiceCategories() });
+});
+
+adminRouter.post("/services/categories", async (req, res) => {
+  const name = String(req.body.name ?? "").trim();
+  if (!name || name.length < 2 || name.length > 80) {
+    throw new AppError(400, "INVALID_NAME", "Category name must be between 2 and 80 characters");
+  }
+  const sortOrder = typeof req.body.sortOrder === "number" ? req.body.sortOrder : 10;
+  const created = addCustomCategory(name, sortOrder);
+  await recordAudit(prisma, {
+    adminId: authUser(req).id,
+    action: "CONTENT_UPDATE",
+    targetType: "service_category",
+    targetId: created.id,
+    newValue: { name: created.name },
+  });
+  res.status(201).json({ category: created });
+});
+
+adminRouter.delete("/services/categories/:id", async (req, res) => {
+  const success = deleteCustomCategory(id(req.params.id));
+  if (!success) throw new AppError(404, "CATEGORY_NOT_FOUND", "Custom category not found");
+  await recordAudit(prisma, {
+    adminId: authUser(req).id,
+    action: "CONTENT_UPDATE",
+    targetType: "service_category",
+    targetId: id(req.params.id),
+    newValue: { deleted: true },
+  });
+  res.status(204).end();
 });
 
 // ---- Reviews (B3b-2): hide with a reason, audited -------------------------------

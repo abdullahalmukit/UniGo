@@ -1,13 +1,15 @@
-import { Briefcase } from "lucide-react";
+import { Briefcase, Plus, Tag, Trash2 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
-import { TextField } from "../../components/form";
-import { EmptyState, PageHeader, Section } from "../../components/ui";
+import { FormAlert, TextField } from "../../components/form";
+import { buttonStyles, EmptyState, PageHeader, Section } from "../../components/ui";
 import { api } from "../../lib/api";
-import { adminError, formatDateTime, Loaded, Pager, SelectField, useLoad } from "./admin-ui";
+import { adminError, ConfirmSheet, formatDateTime, Loaded, Pager, SelectField, useLoad } from "./admin-ui";
 import { CancelButton, History, Person, Reviews } from "./AdminRideDetailPage";
 import type { AdminPerson, AdminReview, HistoryRow } from "./admin-rides-api";
+import { adminServiceCategoriesApi, type ServiceCategory } from "../service/service-api";
+import { categoryLabel } from "../service/ServiceCard";
 import styles from "./admin.module.css";
 
 // Admin › Uni Service (B5): every service request with filters, details,
@@ -85,6 +87,52 @@ export function AdminServicePage() {
   const [date, setDate] = useState("");
   const [page, setPage] = useState(1);
 
+  // Category management
+  const [categoryModalOpen, setCategoryModalOpen] = useState(false);
+  const [categories, setCategories] = useState<ServiceCategory[]>([]);
+  const [newCatName, setNewCatName] = useState("");
+  const [catError, setCatError] = useState<string | null>(null);
+  const [catLoading, setCatLoading] = useState(false);
+
+  const loadCategories = async () => {
+    try {
+      const res = await adminServiceCategoriesApi.list();
+      setCategories(res.categories);
+    } catch {
+      // Ignore
+    }
+  };
+
+  useEffect(() => {
+    void loadCategories();
+  }, []);
+
+  const handleAddCategory = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newCatName.trim()) return;
+    setCatLoading(true);
+    setCatError(null);
+    try {
+      await adminServiceCategoriesApi.create(newCatName.trim());
+      setNewCatName("");
+      await loadCategories();
+    } catch (err: any) {
+      setCatError(err?.message || "Failed to add category");
+    } finally {
+      setCatLoading(false);
+    }
+  };
+
+  const handleDeleteCategory = async (catId: string) => {
+    if (!confirm("Are you sure you want to delete this custom category?")) return;
+    try {
+      await adminServiceCategoriesApi.delete(catId);
+      await loadCategories();
+    } catch (err: any) {
+      alert(err?.message || "Failed to delete category");
+    }
+  };
+
   useEffect(() => {
     const timer = setTimeout(() => {
       setSearch(q.trim());
@@ -97,7 +145,19 @@ export function AdminServicePage() {
 
   return (
     <>
-      <PageHeader title={t("admin.nav.services")} />
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
+        <PageHeader title={t("admin.nav.services")} />
+        <button
+          type="button"
+          onClick={() => { setCategoryModalOpen(true); void loadCategories(); }}
+          className={buttonStyles.primary}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+        >
+          <Plus size={16} aria-hidden strokeWidth={2.5} />
+          <span>Add Category</span>
+        </button>
+      </div>
+
       <div className={styles.stack}>
         <div className={styles.filters}>
           <TextField label={t("admin.services.search")} type="search" value={q} onChange={setQ} />
@@ -144,6 +204,92 @@ export function AdminServicePage() {
           }
         </Loaded>
       </div>
+
+      {/* Category Management Sheet */}
+      <ConfirmSheet
+        title="Manage & Add Service Categories"
+        open={categoryModalOpen}
+        onClose={() => setCategoryModalOpen(false)}
+        confirmLabel="Done"
+        onConfirm={async () => setCategoryModalOpen(false)}
+      >
+        <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+          {catError && <FormAlert>{catError}</FormAlert>}
+
+          {/* Add Category Form */}
+          <form onSubmit={(e) => void handleAddCategory(e)} style={{ display: "flex", gap: "8px", alignItems: "flex-end" }}>
+            <div style={{ flex: 1 }}>
+              <label style={{ fontSize: "0.85rem", fontWeight: 500, display: "block", marginBottom: "4px" }}>
+                New Category Name
+              </label>
+              <input
+                type="text"
+                placeholder="e.g. Photography & Media, Tutoring..."
+                value={newCatName}
+                onChange={(e) => setNewCatName(e.target.value)}
+                style={{ width: "100%", padding: "8px 12px", borderRadius: "8px", border: "1px solid var(--color-border)", background: "var(--color-card)", color: "var(--color-text)" }}
+              />
+            </div>
+            <button
+              type="submit"
+              disabled={catLoading || !newCatName.trim()}
+              className={buttonStyles.primary}
+              style={{ padding: "8px 16px", height: "38px" }}
+            >
+              {catLoading ? "Adding..." : "Add"}
+            </button>
+          </form>
+
+          {/* Existing Categories List */}
+          <div style={{ marginTop: "8px" }}>
+            <h4 style={{ fontSize: "0.875rem", marginBottom: "8px", color: "var(--color-text-muted)" }}>
+              Active Categories ({categories.length})
+            </h4>
+            <div style={{ display: "flex", flexDirection: "column", gap: "6px", maxHeight: "280px", overflowY: "auto" }}>
+              {categories.map((cat) => (
+                <div
+                  key={cat.id}
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
+                    background: "var(--color-surface)",
+                    border: "1px solid var(--color-border)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                    <Tag size={15} style={{ color: "var(--color-brand)" }} />
+                    <span style={{ fontSize: "0.875rem", fontWeight: 500 }}>
+                      {categoryLabel(cat.code, t, cat.name)}
+                    </span>
+                    {cat.isCustom ? (
+                      <span style={{ fontSize: "0.7rem", padding: "2px 6px", borderRadius: "4px", background: "var(--color-brand-bg, rgba(59,130,246,0.1))", color: "var(--color-brand)" }}>
+                        Custom
+                      </span>
+                    ) : (
+                      <span style={{ fontSize: "0.7rem", padding: "2px 6px", borderRadius: "4px", background: "var(--color-surface-hover, rgba(150,150,150,0.1))", color: "var(--color-text-muted)" }}>
+                        Default
+                      </span>
+                    )}
+                  </div>
+                  {cat.isCustom && (
+                    <button
+                      type="button"
+                      onClick={() => void handleDeleteCategory(cat.id)}
+                      title="Delete category"
+                      style={{ background: "none", border: "none", color: "var(--status-red-fg, #ef4444)", cursor: "pointer", padding: "4px" }}
+                    >
+                      <Trash2 size={16} />
+                    </button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </ConfirmSheet>
     </>
   );
 }

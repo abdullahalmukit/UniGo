@@ -19,7 +19,8 @@
     "test:integration": "vitest run --project integration",
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
-    "db:seed:dev-chat": "tsx prisma/dev-chat-seed.ts"
+    "db:seed:dev-chat": "tsx prisma/dev-chat-seed.ts",
+    "db:seed:samples": "tsx prisma/seed-sample-requests.ts"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

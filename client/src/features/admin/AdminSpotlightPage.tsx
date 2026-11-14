@@ -1,7 +1,7 @@
-import { Image, Video } from "lucide-react";
+import { Image, Plus, Video } from "lucide-react";
 import { useState } from "react";
 import { useTranslation } from "react-i18next";
-import { EmptyState, PageHeader, Section } from "../../components/ui";
+import { buttonStyles, EmptyState, PageHeader, Section } from "../../components/ui";
 import type { SpotlightItem } from "../content/content-api";
 import { adminContentApi } from "../content/content-api";
 import {
@@ -197,23 +197,37 @@ export function AdminSpotlightPage() {
 
   return (
     <>
-      <PageHeader title={t("admin.content.spotlight")} />
-      <Section
-        title=""
-        action={
-          <button
-            type="button"
-            onClick={() => { setCreateForm(emptyForm()); setCreateOpen(true); }}
-            style={{ padding: "8px 16px", background: "var(--color-brand)", color: "#fff", border: "none", borderRadius: "8px", cursor: "pointer", fontSize: "0.875rem" }}
-          >
-            {t("admin.content.add")}
-          </button>
-        }
-      >
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "var(--space-4)" }}>
+        <PageHeader title={t("admin.content.spotlight")} />
+        <button
+          type="button"
+          onClick={() => { setCreateForm(emptyForm()); setCreateOpen(true); }}
+          className={buttonStyles.primary}
+          style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}
+        >
+          <Plus size={16} aria-hidden strokeWidth={2.5} />
+          <span>{t("admin.content.add")}</span>
+        </button>
+      </div>
+      <Section title="">
         <Loaded state={state} reload={reload}>
           {(items: SpotlightItem[]) =>
             items.length === 0 ? (
-              <EmptyState icon={Image} text={t("admin.content.noItems")} />
+              <EmptyState
+                icon={Image}
+                text={t("admin.content.noItems")}
+                action={
+                  <button
+                    type="button"
+                    onClick={() => { setCreateForm(emptyForm()); setCreateOpen(true); }}
+                    className={buttonStyles.primary}
+                    style={{ display: "inline-flex", alignItems: "center", gap: "6px", marginTop: "12px" }}
+                  >
+                    <Plus size={16} aria-hidden strokeWidth={2.5} />
+                    <span>{t("admin.content.add")}</span>
+                  </button>
+                }
+              />
             ) : (
               <ul className={styles.list}>
                 {items.map((item) => (

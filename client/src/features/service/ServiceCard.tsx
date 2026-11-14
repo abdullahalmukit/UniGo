@@ -26,11 +26,12 @@ export function ServiceGate() {
   return <Outlet />;
 }
 
-export function categoryLabel(code: ServiceCategoryCode, t: (key: string) => string) {
-  return t(`service.categories.${code}`);
+export function categoryLabel(code: ServiceCategoryCode | string, t: (key: string, opts?: { defaultValue?: string }) => string, name?: string) {
+  if (name) return name;
+  return t(`service.categories.${code}`, { defaultValue: code });
 }
 
-export function categorySafetyWarning(code: ServiceCategoryCode, t: (key: string) => string) {
+export function categorySafetyWarning(code: ServiceCategoryCode | string, t: (key: string) => string) {
   if (code === "PHARMACY_HEALTHCARE") {
     return {
       title: t("service.safety.pharmacyTitle"),
