@@ -15,6 +15,7 @@ import { participantPhone } from "../users/contact.js";
 import { fillPersonStats } from "../users/stats.service.js";
 import type { CreateServiceInput, EditServiceInput, ListServicesQuery } from "./service.validation.js";
 import { serviceSelect, serviceView, type ServiceRow } from "./service.views.js";
+import { readCustomCategories } from "./custom-categories.js";
 
 const DAY = 24 * 60 * 60 * 1000;
 const notFound = () => new AppError(404, "SERVICE_NOT_FOUND", "This service request was not found");
@@ -23,10 +24,30 @@ const decimal = (value: number) => new Prisma.Decimal(value.toFixed(2));
 const coord = (value: number) => new Prisma.Decimal(value.toFixed(6));
 
 export async function listServiceCategories() {
-  return prisma.serviceCategory.findMany({
+  const standard = await prisma.serviceCategory.findMany({
     where: { isActive: true },
     orderBy: { sortOrder: "asc" },
   });
+  const custom = readCustomCategories().filter((c) => c.isActive);
+
+  return [
+    ...standard.map((cat) => ({
+      id: cat.id,
+      code: cat.code as string,
+      name: undefined as string | undefined,
+      sortOrder: cat.sortOrder,
+      isActive: cat.isActive,
+      isCustom: false,
+    })),
+    ...custom.map((cat) => ({
+      id: cat.id,
+      code: cat.code,
+      name: cat.name,
+      sortOrder: cat.sortOrder,
+      isActive: cat.isActive,
+      isCustom: true,
+    })),
+  ].sort((a, b) => a.sortOrder - b.sortOrder);
 }
 
 export async function loadService(id: string, options: { includeDeleted?: boolean } = {}): Promise<ServiceRow> {
@@ -64,8 +85,25 @@ export async function createServiceRequest(userId: string, input: CreateServiceI
     if (!area) throw new AppError(400, "SUB_AREA_NOT_FOUND", "Choose a sub-area from the list");
   }
 
-  const category = await prisma.serviceCategory.findUnique({ where: { id: input.categoryId } });
-  if (!category || !category.isActive) throw new AppError(400, "CATEGORY_NOT_FOUND", "Invalid service category");
+  const customList = readCustomCategories();
+  const customMatch = customList.find((c) => c.id === input.categoryId && c.isActive);
+
+  let categoryId = input.categoryId;
+  if (customMatch) {
+    const customOther = await prisma.serviceCategory.findUnique({ where: { code: "CUSTOM_OTHER" } });
+    if (!customOther) {
+      throw new AppError(400, "CATEGORY_NOT_FOUND", "Default service category not configured");
+    }
+    categoryId = customOther.id;
+  } else {
+    const category = await prisma.serviceCategory.findUnique({ where: { id: input.categoryId } });
+    if (!category || !category.isActive) throw new AppError(400, "CATEGORY_NOT_FOUND", "Invalid service category");
+  }
+
+  let taskTitle = input.taskTitle;
+  if (customMatch && !taskTitle.startsWith(`[${customMatch.name}]`)) {
+    taskTitle = `[${customMatch.name}] ${taskTitle}`.slice(0, 150);
+  }
 
   const activity = await runActivityTransaction(async (tx) => {
     await assertCreationLimits(tx, userId, now);
@@ -78,9 +116,9 @@ export async function createServiceRequest(userId: string, input: CreateServiceI
         creatorId: userId,
         serviceRequest: {
           create: {
-            categoryId: input.categoryId,
+            categoryId,
             serviceTitle: input.serviceTitle,
-            taskTitle: input.taskTitle,
+            taskTitle,
             description: input.description,
             destinationAddress: input.destination.address,
             destinationLat: coord(input.destination.lat),

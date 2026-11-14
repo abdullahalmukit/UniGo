@@ -142,7 +142,7 @@ function AvailableList() {
               className={selectedCategoryId === cat.id ? `${styles.chip} ${styles.chipActive}` : styles.chip}
               onClick={() => setSelectedCategoryId(cat.id)}
             >
-              {categoryLabel(cat.code, t)}
+              {categoryLabel(cat.code, t, cat.name)}
             </button>
           ))}
         </div>

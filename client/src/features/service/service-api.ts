@@ -12,9 +12,11 @@ export type ServiceCategoryCode =
 
 export type ServiceCategory = {
   id: string;
-  code: ServiceCategoryCode;
+  code: ServiceCategoryCode | string;
+  name?: string;
   sortOrder?: number;
   isActive?: boolean;
+  isCustom?: boolean;
 };
 
 export type ServiceRequest = {
@@ -121,4 +123,10 @@ export const updateServiceRequest = (id: string, input: EditServiceInput) => api
 export const acceptServiceRequest = (id: string) => api<One>(`/service/requests/${enc(id)}/accept`, { method: "POST" });
 export const startService = (id: string) => api<One>(`/service/requests/${enc(id)}/start`, { method: "POST" });
 export const deliverService = (id: string) => api<One>(`/service/requests/${enc(id)}/deliver`, { method: "POST" });
+
+export const adminServiceCategoriesApi = {
+  list: () => api<{ categories: ServiceCategory[] }>("/admin/services/categories/all"),
+  create: (name: string, sortOrder?: number) => api<{ category: ServiceCategory }>("/admin/services/categories", { method: "POST", body: { name, sortOrder } }),
+  delete: (id: string) => api(`/admin/services/categories/${enc(id)}`, { method: "DELETE" }),
+};
 
