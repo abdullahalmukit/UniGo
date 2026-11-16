@@ -26,6 +26,10 @@ export type ServiceRequestCardItem = {
     totalSeats?: number;
     restaurantName?: string;
     deliveryCharge?: number;
+    offeredAmount?: number;
+    estimatedBudget?: number | null;
+    categoryCode?: string;
+    categoryName?: string;
     vehicle?: {
       id: string;
       type: "BIKE" | "CAR";

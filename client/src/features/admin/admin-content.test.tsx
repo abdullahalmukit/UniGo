@@ -147,8 +147,8 @@ describe("AdminSpotlightPage", () => {
     // Wait for page load
     await screen.findByText("No items yet.");
 
-    // Click Add button
-    await userEvent.click(screen.getByRole("button", { name: "Add" }));
+    // Click Add button (may be present in header and empty state)
+    await userEvent.click(screen.getAllByRole("button", { name: "Add" })[0]);
 
     // The ConfirmSheet renders a Save button at the bottom — just check it appears
     // (The BottomSheet renders in a portal so ARIA structure differs; we verify
