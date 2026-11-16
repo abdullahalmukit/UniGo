@@ -38,6 +38,9 @@ export type UnifiedRequestItem = {
     totalSeats?: number;
     restaurantName?: string;
     deliveryCharge?: number;
+    offeredAmount?: number;
+    estimatedBudget?: number | null;
+    categoryCode?: string;
     vehicle?: ReturnType<typeof toPublicVehicle> | null;
     prices?: { durationMonths: number; monthlyPrice: number }[];
   };
@@ -278,13 +281,16 @@ export async function listAllOpenRequests(viewerId: string | null, query: AllReq
         pickup: pickupPlace,
         destination: place(req.destinationAddress, req.destinationLat, req.destinationLng),
         time: s.startTime,
-        amount: offered + budget,
+        amount: offered,
         amountLabel: "Offered Amount",
         subArea: req.subArea,
         mine: viewerId === s.creatorId,
         details: {
           notes: req.description,
           items: req.itemDetails,
+          offeredAmount: offered,
+          estimatedBudget: req.estimatedBudget ? Number(req.estimatedBudget) : null,
+          categoryCode: req.category?.code,
         },
         link: `/service/requests/${s.id}`,
         createdAt: s.createdAt,
