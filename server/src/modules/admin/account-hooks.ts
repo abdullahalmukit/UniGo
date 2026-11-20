@@ -48,9 +48,12 @@ export async function onAccountLocked(
   await db.rideOffer.updateMany({ where: { riderId: userId, status: { in: ["OPEN", "FULL"] } }, data: { status: "CLOSED", closedAt: now, closeReason: "ACCOUNT_MODERATED" } });
   await db.carpoolPost.updateMany({ where: { riderId: userId, status: { in: ["OPEN", "FULL"] } }, data: { status: "CLOSED", closedAt: now, closeReason: "ACCOUNT_MODERATED" } });
 
+  // B6b (#6): a running carpool contract carries on; its other participant is
+  // told once through the booking, not once per session.
   const accepted = await db.activity.findMany({
     where: {
       status: { in: ["ACCEPTED", "IN_PROGRESS"] },
+      type: { not: "CARPOOL_SESSION" },
       deletedAt: null,
       OR: [{ creatorId: userId }, { accepterId: userId }],
     },

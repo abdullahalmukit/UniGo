@@ -33,6 +33,7 @@ export type ActivityAction =
   | "AUTO_COMPLETE"
   | "RELEASE_HOLD"
   | "END_CONTRACT"
+  | "CLOSE_SESSION"
   | "MODERATION_CLOSE"
   | "ADMIN_CANCEL"
   | "RESOLVE_COMPLETED"
@@ -168,6 +169,9 @@ export const TRANSITIONS: readonly TransitionRule[] = [
   { action: "TERMINATE_CONTRACT", types: ["CARPOOL_BOOKING"], from: [{ status: "ACCEPTED", subStatus: ["CONTRACT_ACTIVE"] }], to: { status: "CANCELLED" }, by: ["EITHER"], reasonRequired: true },
   { action: "RELEASE_HOLD", types: ["CARPOOL_BOOKING"], from: [{ status: "ACCEPTED", subStatus: [null] }], to: { status: "CANCELLED" }, by: ["SYSTEM"], closure: "SEAT_HOLD_EXPIRED" },
   { action: "END_CONTRACT", types: ["CARPOOL_BOOKING"], from: [{ status: "ACCEPTED", subStatus: ["CONTRACT_ACTIVE"] }], to: { status: "COMPLETED" }, by: ["SYSTEM"] },
+  // B6b: both agreed to end the contract early; its future sessions are
+  // cancelled by the system and count against nobody.
+  { action: "CLOSE_SESSION", types: ["CARPOOL_SESSION"], from: [{ status: "ACCEPTED" }], to: { status: "CANCELLED" }, by: ["SYSTEM"], closure: "CONTRACT_TERMINATED" },
 
   // --- System timers (CLAUDE.md section 8)
   { action: "EXPIRE", types: EXPIRING_TYPES, from: [{ status: "OPEN" }], to: { status: "EXPIRED" }, by: ["SYSTEM"], closure: "EXPIRED_UNACCEPTED" },

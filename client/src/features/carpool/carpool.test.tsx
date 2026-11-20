@@ -25,6 +25,14 @@ const carpoolApi = vi.hoisted(() => ({
   requestSeat: vi.fn(),
   acceptBooking: vi.fn(),
   agreeBooking: vi.fn(),
+  // B6b
+  completeSession: vi.fn(),
+  setPaymentMethod: vi.fn(),
+  markPaymentPaid: vi.fn(),
+  requestTermination: vi.fn(),
+  withdrawTermination: vi.fn(),
+  answerTermination: vi.fn(),
+  renewContract: vi.fn(),
 }));
 vi.mock("./carpool-api", async (importOriginal) => ({ ...(await importOriginal<typeof import("./carpool-api")>()), ...carpoolApi }));
 
@@ -106,6 +114,9 @@ function booking(overrides: Partial<CarpoolBooking> = {}): CarpoolBooking {
     phone: "+8801711000000",
     post: post(),
     sessions: [],
+    payments: [],
+    history: [],
+    renewal: null,
     ...overrides,
   };
 }
@@ -219,5 +230,70 @@ describe("a held seat (9.3 step 4)", () => {
     expect(await screen.findByText("Contract active", {}, LAZY)).toBeInTheDocument();
     expect(screen.getByText("2 rides")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Agree" })).not.toBeInTheDocument();
+  });
+});
+
+describe("a running contract (B6b)", () => {
+  const running = (overrides: Partial<CarpoolBooking> = {}) =>
+    booking({
+      subStatus: "CONTRACT_ACTIVE",
+      holdExpiresAt: null,
+      agreed: { me: true, other: true },
+      contract: { id: "k1", startDate: "2026-11-10", endDate: "2026-12-09", status: "ACTIVE", termination: null },
+      payments: [
+        { id: "m1", monthNumber: 1, periodStart: "2026-11-10", periodEnd: "2026-12-09", amount: 2000, method: null, status: "UNPAID", paidAt: null },
+      ],
+      history: [{ monthNumber: 1, periodStart: "2026-11-10", periodEnd: "2026-12-09", total: 13, completed: 2, notMarked: 0, cancelledByMe: 1, cancelledByOther: 0, closed: 0 }],
+      ...overrides,
+    });
+
+  it("shows the monthly payment and history; the passenger picks the method but cannot mark it paid", async () => {
+    carpoolApi.getBooking.mockResolvedValue({ booking: running() });
+    carpoolApi.setPaymentMethod.mockResolvedValue({ payment: {} });
+    renderAt("/carpool/bookings/b1");
+    expect(await screen.findByText("Monthly payments", {}, LAZY)).toBeInTheDocument();
+    expect(screen.getByText(/2 completed · 0 not marked · 1 cancelled by you/)).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Mark paid" })).not.toBeInTheDocument();
+    await userEvent.selectOptions(screen.getByRole("combobox", { name: "How it is paid" }), "BKASH");
+    expect(carpoolApi.setPaymentMethod).toHaveBeenCalledWith("m1", "BKASH");
+  });
+
+  it("lets the rider mark a month paid once a method is chosen", async () => {
+    carpoolApi.getBooking.mockResolvedValue({
+      booking: running({
+        role: "RIDER",
+        payments: [{ id: "m1", monthNumber: 1, periodStart: "2026-11-10", periodEnd: "2026-12-09", amount: 2000, method: "CASH", status: "UNPAID", paidAt: null }],
+      }),
+    });
+    carpoolApi.markPaymentPaid.mockResolvedValue({ payment: {} });
+    renderAt("/carpool/bookings/b1");
+    await userEvent.click(await screen.findByRole("button", { name: "Mark paid" }, LAZY));
+    expect(carpoolApi.markPaymentPaid).toHaveBeenCalledWith("m1");
+  });
+
+  it("answers the other person's request to end early", async () => {
+    carpoolApi.getBooking.mockResolvedValue({
+      booking: running({ contract: { id: "k1", startDate: "2026-11-10", endDate: "2026-12-09", status: "ACTIVE", termination: { requestedBy: "OTHER", reason: "Moving away", requestedAt: null } } }),
+    });
+    carpoolApi.answerTermination.mockResolvedValue({ booking: running() });
+    renderAt("/carpool/bookings/b1");
+    expect(await screen.findByText(/asked to end this contract early: Moving away/, {}, LAZY)).toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Agree to end" }));
+    expect(carpoolApi.answerTermination).toHaveBeenCalledWith("b1", true);
+  });
+
+  it("offers Renew to the passenger after a normal end", async () => {
+    carpoolApi.getBooking.mockResolvedValue({
+      booking: running({
+        status: "COMPLETED",
+        subStatus: "CONTRACT_ACTIVE",
+        contract: { id: "k1", startDate: "2026-11-10", endDate: "2026-12-09", status: "ENDED", termination: null },
+        renewal: { available: true, postId: "p1", startDate: "2026-12-10", until: "2026-12-17T18:00:00.000Z" },
+      }),
+    });
+    carpoolApi.renewContract.mockResolvedValue({ booking: booking({ activityId: "b2", status: "OPEN" }) });
+    renderAt("/carpool/bookings/b1");
+    await userEvent.click(await screen.findByRole("button", { name: "Request renewal" }, LAZY));
+    expect(carpoolApi.renewContract).toHaveBeenCalledWith("b1", 1);
   });
 });

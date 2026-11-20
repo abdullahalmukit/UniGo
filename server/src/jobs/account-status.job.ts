@@ -28,7 +28,8 @@ export async function runAccountStatusJob(now = new Date()) {
   const restrictionsEnded = await endRestrictions(now);
   const ridersDeactivated = await deactivateExpiredLicences(now);
   const riderSuspensionsEnded = await endRiderSuspensions(now);
-  return { started, suspensionsEnded, restrictionsEnded, ridersDeactivated, riderSuspensionsEnded };
+  const carpoolSuspensionsEnded = await endCarpoolSuspensions(now);
+  return { started, suspensionsEnded, restrictionsEnded, ridersDeactivated, riderSuspensionsEnded, carpoolSuspensionsEnded };
 }
 
 async function startBookedSuspensions(now: Date) {
@@ -122,6 +123,28 @@ async function deactivateExpiredLicences(now: Date) {
 // stays Inactive until they switch Active themselves.
 function endRiderSuspensions(now: Date) {
   return endEachRider({ riderSuspended: true, riderSuspendedUntil: { lte: now } });
+}
+
+// B6b: a carpool access suspension ends at its date (always set). Posts it
+// paused stay paused until the rider resumes them.
+async function endCarpoolSuspensions(now: Date) {
+  const users = await prisma.user.findMany({ where: { carpoolSuspendedUntil: { lte: now } }, select: { id: true, carpoolSuspendedUntil: true }, take: BATCH });
+  let count = 0;
+  for (const user of users) {
+    const result = await prisma.user.updateMany({
+      where: { id: user.id, carpoolSuspendedUntil: user.carpoolSuspendedUntil },
+      data: { carpoolSuspendedUntil: null },
+    });
+    if (result.count === 0) continue;
+    count += 1;
+    await notify({
+      type: "CARPOOL_ACCESS_CHANGED",
+      userIds: [user.id],
+      dedupeKey: `CARPOOL_ACCESS_CHANGED:SUSPENSION_ENDED:${user.id}:${user.carpoolSuspendedUntil?.getTime() ?? 0}`,
+      data: { kind: "SUSPENSION_ENDED" },
+    });
+  }
+  return count;
 }
 
 async function endEachRider(where: Record<string, unknown>) {

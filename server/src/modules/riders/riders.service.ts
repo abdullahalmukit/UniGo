@@ -288,8 +288,7 @@ export async function getRiderOverview(userId: string) {
   };
 }
 
-// The Rider Dashboard counters (proposal section 6). Rides and carpools arrive
-// in B3 and B6, which fill these in; until then every counter is 0.
+// The Rider Dashboard counters (proposal section 6): rides (B3b-2) and carpool (B6b).
 export async function getRiderDashboard(userId: string) {
   const user = await prisma.user.findUniqueOrThrow({ where: { id: userId }, select: { isVerifiedRider: true } });
   if (!user.isVerifiedRider) throw new AppError(403, "NOT_A_RIDER", ACTIVE_MESSAGES.NOT_A_RIDER);
@@ -301,7 +300,7 @@ export async function getRiderDashboard(userId: string) {
       { type: "RIDE_BOOKING" as const, creatorId: userId },
     ],
   };
-  const [byStatus, counts, stats, earnings] = await Promise.all([
+  const [byStatus, counts, stats, earnings, activeContracts, sessionCancellations, carpoolEarnings] = await Promise.all([
     prisma.activity.groupBy({ by: ["status"], where: riderSide, _count: { _all: true } }),
     riderRideCounts(userId),
     userStats(userId),
@@ -309,6 +308,10 @@ export async function getRiderDashboard(userId: string) {
       where: { payeeId: userId, status: "PAID", activity: { type: { in: ["RIDE_REQUEST", "RIDE_BOOKING"] } } },
       _sum: { amount: true },
     }),
+    // B6b: running carpool contracts, sessions the rider cancelled, and PAID carpool months
+    prisma.carpoolContract.count({ where: { status: "ACTIVE", booking: { activity: { creatorId: userId } } } }),
+    prisma.activity.count({ where: { type: "CARPOOL_SESSION", status: "CANCELLED", creatorId: userId, cancelledById: userId } }),
+    prisma.carpoolMonthlyPayment.aggregate({ where: { status: "PAID", contract: { booking: { activity: { creatorId: userId } } } }, _sum: { amount: true } }),
   ]);
   const count = (statuses: string[]) => byStatus.filter((row) => statuses.includes(row.status)).reduce((sum, row) => sum + row._count._all, 0);
   // Same rules as the profile (B3b-2 Q2), on the rider's rides only
@@ -323,11 +326,11 @@ export async function getRiderDashboard(userId: string) {
     lateCancellationRate: enough ? Math.round((counts.late / accepted) * 10000) / 10000 : null,
     rating: stats.rating,
     ratingCount: stats.reviewCount,
-    // Carpool counters arrive with B6
-    activeCarpoolContracts: 0,
-    carpoolSessionCancellations: 0,
-    // Sum of PAID ride payments the rider received
-    earnings: Number(earnings._sum.amount ?? 0),
+    activeCarpoolContracts: activeContracts,
+    carpoolSessionCancellations: sessionCancellations,
+    // Sum of PAID ride payments and PAID carpool months the rider received
+    earnings: Number(earnings._sum.amount ?? 0) + Number(carpoolEarnings._sum.amount ?? 0),
+    carpoolEarnings: Number(carpoolEarnings._sum.amount ?? 0),
   };
 }
 

@@ -5,6 +5,14 @@ import { requireCanAct, requireVerifiedStudent } from "../../middleware/authoriz
 import { parseInput, validateBody } from "../../middleware/validate.js";
 import { fillPersonStats } from "../users/stats.service.js";
 import {
+  answerCarpoolTermination,
+  completeCarpoolSession,
+  markMonthlyPaymentPaid,
+  requestCarpoolTermination,
+  setMonthlyPaymentMethod,
+  withdrawCarpoolTermination,
+} from "./carpool.contract.js";
+import {
   acceptCarpoolBooking,
   addCarpoolSeats,
   agreeCarpoolBooking,
@@ -15,6 +23,7 @@ import {
   quoteCarpoolBooking,
   rejectCarpoolBooking,
   removeCarpoolPost,
+  renewCarpoolContract,
   requestCarpoolBooking,
   searchCarpools,
   setCarpoolPaused,
@@ -23,6 +32,9 @@ import {
 } from "./carpool.service.js";
 import {
   bookingSchema,
+  paymentMethodSchema,
+  renewSchema,
+  terminationSchema,
   postEditSchema,
   postSchema,
   quoteQuery,
@@ -112,4 +124,45 @@ carpoolRouter.post("/bookings/:activityId/withdraw", async (req, res) => {
 
 carpoolRouter.post("/bookings/:activityId/agree", requireCanAct, async (req, res) => {
   res.json(await fillPersonStats({ booking: await agreeCarpoolBooking(me(req), id(req.params.activityId)) }));
+});
+
+// --- B6b: contracts after they start
+
+// A session: Completed in one step (from 30 minutes before its departure).
+// Cancelling a session uses POST /api/activities/:id/cancel.
+carpoolRouter.post("/sessions/:activityId/complete", async (req, res) => {
+  res.json(await completeCarpoolSession(me(req), id(req.params.activityId)));
+});
+
+// Monthly payment records (9.5)
+carpoolRouter.patch("/payments/:id", validateBody(paymentMethodSchema), async (req, res) => {
+  res.json(await setMonthlyPaymentMethod(me(req), id(req.params.id), (req.body as z.infer<typeof paymentMethodSchema>).method));
+});
+
+carpoolRouter.post("/payments/:id/paid", async (req, res) => {
+  res.json(await markMonthlyPaymentPaid(me(req), id(req.params.id)));
+});
+
+// Early termination (9.6): ask, take back, agree or decline
+carpoolRouter.post("/bookings/:activityId/termination", validateBody(terminationSchema), async (req, res) => {
+  await requestCarpoolTermination(me(req), id(req.params.activityId), (req.body as z.infer<typeof terminationSchema>).reason);
+  res.json(await fillPersonStats({ booking: await getCarpoolBooking(me(req), id(req.params.activityId)) }));
+});
+
+carpoolRouter.post("/bookings/:activityId/termination/withdraw", async (req, res) => {
+  await withdrawCarpoolTermination(me(req), id(req.params.activityId));
+  res.json(await fillPersonStats({ booking: await getCarpoolBooking(me(req), id(req.params.activityId)) }));
+});
+
+for (const answer of ["agree", "decline"] as const) {
+  carpoolRouter.post(`/bookings/:activityId/termination/${answer}`, async (req, res) => {
+    await answerCarpoolTermination(me(req), id(req.params.activityId), answer === "agree");
+    res.json(await fillPersonStats({ booking: await getCarpoolBooking(me(req), id(req.params.activityId)) }));
+  });
+}
+
+// Renew after a normal end (9.3 step 8): a new booking request
+carpoolRouter.post("/bookings/:activityId/renew", requireCanAct, validateBody(renewSchema), async (req, res) => {
+  const durationMonths = (req.body as z.infer<typeof renewSchema>).durationMonths;
+  res.status(201).json(await fillPersonStats({ booking: await renewCarpoolContract(me(req), id(req.params.activityId), durationMonths) }));
 });

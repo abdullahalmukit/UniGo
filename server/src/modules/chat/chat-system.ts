@@ -28,7 +28,8 @@ export type SystemCode =
 // B4: food messages written by the food module, not by a status change
 export type FoodSystemCode = "ORDER_UPDATED" | "BUDGET_APPROVED" | "BUDGET_REJECTED" | "RECEIPT_UPLOADED";
 // B6a: one participant pressed Agree; the other still has to
-export type CarpoolSystemCode = "CONTRACT_AGREED";
+// B6b: early termination asked (body = reason), taken back or declined
+export type CarpoolSystemCode = "CONTRACT_AGREED" | "TERMINATION_REQUESTED" | "TERMINATION_WITHDRAWN" | "TERMINATION_DECLINED";
 
 // The key events of proposal section 13, plus NOT_MARKED (B2b decision 4), so
 // a chat never turns read-only without saying why.

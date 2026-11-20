@@ -71,6 +71,11 @@ export const CATALOGUE: Record<NotificationType, CatalogueEntry> = {
   FOOD_BUDGET_APPROVAL_DECIDED: { recipients: "Accepter", channels: IN_APP_PUSH },
   // B6a (Q11): the other person pressed Agree on a held carpool seat
   CARPOOL_AGREE_REQUESTED: { recipients: "Other participant", channels: IN_APP_PUSH },
+  // B6b: early termination asked for (other participant) and answered (the one who asked)
+  CARPOOL_TERMINATION_REQUESTED: { recipients: "Other participant", channels: IN_APP_PUSH },
+  CARPOOL_TERMINATION_ANSWERED: { recipients: "Participant who asked", channels: IN_APP_PUSH },
+  // B6b: carpool access suspended, reinstated or the suspension ended (always emailed)
+  CARPOOL_ACCESS_CHANGED: { recipients: "Rider", channels: IN_APP_EMAIL, email: "ACCOUNT" },
 };
 
 // Values stored with a notification to build its text in the recipient's

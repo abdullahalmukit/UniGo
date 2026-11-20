@@ -63,6 +63,9 @@ export type TransitionOptions = {
   // activity and not shown in the chat (cancelling because of a block, B2b
   // decision 8). The other user sees only "Cancelled by the other user".
   hideReason?: boolean;
+  // No system message in the chat (B6b: the future sessions closed with an
+  // early termination; the booking's own message says it once).
+  noChatMessage?: boolean;
 };
 
 // Applies one action from the transition table inside the caller's
@@ -85,6 +88,10 @@ export async function applyTransition(
     if (now.getTime() < activity.startTime.getTime() - rules.ride.startAllowedBefore) {
       throw new AppError(409, "START_TOO_EARLY", "You can start the ride from 30 minutes before its time");
     }
+  }
+  // B6b (#1): a carpool session can be marked Completed from 30 minutes before its departure.
+  if (action === "COMPLETE_SESSION" && now.getTime() < activity.startTime.getTime() - rules.carpool.sessionCompleteAllowedBefore) {
+    throw new AppError(409, "SESSION_TOO_EARLY", "You can mark this ride completed from 30 minutes before its time");
   }
 
   const reason = options.reason?.trim() || undefined;
@@ -151,7 +158,7 @@ export async function applyTransition(
   if (status === "CANCELLED" || (status === "COMPLETED" && activity.type === "CARPOOL_BOOKING")) await releaseHeldSeat(tx, activity, now);
 
   // The chat's system message, in the same transaction (B2b decision 4).
-  const chatEvent = await postTransitionMessage(
+  const chatEvent = options.noChatMessage ? null : await postTransitionMessage(
     tx,
     activity,
     { status: activity.status, subStatus: activity.subStatus },

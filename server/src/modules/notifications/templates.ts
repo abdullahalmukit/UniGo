@@ -130,6 +130,23 @@ const EN: Record<OwnTemplates, Template> = {
     title: `Update on your ${f.activity}`,
     body: `${f.name}'s account is under a moderation action and may not be able to take part. The activity stays as it is; you can cancel it from its page if you need to.`,
   }),
+  CARPOOL_TERMINATION_REQUESTED: (_d, f) => ({
+    title: "End the carpool contract early?",
+    body: `${f.name} asked to end your carpool contract early. Open it to agree or decline.`,
+  }),
+  CARPOOL_TERMINATION_ANSWERED: (d, f) =>
+    d.kind === "AGREED"
+      ? { title: "Carpool contract ended", body: `${f.name} agreed to end your carpool contract early. Its remaining rides are cancelled.` }
+      : { title: "Early end declined", body: `${f.name} declined to end your carpool contract early. You can raise a complaint from the contract if needed.` },
+  CARPOOL_ACCESS_CHANGED: (d, f) =>
+    d.kind === "SUSPENDED"
+      ? {
+          title: "Your carpool access is suspended",
+          body: `You cannot create carpool posts, accept requests or start contracts until ${f.until}. Your running contracts carry on.${d.reason ? ` Reason: ${d.reason}` : ""}`,
+        }
+      : d.kind === "REINSTATED"
+        ? { title: "Your carpool access is back", body: "An admin lifted your carpool suspension. You can resume your posts." }
+        : { title: "Your carpool suspension has ended", body: "Your carpool suspension has ended. You can resume your posts." },
 };
 
 const BN: Record<OwnTemplates, Template> = {
@@ -215,6 +232,23 @@ const BN: Record<OwnTemplates, Template> = {
     title: `আপনার ${f.activity} সম্পর্কে আপডেট`,
     body: `${f.name}-এর অ্যাকাউন্টের ওপর মডারেশন ব্যবস্থা চলছে, তাই তিনি হয়তো অংশ নিতে পারবেন না। অ্যাক্টিভিটিটি যেমন আছে তেমনই থাকবে; প্রয়োজনে এর পেজ থেকে বাতিল করতে পারেন।`,
   }),
+  CARPOOL_TERMINATION_REQUESTED: (_d, f) => ({
+    title: "কারপুল চুক্তি আগেই শেষ করবেন?",
+    body: `${f.name} আপনার কারপুল চুক্তি আগেই শেষ করতে চেয়েছেন। রাজি হতে বা না করতে চুক্তিটি খুলুন।`,
+  }),
+  CARPOOL_TERMINATION_ANSWERED: (d, f) =>
+    d.kind === "AGREED"
+      ? { title: "কারপুল চুক্তি শেষ হয়েছে", body: `${f.name} আপনার কারপুল চুক্তি আগেই শেষ করতে রাজি হয়েছেন। বাকি রাইডগুলো বাতিল করা হয়েছে।` }
+      : { title: "আগে শেষ করতে রাজি হননি", body: `${f.name} আপনার কারপুল চুক্তি আগেই শেষ করতে রাজি হননি। প্রয়োজনে চুক্তি থেকে অভিযোগ করতে পারেন।` },
+  CARPOOL_ACCESS_CHANGED: (d, f) =>
+    d.kind === "SUSPENDED"
+      ? {
+          title: "আপনার কারপুল সুবিধা স্থগিত করা হয়েছে",
+          body: `${f.until} পর্যন্ত আপনি কারপুল পোস্ট তৈরি, অনুরোধ গ্রহণ বা নতুন চুক্তি করতে পারবেন না। চলমান চুক্তিগুলো চলবে।${d.reason ? ` কারণ: ${d.reason}` : ""}`,
+        }
+      : d.kind === "REINSTATED"
+        ? { title: "আপনার কারপুল সুবিধা আবার চালু হয়েছে", body: "একজন অ্যাডমিন আপনার কারপুল স্থগিতাদেশ তুলে নিয়েছেন। আপনার পোস্টগুলো আবার চালু করতে পারেন।" }
+        : { title: "আপনার কারপুল স্থগিতাদেশ শেষ হয়েছে", body: "আপনার কারপুল স্থগিতাদেশের মেয়াদ শেষ হয়েছে। আপনার পোস্টগুলো আবার চালু করতে পারেন।" },
 };
 
 export const TEMPLATES: Record<Language, Record<OwnTemplates, Template>> = { EN, BN };

@@ -102,3 +102,12 @@ export const searchQuery = z
     path: ["destinationLat"],
   });
 export type SearchQuery = z.infer<typeof searchQuery>;
+
+// --- B6b
+
+const { minLength: terminationMin, maxLength: terminationMax } = rules.carpool.terminationReason;
+export const terminationSchema = z.object({
+  reason: z.string().trim().min(terminationMin, `At least ${terminationMin} characters`).max(terminationMax, `At most ${terminationMax} characters`),
+});
+export const paymentMethodSchema = z.object({ method: z.enum(["CASH", "BKASH", "NAGAD"]) });
+export const renewSchema = z.object({ durationMonths: duration });

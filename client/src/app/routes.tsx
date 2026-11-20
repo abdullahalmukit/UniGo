@@ -136,6 +136,9 @@ export const routes: RouteObject[] = [
       { path: "rides/activities/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideActivityPage) },
       { path: "rides/offers/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideOfferPage) },
       // Food (B4): Moderators and Super Admins
+      { path: "carpool", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolPage) },
+      { path: "carpool/posts/:id", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolPostPage) },
+      { path: "carpool/bookings/:id", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolBookingPage) },
       { path: "food", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodPage) },
       { path: "food/:id", lazy: page(() => import("../features/admin/AdminFoodPage"), (m) => m.AdminFoodDetailPage) },
       // Uni Service (B5): Moderators and Super Admins

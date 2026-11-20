@@ -147,6 +147,9 @@ enum ClosureReason {
   // requests were rejected
   POST_CHANGED
   POST_REMOVED
+  // B6b: both agreed to end a carpool contract early; its future sessions
+  // were cancelled by the system and count against nobody
+  CONTRACT_TERMINATED
 }
 
 enum ActorType {
@@ -267,6 +270,11 @@ enum NotificationType {
   FOOD_BUDGET_APPROVAL_DECIDED
   // B6a (Q11): the other person pressed Agree on a held carpool seat
   CARPOOL_AGREE_REQUESTED
+  // B6b: early termination asked for, and the answer (agreed or declined)
+  CARPOOL_TERMINATION_REQUESTED
+  CARPOOL_TERMINATION_ANSWERED
+  // B6b: carpool access suspended, reinstated or the suspension ended
+  CARPOOL_ACCESS_CHANGED
 }
 
 enum NotificationChannel {

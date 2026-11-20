@@ -1,4 +1,4 @@
-import { AlertTriangle, ArrowLeft, Briefcase, Car, CarFront, Coins, Flag, GraduationCap, IdCard, Image, LayoutDashboard, MapPin, Menu, MessageSquare, ScrollText, TicketPercent, Users, UtensilsCrossed, X } from "lucide-react";
+import { AlertTriangle, ArrowLeft, Briefcase, Car, CarFront, CarTaxiFront, Coins, Flag, GraduationCap, IdCard, Image, LayoutDashboard, MapPin, Menu, MessageSquare, ScrollText, TicketPercent, Users, UtensilsCrossed, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, NavLink, Outlet, useLocation } from "react-router";
@@ -13,6 +13,7 @@ const items = [
   { to: "/admin/rider-requests", labelKey: "admin.nav.riderRequests", icon: CarFront, end: false, superAdminOnly: false },
   { to: "/admin/users", labelKey: "admin.nav.users", icon: Users, end: false, superAdminOnly: false },
   { to: "/admin/rides", labelKey: "admin.nav.rides", icon: Car, end: false, superAdminOnly: false },
+  { to: "/admin/carpool", labelKey: "admin.nav.carpool", icon: CarTaxiFront, end: false, superAdminOnly: false },
   { to: "/admin/food", labelKey: "admin.nav.food", icon: UtensilsCrossed, end: false, superAdminOnly: false },
   { to: "/admin/services", labelKey: "admin.nav.services", icon: Briefcase, end: false, superAdminOnly: false },
   { to: "/admin/disputes", labelKey: "admin.nav.disputes", icon: AlertTriangle, end: false, superAdminOnly: false },

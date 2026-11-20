@@ -45,6 +45,9 @@ const SECTION_14 = {
   FOOD_BUDGET_APPROVAL_DECIDED: ["IN_APP", "PUSH"],
   // B6a (Q11)
   CARPOOL_AGREE_REQUESTED: ["IN_APP", "PUSH"],
+  CARPOOL_TERMINATION_REQUESTED: ["IN_APP", "PUSH"],
+  CARPOOL_TERMINATION_ANSWERED: ["IN_APP", "PUSH"],
+  CARPOOL_ACCESS_CHANGED: ["IN_APP", "EMAIL"],
 } as const;
 
 const ACCOUNT_EMAILS = [
@@ -55,6 +58,8 @@ const ACCOUNT_EMAILS = [
   "PASSWORD_CHANGED",
   "LICENCE_EXPIRY_REMINDER",
   "RIDER_ACCESS_CHANGED",
+  // B6b: carpool access suspended, lifted or ended
+  "CARPOOL_ACCESS_CHANGED",
 ];
 
 const types = Object.values(NotificationType);

@@ -50,7 +50,17 @@ export type CarpoolBookingSummary = {
   cancelledBy: "ME" | "OTHER" | null;
   cancellationReason: string | null;
   isLateCancellation: boolean;
-  contract: { id: string; startDate: string; endDate: string; status: "ACTIVE" | "ENDED" | "TERMINATED" } | null;
+  contract: {
+    id: string;
+    startDate: string;
+    endDate: string;
+    status: "ACTIVE" | "ENDED" | "TERMINATED";
+    endedAt?: string | null;
+    terminatedAt?: string | null;
+    // B6b: an early termination asked for and not yet answered
+    termination?: { requestedBy: "ME" | "OTHER" | null; reason: string | null; requestedAt: string | null } | null;
+  } | null;
+  isRenewal?: boolean;
   passenger: MiniProfile | null;
   rider: MiniProfile;
   chatId: string | null;
@@ -61,7 +71,41 @@ export type CarpoolBookingSummary = {
 
 export type CarpoolSession = { activityId: string; date: string; startTime: string; status: ActivityStatus; cancelledBy: "ME" | "OTHER" | null };
 
-export type CarpoolBooking = CarpoolBookingSummary & { post: CarpoolPost; sessions: CarpoolSession[] };
+// B6b: monthly payment record, month-by-month session history and Renew
+export type PaymentMethod = "CASH" | "BKASH" | "NAGAD";
+export type MonthlyPayment = {
+  id: string;
+  monthNumber: number;
+  periodStart: string;
+  periodEnd: string;
+  amount: number;
+  method: PaymentMethod | null;
+  status: "UNPAID" | "PAID";
+  paidAt: string | null;
+};
+export type ContractMonth = {
+  monthNumber: number;
+  periodStart: string;
+  periodEnd: string;
+  total: number;
+  completed: number;
+  notMarked: number;
+  cancelledByMe: number;
+  cancelledByOther: number;
+  closed: number;
+};
+export type RenewalOption =
+  | { available: true; postId: string; startDate: string; until: string }
+  | { available: false; pendingActivityId: string }
+  | null;
+
+export type CarpoolBooking = CarpoolBookingSummary & {
+  post: CarpoolPost;
+  sessions: CarpoolSession[];
+  payments: MonthlyPayment[];
+  history: ContractMonth[];
+  renewal: RenewalOption;
+};
 
 export type CarpoolPostDetail = CarpoolPost & { bookings: CarpoolBookingSummary[]; myBooking: CarpoolBookingSummary | null };
 
@@ -138,6 +182,18 @@ export const rejectBooking = (id: string, reason: string | null) =>
   api<{ booking: CarpoolBooking }>(`/carpool/bookings/${encodeURIComponent(id)}/reject`, json("POST", reason ? { reason } : {}));
 export const withdrawBooking = (id: string) => api<{ booking: CarpoolBooking }>(`/carpool/bookings/${encodeURIComponent(id)}/withdraw`, json("POST"));
 export const agreeBooking = (id: string) => api<{ booking: CarpoolBooking }>(`/carpool/bookings/${encodeURIComponent(id)}/agree`, json("POST"));
+
+// --- B6b: contracts after they start
+const bookingPath = (id: string) => `/carpool/bookings/${encodeURIComponent(id)}`;
+export const completeSession = (activityId: string) => api<{ activity: { id: string; status: ActivityStatus } }>(`/carpool/sessions/${encodeURIComponent(activityId)}/complete`, json("POST"));
+export const setPaymentMethod = (paymentId: string, method: PaymentMethod) =>
+  api<{ payment: MonthlyPayment }>(`/carpool/payments/${encodeURIComponent(paymentId)}`, json("PATCH", { method }));
+export const markPaymentPaid = (paymentId: string) => api<{ payment: MonthlyPayment }>(`/carpool/payments/${encodeURIComponent(paymentId)}/paid`, json("POST"));
+export const requestTermination = (id: string, reason: string) => api<{ booking: CarpoolBooking }>(`${bookingPath(id)}/termination`, json("POST", { reason }));
+export const withdrawTermination = (id: string) => api<{ booking: CarpoolBooking }>(`${bookingPath(id)}/termination/withdraw`, json("POST"));
+export const answerTermination = (id: string, agree: boolean) =>
+  api<{ booking: CarpoolBooking }>(`${bookingPath(id)}/termination/${agree ? "agree" : "decline"}`, json("POST"));
+export const renewContract = (id: string, durationMonths: number) => api<{ booking: CarpoolBooking }>(`${bookingPath(id)}/renew`, json("POST", { durationMonths }));
 
 // --- Days and times
 

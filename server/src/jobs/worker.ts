@@ -12,6 +12,7 @@ import {
   runCarpoolPostCloseJob,
   runCarpoolSessionTimersJob,
 } from "../modules/carpool/carpool.jobs.js";
+import { runCarpoolPaymentsJob } from "../modules/carpool/carpool.contract.js";
 import { runReminderJob } from "./reminders.job.js";
 import { closeTimerQueue, createRedisConnection, defaultJobOptions, QUEUE_NAME } from "./scheduler.js";
 
@@ -55,6 +56,9 @@ export async function processJob(job: Job<{ id?: string }>): Promise<JobResult> 
       return runCarpoolPostCloseJob(id);
     case "carpool-session-timers":
       return runCarpoolSessionTimersJob();
+    // B6b: monthly payment records of running contracts
+    case "carpool-payments":
+      return runCarpoolPaymentsJob();
     case "notification-deliver": {
       // Retried with backoff; the last attempt records FAILED on the row.
       const attempts = job.opts.attempts ?? 1;
@@ -72,6 +76,8 @@ const REPEATING = [
   { id: "licence-reminder", every: rules.notifications.licenceReminderInterval },
   // B6a: timers of carpool sessions that have come within 7 days
   { id: "carpool-session-timers", every: rules.carpool.sessionTimerInterval },
+  // B6b: each contract month's payment record, UNPAID from the month's start
+  { id: "carpool-payments", every: rules.carpool.paymentRecordInterval },
 ] as const;
 
 export function startJobs() {

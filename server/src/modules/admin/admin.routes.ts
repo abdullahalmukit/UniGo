@@ -29,6 +29,15 @@ import { rules } from "../../config/rules.js";
 import { listFareSettings, setRatePerKm } from "../ride/fare.service.js";
 import { adminCancelActivity, adminCancelOffer, getAdminRideActivity, getAdminRideOffer, listAdminRides } from "../ride/ride.admin.service.js";
 import { hideReview } from "../reviews/reviews.service.js";
+import {
+  adminCloseCarpoolPost,
+  getAdminCarpoolBooking,
+  getAdminCarpoolPost,
+  listAdminCarpool,
+  reinstateCarpoolAccess,
+  riderCarpoolRecord,
+  suspendCarpoolAccess,
+} from "../carpool/carpool.admin.service.js";
 import { listAuditLogs } from "./audit-log.service.js";
 import { getDashboard } from "./dashboard.service.js";
 import { actionSchemas, applyAccountAction, type AccountAction, type ActionInput } from "./moderation.service.js";
@@ -154,6 +163,46 @@ adminRouter.post("/rides/activities/:id/cancel", validateBody(adminReason), asyn
 
 adminRouter.post("/rides/offers/:id/cancel", validateBody(adminReason), async (req, res) => {
   res.json({ offer: await adminCancelOffer(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+// ---- Carpool (B6b): Moderators and Super Admins view and close posts;
+// carpool access suspension is Super Admin only ---------------------------------
+
+const carpoolQuery = z.object({
+  kind: z.enum(["posts", "bookings", "contracts"]).default("posts"),
+  status: z.enum(["OPEN", "FULL", "CLOSED", "ACCEPTED", "DISPUTED", "COMPLETED", "CANCELLED", "EXPIRED", "ACTIVE", "ENDED", "TERMINATED"]).optional(),
+  q: optionalText,
+  page,
+});
+const carpoolSuspendSchema = adminReason.extend({ endsAt: z.coerce.date() });
+
+adminRouter.get("/carpool", async (req, res) => {
+  res.json(await listAdminCarpool(parseInput(carpoolQuery, req.query)));
+});
+
+adminRouter.get("/carpool/posts/:id", async (req, res) => {
+  res.json({ post: await getAdminCarpoolPost(id(req.params.id)) });
+});
+
+adminRouter.get("/carpool/bookings/:id", async (req, res) => {
+  res.json({ booking: await getAdminCarpoolBooking(id(req.params.id)) });
+});
+
+adminRouter.get("/carpool/riders/:id", async (req, res) => {
+  res.json(await riderCarpoolRecord(id(req.params.id)));
+});
+
+adminRouter.post("/carpool/posts/:id/close", validateBody(adminReason), async (req, res) => {
+  res.json({ post: await adminCloseCarpoolPost(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip) });
+});
+
+adminRouter.post("/carpool/riders/:id/suspend", superAdminOnly, validateBody(carpoolSuspendSchema), async (req, res) => {
+  const body = req.body as z.infer<typeof carpoolSuspendSchema>;
+  res.json(await suspendCarpoolAccess(authUser(req).id, id(req.params.id), body.reason, body.endsAt, req.ip));
+});
+
+adminRouter.post("/carpool/riders/:id/reinstate", superAdminOnly, validateBody(adminReason), async (req, res) => {
+  res.json(await reinstateCarpoolAccess(authUser(req).id, id(req.params.id), (req.body as z.infer<typeof adminReason>).reason, req.ip));
 });
 
 // ---- Food (B4): Moderators and Super Admins, as Ride Sharing --------------------

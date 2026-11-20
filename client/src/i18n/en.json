@@ -427,7 +427,14 @@
     "DURATION_NOT_OFFERED": "Choose a duration this carpool offers.",
     "HOLD_EXPIRED": "The seat hold has ended.",
     "ALREADY_AGREED": "You have already agreed. Waiting for the other person.",
-    "CARPOOL_NOT_FOUND": "This carpool is not available."
+    "CARPOOL_NOT_FOUND": "This carpool is not available.",
+    "SESSION_TOO_EARLY": "You can mark this ride completed from 30 minutes before its time.",
+    "CARPOOL_SUSPENDED": "Your carpool access is suspended for now.",
+    "TERMINATION_ALREADY_REQUESTED": "Ending this contract early has already been asked.",
+    "OWN_TERMINATION_REQUEST": "The other person answers your request.",
+    "NO_TERMINATION_REQUEST": "There is no request to end this contract early.",
+    "NO_ACTIVE_CONTRACT": "There is no running contract.",
+    "RENEW_NOT_AVAILABLE": "This contract cannot be renewed now."
   },
   "verification": {
     "title": "Verify your student status",
@@ -523,7 +530,8 @@
       "support": "Support",
       "spotlight": "Spotlight",
       "promos": "Promos",
-      "banners": "Banners"
+      "banners": "Banners",
+      "carpool": "Carpool"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -994,6 +1002,52 @@
       "VIDEO": "Video",
       "active": "Active",
       "inactive": "Inactive"
+    },
+    "carpool": {
+      "kind": "Show",
+      "kinds": {
+        "posts": "Posts",
+        "bookings": "Booking requests",
+        "contracts": "Contracts"
+      },
+      "search": "Rider or passenger (name, email, phone)",
+      "empty": "Nothing here yet.",
+      "count_one": "{{count}} item",
+      "count_other": "{{count}} items",
+      "paused": "Paused",
+      "seats": "{{seats}} seats taken",
+      "seatsTitle": "Seats",
+      "month": "month",
+      "paymentsLine": "{{paid}} paid, {{unpaid}} unpaid months",
+      "terminationAsked": "Early end asked",
+      "contractStatus": {
+        "ACTIVE": "Running",
+        "ENDED": "Ended",
+        "TERMINATED": "Ended early"
+      },
+      "postTitle": "Carpool post",
+      "bookingTitle": "Carpool booking",
+      "back": "Back to Carpool",
+      "schedule": "Days and time",
+      "dates": "Dates",
+      "noEnd": "no end date",
+      "prices": "Monthly prices",
+      "close": "Close this post",
+      "bookings": "Requests and contracts",
+      "noBookings": "No requests yet.",
+      "riderRecord": "Rider's carpool record",
+      "suspendedUntil": "Carpool access suspended until {{date}}.",
+      "notSuspended": "Carpool access is not suspended.",
+      "cancellations_one": "{{count}} ride cancelled by the rider",
+      "cancellations_other": "{{count}} rides cancelled by the rider",
+      "reason": "Reason",
+      "until": "Suspended until",
+      "suspend": "Suspend carpool access",
+      "reinstate": "Lift the carpool suspension",
+      "renewal": "Renewal",
+      "contract": "Contract",
+      "post": "Post",
+      "openPost": "Open the post"
     }
   },
   "support": {
@@ -1473,6 +1527,21 @@
         "you": "Both agreed. The carpool contract is active.",
         "other": "Both agreed. The carpool contract is active.",
         "system": "The carpool contract is active."
+      },
+      "TERMINATION_REQUESTED": {
+        "you": "You asked to end the contract early.",
+        "other": "The other person asked to end the contract early.",
+        "system": "Ending the contract early was asked."
+      },
+      "TERMINATION_WITHDRAWN": {
+        "you": "You took back your request to end early.",
+        "other": "The other person took back their request to end early.",
+        "system": "The request to end early was taken back."
+      },
+      "TERMINATION_DECLINED": {
+        "you": "You declined to end the contract early.",
+        "other": "The other person declined to end the contract early.",
+        "system": "Ending the contract early was declined."
       }
     },
     "viewDetails": "View details"
@@ -1996,7 +2065,15 @@
     },
     "sessions": {
       "title_one": "{{count}} ride",
-      "title_other": "{{count}} rides"
+      "title_other": "{{count}} rides",
+      "complete": "Completed",
+      "cancel": "Cancel ride",
+      "cancelTitle": "Cancel this ride?",
+      "cancelHint": "Give a reason. Cancelling less than 60 minutes before the ride counts as a late cancellation, and riders' cancellations are shown to passengers.",
+      "markedCompleted": "Marked completed",
+      "cancelledByMe": "Cancelled by you",
+      "cancelledByOther": "Cancelled by the other person",
+      "closed": "Closed when the contract ended early"
     },
     "actions": {
       "resume": "Take bookings again",
@@ -2034,7 +2111,8 @@
       "cancelled": "Cancelled.",
       "cancelledWith": "Cancelled: {{reason}}",
       "expired": "The rider did not answer before the first ride.",
-      "ended": "The contract has ended."
+      "ended": "The contract has ended.",
+      "terminated": "This contract was ended early by agreement. Its remaining rides were cancelled."
     },
     "form": {
       "days": "Ride days",
@@ -2055,6 +2133,48 @@
       "lockedHint": "Someone holds a seat or has a contract, so the schedule is locked. You can still add seats.",
       "pendingHint_one": "Saving declines {{count}} pending seat request.",
       "pendingHint_other": "Saving declines {{count}} pending seat requests."
+    },
+    "history": {
+      "title": "Monthly history",
+      "line": "{{completed}} completed · {{notMarked}} not marked · {{byMe}} cancelled by you · {{byOther}} by the other person (of {{total}})"
+    },
+    "payments": {
+      "title": "Monthly payments",
+      "none": "The first month's record appears on the contract's start date.",
+      "month": "Month {{number}}",
+      "method": "How it is paid",
+      "markPaid": "Mark paid",
+      "markedPaid": "Marked paid",
+      "saved": "Saved",
+      "passengerHint": "Pay the rider as you agreed. The rider marks each month paid; UniGo only records it."
+    },
+    "contract": {
+      "endEarly": "End the contract early",
+      "endEarlyHint": "Both of you must agree. If you don't agree, you can raise a complaint. Refunds are settled between you, outside UniGo.",
+      "askEndEarly": "Ask to end early",
+      "askHint": "Tell the other person why. They can agree or decline.",
+      "send": "Send",
+      "asked": "Request sent",
+      "youAsked": "You asked to end this contract early: {{reason}}",
+      "withdraw": "Take back my request",
+      "withdrawn": "Request taken back",
+      "otherAsked": "The other person asked to end this contract early: {{reason}}",
+      "agreeHint": "If you agree, the contract ends now and its remaining rides are cancelled without counting against anyone.",
+      "agreeEnd": "Agree to end",
+      "declineEnd": "Decline",
+      "ended": "Contract ended",
+      "declined": "Declined",
+      "terminatedNote": "This contract was ended early by agreement.",
+      "complaint": "Raise a complaint"
+    },
+    "renew": {
+      "title": "Renew this carpool",
+      "hint": "Send a new request on the same carpool, starting {{date}}. The rider accepts it as usual. Available until {{until}}.",
+      "duration": "Duration",
+      "action": "Request renewal",
+      "sent": "Renewal request sent",
+      "pending": "You already asked to renew.",
+      "open": "Open the request"
     }
   },
   "trip": {

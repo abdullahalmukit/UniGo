@@ -37,6 +37,7 @@ import {
   type Quote,
 } from "./carpool-api";
 import { DateRange, ScheduleLine, showDate } from "./carpool-shared";
+import { ContractPanel } from "./ContractPanel";
 import carpoolStyles from "./carpool.module.css";
 
 const HOLDING = ["ACCEPTED", "DISPUTED"];
@@ -457,19 +458,8 @@ function BookingView({ booking, reload }: { booking: CarpoolBooking; reload: () 
 
       <PostSummary post={booking.post} />
 
-      {contract || booking.sessions.length > 0 ? (
-        <section className={styles.section}>
-          <h2 className={styles.sectionTitle}>{t("carpool.sessions.title", { count: booking.sessions.length })}</h2>
-          <ul className={carpoolStyles.sessions}>
-            {booking.sessions.map((session) => (
-              <li key={session.activityId} className={carpoolStyles.session}>
-                <span>{formatRideTime(session.startTime, i18n.language)}</span>
-                <StatusChip status={session.status} />
-              </li>
-            ))}
-          </ul>
-        </section>
-      ) : null}
+      {/* B6b: sessions, monthly history and payments, early end, reviews and Renew */}
+      {booking.contract && <ContractPanel booking={booking} reload={reload} />}
 
       <ConfirmSheet
         title={t("carpool.actions.cancelSeatTitle")}
@@ -502,6 +492,7 @@ function BookingNote({ booking }: { booking: CarpoolBooking }) {
     return <FormAlert tone="info">{t(key, { until })}</FormAlert>;
   }
   if (booking.status === "ACCEPTED" && booking.subStatus === "CONTRACT_ACTIVE") return <FormAlert tone="success">{t("carpool.note.contract")}</FormAlert>;
+  if (booking.status === "CANCELLED" && booking.contract?.status === "TERMINATED") return <FormAlert tone="info">{t("carpool.note.terminated")}</FormAlert>;
   if (booking.status === "CANCELLED") {
     const why =
       booking.closureReason === "BOOKING_REJECTED"

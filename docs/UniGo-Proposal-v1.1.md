@@ -340,7 +340,7 @@ Carpool is for recurring weekly rides. Only Verified & Active Riders create sche
 3. After the rider accepts, the seat is held for 24 hours (or until the first ride, whichever is sooner) and a chat opens. Every ride day of the contract is checked against both people's activities (section 7.5); a clash is refused and the clashing dates are listed.
 4. Both press Agree. The first Agree tells the other person it is their turn and when the hold ends. The second creates a contract for that passenger (sub-status CONTRACT_ACTIVE), after checking every ride day again. If they do not agree within the hold, the seat returns to available. Either side can give up a held seat with a reason.
 5. The system generates a ride session for every agreed day of the contract. Contract months are counted from the start date (10 November – 9 December is month 1; a start on the 31st moves to the last day of a shorter month).
-6. On each ride day, either side can mark the session Completed or Cancelled (with a reason). The system records who cancelled.
+6. On each ride day, either side can mark the session Completed (from 30 minutes before its departure) or Cancelled (with a reason, any time while it is open; less than 60 minutes before departure is a late cancellation). The system records who cancelled.
 7. A monthly history shows completed, cancelled and not-marked sessions and who cancelled each one.
 8. When the contract ends, both can review each other and the passenger can request Renew.
 
@@ -364,7 +364,9 @@ Carpool is for recurring weekly rides. Only Verified & Active Riders create sche
 - A rider who cancels a session must give a reason, and every cancellation is recorded.
 - Passengers can see a rider's session cancellation history before booking.
 - For repeated cancellations, the admin can warn the rider or temporarily suspend their carpool access.
-- Early termination: one side requests it and the other agrees. If they disagree, either side can raise a complaint (section 15). Refunds are handled outside the app.
+- Early termination: one side requests it with a reason and the other agrees or declines; the one who asked can take it back while it is unanswered. Agreeing ends the contract at once: the seat reopens and the remaining rides are cancelled by the system without counting against anyone. If they disagree, either side can raise a complaint (a report to UniGo, section 15). Refunds are handled outside the app.
+- Carpool access suspension: a Super Admin suspends a rider's carpool access until an end date, with a reason. The rider's open posts are paused, and they cannot create or resume posts, add seats, accept requests or agree to contracts; running contracts carry on. It ends by itself at the end date, or earlier when a Super Admin lifts it.
+- Renew: for 7 days after a contract ended normally, the passenger can send a new booking request on the same post, starting on its next ride day, for a duration they choose at today's price. Reviews are only for contracts that ended normally.
 
 ## 10. Food Delivery
 
@@ -521,6 +523,9 @@ Users can turn Web Push on or off. The system sends notifications on status tran
 | Food over-budget approval requested | Requester | In-app, push |
 | Food over-budget approval approved or rejected | Accepter | In-app, push |
 | The other person agreed to a carpool contract (your turn; the seat hold ends at a given time) | Other participant | In-app, push |
+| Ending a carpool contract early was asked | Other participant | In-app, push |
+| The request to end a carpool contract early was agreed or declined | Participant who asked | In-app, push |
+| Carpool access suspended, lifted, or the suspension ended | Rider | In-app, email |
 
 Rules for all notifications:
 

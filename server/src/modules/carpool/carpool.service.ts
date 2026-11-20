@@ -40,6 +40,7 @@ import {
   tomorrow,
   type PostSchedule,
 } from "./carpool-dates.js";
+import { contractHistory, contractPayments, ensureMonthlyPayments, renewalOption } from "./carpool.contract.js";
 import { contractEndJob, holdReleaseJob, postCloseJob, sessionTimerSubjects } from "./carpool.jobs.js";
 import type { BookingInput, PostEditInput, PostInput, SearchQuery } from "./carpool.validation.js";
 import { bookingSelect, bookingView, postSelect, postView, scheduleOf, type PostRow } from "./carpool.views.js";
@@ -160,8 +161,19 @@ async function rejectPending(tx: Tx, riderId: string, postId: string, closure: "
 async function assertRiderAvailable(tx: Tx, riderId: string, now: Date) {
   try {
     await assertActiveRider(tx, riderId, now);
+    await assertCarpoolAccess(tx, riderId, now);
   } catch {
     throw new AppError(409, "RIDER_NOT_AVAILABLE", "This rider is not taking bookings right now");
+  }
+}
+
+// B6b (#2, #3): an admin can suspend a rider's carpool access until a date.
+// While it lasts the rider cannot create, resume or add seats to posts, accept
+// requests or agree to contracts; running contracts carry on.
+export async function assertCarpoolAccess(tx: Tx, riderId: string, now: Date) {
+  const user = await tx.user.findUnique({ where: { id: riderId }, select: { carpoolSuspendedUntil: true } });
+  if (user?.carpoolSuspendedUntil && user.carpoolSuspendedUntil > now) {
+    throw new AppError(403, "CARPOOL_SUSPENDED", "Your carpool access is suspended", { data: { until: user.carpoolSuspendedUntil.toISOString() } });
   }
 }
 
@@ -229,6 +241,7 @@ export async function createCarpoolPost(riderId: string, input: PostInput, now =
     // the limit or the overlap check.
     await lockUsers(tx, [riderId]);
     await assertActiveRider(tx, riderId, now);
+    await assertCarpoolAccess(tx, riderId, now);
     await usableVehicle(tx, riderId, input.vehicleId, input.seats);
     await assertScheduleFree(tx, riderId, schedule, { countLimit: true });
     return tx.carpoolPost.create({
@@ -334,6 +347,7 @@ export async function addCarpoolSeats(riderId: string, postId: string, seats: nu
     const post = await lockPost(tx, postId);
     if (post.riderId !== riderId) throw new AppError(403, "NOT_PARTICIPANT", "Only the rider can change this carpool");
     if (post.status === "CLOSED") throw new AppError(409, "POST_CLOSED", "This carpool is closed");
+    await assertCarpoolAccess(tx, riderId, now);
     if (seats <= post.totalSeats) throw new AppError(400, "SEATS_NOT_HIGHER", "Choose more seats than now", { fields: { seats: ["Choose more seats than now"] } });
     await usableVehicle(tx, riderId, post.vehicleId, seats);
     await tx.carpoolPost.update({
@@ -353,6 +367,7 @@ export async function setCarpoolPaused(riderId: string, postId: string, paused: 
     const post = await lockPost(tx, postId);
     if (post.riderId !== riderId) throw new AppError(403, "NOT_PARTICIPANT", "Only the rider can change this carpool");
     if (post.status === "CLOSED") throw new AppError(409, "POST_CLOSED", "This carpool is closed");
+    if (!paused) await assertCarpoolAccess(tx, riderId, now);
     if (paused !== (post.pausedAt !== null)) await tx.carpoolPost.update({ where: { id: postId }, data: { pausedAt: paused ? now : null } });
   });
   return getCarpoolPost(riderId, postId, now);
@@ -434,7 +449,13 @@ const durationNotOffered = () =>
 // One seat, a duration and a start date (proposal 9.3 step 1). The request is
 // OPEN until the rider answers; it expires at its first ride (Q3). Carpool
 // bookings are outside the open and daily limits (15.5).
-export async function requestCarpoolBooking(passengerId: string, postId: string, input: BookingInput, now = new Date()) {
+export async function requestCarpoolBooking(
+  passengerId: string,
+  postId: string,
+  input: BookingInput,
+  now = new Date(),
+  options: { renewedFromContractId?: string } = {},
+) {
   const known = await prisma.carpoolPost.findUnique({ where: { id: postId }, select: { riderId: true } });
   if (!known) throw notFound();
   if (known.riderId === passengerId) throw new AppError(403, "OWN_ITEM", "You cannot book your own carpool");
@@ -468,7 +489,13 @@ export async function requestCarpoolBooking(passengerId: string, postId: string,
         accepterId: passengerId,
         conflictGroupId: postId,
         carpoolBooking: {
-          create: { postId, durationMonths: input.durationMonths, monthlyPrice: price.monthlyPrice, startDate: dateOnly(input.startDate) },
+          create: {
+            postId,
+            durationMonths: input.durationMonths,
+            monthlyPrice: price.monthlyPrice,
+            startDate: dateOnly(input.startDate),
+            renewedFromContractId: options.renewedFromContractId ?? null,
+          },
         },
       },
       select: engineActivitySelect,
@@ -525,6 +552,7 @@ export async function acceptCarpoolBooking(riderId: string, activityId: string, 
     const post = await lockPost(tx, booking.postId);
     assertBookable(post);
     await assertActiveRider(tx, riderId, now);
+    await assertCarpoolAccess(tx, riderId, now);
     await usableVehicle(tx, riderId, post.vehicleId, post.totalSeats);
     await assertCanAccept(tx, riderId, now);
     await assertCanAccept(tx, activity.accepterId!, now);
@@ -604,8 +632,10 @@ export async function agreeCarpoolBooking(userId: string, activityId: string, no
 
     // The second Agree: the contract. Checked again with both users locked.
     const post = await lockPost(tx, booking.postId);
-    if (isRider) await assertActiveRider(tx, riderId, now);
-    else await assertRiderAvailable(tx, riderId, now);
+    if (isRider) {
+      await assertActiveRider(tx, riderId, now);
+      await assertCarpoolAccess(tx, riderId, now);
+    } else await assertRiderAvailable(tx, riderId, now);
     await usableVehicle(tx, riderId, post.vehicleId, post.totalSeats);
     await assertCanAccept(tx, riderId, now);
     await assertCanAccept(tx, passengerId, now);
@@ -637,6 +667,8 @@ export async function agreeCarpoolBooking(userId: string, activityId: string, no
     await removeTimerJobs([holdReleaseJob(activityId, result.holdExpiresAt).jobId]);
     await scheduleActivityTimers(sessionTimerSubjects(result.sessions, now));
     await scheduleTimerJobs([contractEndJob(result.contract.id, dateOnlyString(result.contract.endDate))]);
+    // 9.5: month 1's payment record, UNPAID from the start date
+    await ensureMonthlyPayments(result.contract.id, now);
   }
   return getCarpoolBooking(userId, activityId, now);
 }
@@ -690,6 +722,21 @@ async function notifyAgreed(activityId: string, userId: string, otherId: string,
   });
 }
 
+// --- Renew (proposal 9.3 step 8, B6b #4)
+
+// The passenger renews a contract that ended normally in the last 7 days: a
+// normal booking request on the same post from its next ride day, with the
+// duration they choose at today's price. The rider accepts it as usual.
+export async function renewCarpoolContract(passengerId: string, activityId: string, durationMonths: number, now = new Date()) {
+  const booking = await prisma.carpoolBooking.findUnique({ where: { activityId }, select: { contract: { select: { id: true } }, activity: { select: { accepterId: true } } } });
+  if (!booking || booking.activity.accepterId !== passengerId) throw notFound();
+  const option = booking.contract ? await renewalOption(booking.contract.id, passengerId, now) : null;
+  if (!option?.available) {
+    throw new AppError(409, option ? "ALREADY_BOOKED" : "RENEW_NOT_AVAILABLE", option ? "You already asked to renew" : "This contract cannot be renewed now");
+  }
+  return requestCarpoolBooking(passengerId, option.postId, { durationMonths, startDate: option.startDate }, now, { renewedFromContractId: booking.contract!.id });
+}
+
 // --- Reading
 
 // One booking, for its two participants: the request, the hold, the contract
@@ -706,8 +753,21 @@ export async function getCarpoolBooking(viewerId: string, activityId: string, no
       })
     : [];
   const [post] = await postViews([row.post], viewerId, now);
+  const contractId = row.contract?.id;
+  if (contractId && row.contract!.status === "ACTIVE") await ensureMonthlyPayments(contractId, now);
+  const [payments, history, renewal] = contractId
+    ? await Promise.all([
+        contractPayments(contractId),
+        contractHistory(contractId, viewerId),
+        isRider ? Promise.resolve(null) : renewalOption(contractId, viewerId, now),
+      ])
+    : [[], [], null];
   return {
     ...(await bookingView(row, viewerId)),
+    // B6b: monthly payment records, the month-by-month session history and Renew
+    payments,
+    history,
+    renewal,
     phone: await participantPhone(viewerId, isRider ? row.activity.accepterId : row.activity.creatorId, row.activity.status),
     post: post!,
     sessions: sessions.map((s) => ({

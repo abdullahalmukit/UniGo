@@ -69,6 +69,17 @@ export const rules = {
     // sessions starting within this window; a daily job queues the next days
     sessionTimerWindow: 7 * DAY,
     sessionTimerInterval: DAY,
+    // B6b (#1): a session can be marked Completed from this long before its
+    // departure; Cancelled at any time while it is ACCEPTED (NOT_MARKED 6 h after)
+    sessionCompleteAllowedBefore: 30 * MINUTE,
+    // B6b (#4): Renew is offered this long after a contract ended normally
+    renewWindow: 7 * DAY,
+    // B6b: early termination reason
+    terminationReason: { minLength: 3, maxLength: 500 },
+    // B6b: how often the monthly payment records of running contracts are checked
+    paymentRecordInterval: HOUR,
+    // B6b: admin Carpool lists
+    adminPageSize: 20,
   },
 
   reviews: {

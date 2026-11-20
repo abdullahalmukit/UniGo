@@ -30,6 +30,8 @@ export function notificationLink(type: NotificationType, data: NotificationData 
       return chat ?? "/upcoming";
     case "STUDENT_VERIFICATION_RESULT":
       return "/verify-student";
+    case "CARPOOL_ACCESS_CHANGED":
+      return "/carpool";
     case "RIDER_VERIFICATION_RESULT":
     case "RIDER_ACCESS_CHANGED":
     case "LICENCE_EXPIRY_REMINDER":

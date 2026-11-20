@@ -58,7 +58,7 @@ describe("activity status changes (proposal section 14)", () => {
     { action: "AUTO_COMPLETE", type: "FOOD", actor: "system", expect: { type: "AUTO_COMPLETED", to: ["creator", "accepter"] } },
     { action: "MARK_NOT_MARKED", type: "FOOD", actor: "system", expect: { type: "AUTO_CLOSED_NOT_MARKED", to: ["creator", "accepter"] } },
     { action: "CANCEL", type: "FOOD", actor: "accepter", expect: { type: "ACTIVITY_CANCELLED", to: ["creator"] } },
-    { action: "TERMINATE_CONTRACT", type: "CARPOOL_BOOKING", actor: "creator", expect: { type: "ACTIVITY_CANCELLED", to: ["accepter"] } },
+    // B6b #3: TERMINATE_CONTRACT sends CARPOOL_TERMINATION_ANSWERED instead (carpool.contracts.test.ts)
     { action: "RELEASE_HOLD", type: "CARPOOL_BOOKING", actor: "system", expect: { type: "ACTIVITY_CANCELLED", to: ["creator", "accepter"] } },
     { action: "ADMIN_CANCEL", type: "SERVICE", actor: "admin", expect: { type: "ACTIVITY_CANCELLED", to: ["creator", "accepter"] } },
     { action: "DISPUTE", type: "FOOD", actor: "creator", expect: { type: "DISPUTE_OPENED", to: ["creator", "accepter"] } },

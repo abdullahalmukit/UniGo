@@ -82,7 +82,20 @@ export const bookingSelect = {
   passengerAgreedAt: true,
   rejectionReason: true,
   createdAt: true,
-  contract: { select: { id: true, startDate: true, endDate: true, status: true } },
+  contract: {
+    select: {
+      id: true,
+      startDate: true,
+      endDate: true,
+      status: true,
+      terminationRequestedById: true,
+      terminationRequestedAt: true,
+      terminationReason: true,
+      terminatedAt: true,
+      endedAt: true,
+    },
+  },
+  renewedFromContractId: true,
   activity: {
     select: {
       id: true,
@@ -131,8 +144,24 @@ export async function bookingView(row: BookingRow, viewerId: string) {
     cancellationReason: a.cancellationReason,
     isLateCancellation: a.isLateCancellation,
     contract: row.contract
-      ? { id: row.contract.id, startDate: dateOnlyString(row.contract.startDate), endDate: dateOnlyString(row.contract.endDate), status: row.contract.status }
+      ? {
+          id: row.contract.id,
+          startDate: dateOnlyString(row.contract.startDate),
+          endDate: dateOnlyString(row.contract.endDate),
+          status: row.contract.status,
+          endedAt: row.contract.endedAt,
+          terminatedAt: row.contract.terminatedAt,
+          // B6b: an early termination asked for and not yet answered
+          termination: row.contract.terminationRequestedById
+            ? {
+                requestedBy: whoDid(row.contract.terminationRequestedById, viewerId),
+                reason: row.contract.terminationReason,
+                requestedAt: row.contract.terminationRequestedAt,
+              }
+            : null,
+        }
       : null,
+    isRenewal: row.renewedFromContractId !== null,
     passenger: a.accepter ? await miniProfile(a.accepter) : null,
     rider: await miniProfile(a.creator),
     chatId: a.chat?.id ?? null,

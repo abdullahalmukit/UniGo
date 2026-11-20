@@ -45,8 +45,8 @@ export async function notifyTransition(event: ActivityTransitionEvent) {
     case "MARK_NOT_MARKED":
       plans.push({ type: "AUTO_CLOSED_NOT_MARKED", to: participants });
       break;
+    // B6b: an early termination is told by CARPOOL_TERMINATION_ANSWERED (carpool.contract.ts).
     case "CANCEL":
-    case "TERMINATE_CONTRACT":
     case "WITHDRAW_BOOKING":
       plans.push({ type: "ACTIVITY_CANCELLED", to: actorId ? others(actorId) : participants, kind: actorId ? "USER" : "UNIGO" });
       break;
