@@ -1,6 +1,8 @@
 import { CalendarClock } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { Link } from "react-router";
+import upcomingArt from "../../assets/upcoming-calendar.svg";
 import { FormAlert } from "../../components/form";
 import { buttonStyles, EmptyState, PageHeader } from "../../components/ui";
 import { SkeletonList } from "../account/SubPage";
@@ -63,7 +65,19 @@ export function UpcomingPage() {
         </FormAlert>
       )}
       {!items && !failed && <SkeletonList rows={3} />}
-      {items && items.length === 0 && <EmptyState icon={CalendarClock} text={t("upcoming.empty")} />}
+      {items && items.length === 0 && (
+        <EmptyState
+          illustration={upcomingArt}
+          icon={CalendarClock}
+          text={t("upcoming.empty")}
+          subtitle={t("home.upcomingSubtitle")}
+          action={
+            <Link to="/services" className={buttonStyles.secondary}>
+              {t("home.browseServices")}
+            </Link>
+          }
+        />
+      )}
       {items && items.length > 0 && (
         <ul className={styles.list}>
           {items.map((item, index) => (

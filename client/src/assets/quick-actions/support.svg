@@ -1,0 +1,160 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <!-- Soft Dynamic Shadow -->
+    <filter id="support-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5.5" flood-color="#0284c7" flood-opacity="0.45"/>
+    </filter>
+
+    <!-- Chrome & Titanium Gradients -->
+    <linearGradient id="support-chrome" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="25%" stop-color="#e2e8f0"/>
+      <stop offset="60%" stop-color="#94a3b8"/>
+      <stop offset="100%" stop-color="#475569"/>
+    </linearGradient>
+
+    <linearGradient id="support-cushion" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#020617"/>
+    </linearGradient>
+
+    <!-- Deep Sapphire Ear Cup Chambers -->
+    <linearGradient id="support-cup-l" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="35%" stop-color="#0284c7"/>
+      <stop offset="75%" stop-color="#004e7a"/>
+      <stop offset="100%" stop-color="#002b44"/>
+    </linearGradient>
+
+    <linearGradient id="support-cup-r" x1="100%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="35%" stop-color="#0284c7"/>
+      <stop offset="75%" stop-color="#004e7a"/>
+      <stop offset="100%" stop-color="#002b44"/>
+    </linearGradient>
+
+    <linearGradient id="support-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7dd3fc"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <!-- Center 3D Glass Console -->
+    <linearGradient id="support-pod-bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#004e7a"/>
+      <stop offset="50%" stop-color="#003554"/>
+      <stop offset="100%" stop-color="#001e30"/>
+    </linearGradient>
+
+    <linearGradient id="support-pod-rim" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.9"/>
+      <stop offset="100%" stop-color="#0284c7" stop-opacity="0.3"/>
+    </linearGradient>
+
+    <!-- Live Soundwave Equalizer Bars -->
+    <linearGradient id="support-wave-bar" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#7dd3fc"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+
+    <!-- Gold Luxury Accents -->
+    <linearGradient id="support-star-gold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="50%" stop-color="#fbbf24"/>
+      <stop offset="100%" stop-color="#d97706"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Blue/Cyan Glow -->
+  <ellipse cx="36" cy="38" rx="26" ry="24" fill="#0284c7" opacity="0.25" filter="blur(9px)"/>
+
+  <!-- Master Group with 3D Elevation Drop Shadow -->
+  <g filter="url(#support-shadow)">
+
+    <!-- 1. Metallic Headband Arch (Outer Steel Shell) -->
+    <path d="M16 36 C16 16.5 24 8 36 8 C48 8 56 16.5 56 36" fill="none" stroke="url(#support-chrome)" stroke-width="4.6" stroke-linecap="round"/>
+
+    <!-- 2. Padded Memory-Foam Head Cushion (Underbelly) -->
+    <path d="M20 34 C20 19 26 12 36 12 C46 12 52 19 52 34" fill="none" stroke="url(#support-cushion)" stroke-width="3" stroke-linecap="round"/>
+
+    <!-- Cushion Stitch Ridges for Luxury Detail -->
+    <path d="M28 15L29 17.5 M33 13.2L33.5 16 M38.5 13.2L38 16 M43 15L42 17.5" stroke="#334155" stroke-width="1.2" stroke-linecap="round"/>
+
+    <!-- Headband Top Specular Highlight Arc -->
+    <path d="M29 9.5 C32 8.8 40 8.8 43 9.5" fill="none" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round" opacity="0.75"/>
+
+    <!-- 3. Metallic Pivot Brackets & Extenders -->
+    <rect x="13.5" y="30" width="5" height="5" rx="1.5" fill="url(#support-chrome)"/>
+    <circle cx="16" cy="32.5" r="1" fill="#1e293b"/>
+
+    <rect x="53.5" y="30" width="5" height="5" rx="1.5" fill="url(#support-chrome)"/>
+    <circle cx="56" cy="32.5" r="1" fill="#1e293b"/>
+
+    <!-- 4. Left Ergonomic 3D Earcup Chamber -->
+    <!-- Soft Leather Inner Pad -->
+    <rect x="13" y="29" width="7" height="19" rx="3.5" fill="#020617"/>
+    <!-- Outer Curved Acoustic Capsule -->
+    <rect x="9" y="30" width="8.5" height="17" rx="4.25" fill="url(#support-cup-l)" stroke="url(#support-rim)" stroke-width="1.2"/>
+    <!-- Sleek Diagonal Specular Shine -->
+    <path d="M10.5 32 C12 31 15 31 16 32 L15 37 C13.5 36 11.5 36 10.5 37 Z" fill="#ffffff" opacity="0.32"/>
+    <!-- Neon Acoustic Core Ring -->
+    <ellipse cx="13.2" cy="38.5" rx="1.5" ry="4" fill="none" stroke="#38bdf8" stroke-width="0.9" opacity="0.8"/>
+
+    <!-- 5. Right Ergonomic 3D Earcup Chamber -->
+    <!-- Soft Leather Inner Pad -->
+    <rect x="52" y="29" width="7" height="19" rx="3.5" fill="#020617"/>
+    <!-- Outer Curved Acoustic Capsule -->
+    <rect x="54.5" y="30" width="8.5" height="17" rx="4.25" fill="url(#support-cup-r)" stroke="url(#support-rim)" stroke-width="1.2"/>
+    <!-- Sleek Diagonal Specular Shine -->
+    <path d="M61.5 32 C60 31 57 31 56 32 L57 37 C58.5 36 60.5 36 61.5 37 Z" fill="#ffffff" opacity="0.32"/>
+    <!-- Neon Acoustic Core Ring -->
+    <ellipse cx="58.8" cy="38.5" rx="1.5" ry="4" fill="none" stroke="#38bdf8" stroke-width="0.9" opacity="0.8"/>
+
+    <!-- 6. Articulated Microphone Arm (Boom) -->
+    <!-- Ball Joint on Left Earcup -->
+    <circle cx="14" cy="43.5" r="2.5" fill="#1e293b" stroke="url(#support-chrome)" stroke-width="1"/>
+    <!-- Sweeping Chrome Boom Arm -->
+    <path d="M14 43.5 Q 16 55 24 58 Q 28 59 32.5 58" fill="none" stroke="url(#support-chrome)" stroke-width="2.2" stroke-linecap="round"/>
+    <!-- Microphone Capsule & Pop Filter -->
+    <rect x="32" y="55" width="7" height="5.5" rx="2" fill="#090d16" stroke="#38bdf8" stroke-width="1"/>
+    <!-- Mic Grille Micro-slots -->
+    <line x1="34" y1="57.7" x2="37" y2="57.7" stroke="#38bdf8" stroke-width="0.8"/>
+    <!-- Active Broadcast Glowing Cyan Dot -->
+    <circle cx="40.5" cy="57.7" r="1.6" fill="#38bdf8" filter="drop-shadow(0 0 4px #38bdf8)"/>
+
+    <!-- 7. Central Floating 3D Support Concierge Console -->
+    <!-- Glass Shield Body -->
+    <rect x="22" y="21" width="28" height="25" rx="9" fill="url(#support-pod-bg)"/>
+    <rect x="22.7" y="21.7" width="26.6" height="23.6" rx="8.3" stroke="url(#support-pod-rim)" stroke-width="1.4"/>
+    <!-- Curved Tail Pin -->
+    <path d="M32 46 L36 50.5 L38 46 Z" fill="#003554"/>
+
+    <!-- Glass Specular Highlight Across Top Edge -->
+    <path d="M23 28 C23 23 26 21.5 32 21.5 H40 C46 21.5 49 23 49 28 C43 25.5 28 25.5 23 28 Z" fill="#ffffff" opacity="0.22"/>
+
+    <!-- 8. Glowing Live Equalizer Waveform (Instant Human Support Indication) -->
+    <!-- Wave Bar 1 -->
+    <rect x="26.5" y="31" width="3" height="9" rx="1.5" fill="url(#support-wave-bar)"/>
+    <!-- Wave Bar 2 -->
+    <rect x="31" y="27" width="3" height="15" rx="1.5" fill="url(#support-wave-bar)"/>
+    <!-- Wave Bar 3 -->
+    <rect x="35.5" y="25" width="3" height="18" rx="1.5" fill="url(#support-wave-bar)"/>
+    <!-- Wave Bar 4 -->
+    <rect x="40" y="29.5" width="3" height="11.5" rx="1.5" fill="url(#support-wave-bar)"/>
+    <!-- Base Wave Horizon Line -->
+    <line x1="25.5" y1="42.5" x2="44" y2="42.5" stroke="#38bdf8" stroke-width="1" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- 9. Live "Online 24/7" Active Status Beacon (Top Right of Pod) -->
+  <g filter="drop-shadow(0 0 5px #10b981)">
+    <!-- Pulse Ripple Ring -->
+    <circle cx="49" cy="22" r="4.2" fill="none" stroke="#10b981" stroke-width="0.8" opacity="0.6"/>
+    <!-- Solid Glowing Emerald Core -->
+    <circle cx="49" cy="22" r="2.8" fill="#10b981" stroke="#ffffff" stroke-width="1"/>
+  </g>
+
+  <!-- 10. Golden Precision Glint / Star (Executive Polish) -->
+  <path d="M51 9L52 11.5L54.5 12.5L52 13.5L51 16L50 13.5L47.5 12.5L50 11.5Z" fill="url(#support-star-gold)" filter="drop-shadow(0 1px 3px rgba(0,0,0,0.4))"/>
+</svg>

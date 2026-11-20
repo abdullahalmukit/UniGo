@@ -1,47 +1,73 @@
-/* Public profile (B3b-1). Colours only from theme tokens. */
+/* ── Public Profile — SUPREME TIER PREMIUM ── */
 
 .page {
   display: grid;
-  gap: var(--space-4);
-  max-width: 720px;
+  gap: var(--space-5);
+  max-width: 760px;
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .card {
+  position: relative;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-5);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.card:hover {
+  transform: translateY(-4px) scale(1.006);
+  border-color: rgba(0, 78, 122, 0.25);
+  box-shadow: var(--shadow-card-hover), var(--glow-accent);
 }
 
 .section {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
 }
 
 .head {
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
 }
 
 .headText {
   display: grid;
-  gap: 2px;
+  gap: 4px;
   min-width: 0;
 }
 
 .name {
   margin: 0;
-  font-size: var(--text-title);
+  font-size: 1.6rem;
+  font-weight: var(--weight-bold);
   overflow-wrap: anywhere;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  line-height: 1.25;
 }
 
 .muted {
   margin: 0;
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  line-height: 1.4;
 }
 
 .badges {
@@ -54,29 +80,48 @@
   margin: 0;
   font-size: var(--text-body);
   font-weight: var(--weight-bold);
+  letter-spacing: -0.015em;
+  color: var(--color-text);
 }
 
 .subTitle {
   margin: 0;
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-text-muted);
 }
 
+/* Luxury stats banner with gradient metrics */
 .stats {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin: 0;
+  padding: var(--space-4) var(--space-5);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.03);
 }
 
 .stats dt {
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
+  margin-bottom: 2px;
 }
 
 .stats dd {
   margin: 0;
+  font-size: 1.35rem;
   font-weight: var(--weight-bold);
+  background: var(--gradient-primary);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
 }
 
 .vehicles,
@@ -86,4 +131,28 @@
   margin: 0;
   padding: 0;
   list-style: none;
+}
+
+@media (max-width: 480px) {
+  .head {
+    flex-direction: column;
+    text-align: center;
+  }
+  .badges {
+    justify-content: center;
+  }
+  .stats {
+    grid-template-columns: 1fr;
+    gap: var(--space-3);
+    text-align: center;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page {
+    animation: none;
+  }
+  .card:hover {
+    transform: none;
+  }
 }

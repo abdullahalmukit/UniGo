@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <filter id="star-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#eab308" flood-opacity="0.45"/>
+    </filter>
+    <linearGradient id="star-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="40%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#facc15"/>
+    </linearGradient>
+    <linearGradient id="star-mid" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#eab308"/>
+    </linearGradient>
+    <linearGradient id="star-dark" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ca8a04"/>
+      <stop offset="100%" stop-color="#854d0e"/>
+    </linearGradient>
+    <linearGradient id="orbit-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#facc15"/>
+      <stop offset="100%" stop-color="#ec4899"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="36" cy="38" r="26" fill="#eab308" opacity="0.25" filter="blur(8px)"/>
+
+  <!-- Orbital Ring (Behind) -->
+  <path d="M14 42C10 40 12 36 22 32C32 28 48 26 58 29" stroke="url(#orbit-grad)" stroke-width="2.5" stroke-linecap="round" opacity="0.6"/>
+
+  <!-- 3D Beveled 5-Point Star -->
+  <g filter="url(#star-shadow)">
+    <!-- Top Arm -->
+    <polygon points="36,10 36,36 43,26" fill="url(#star-dark)"/>
+    <polygon points="36,10 29,26 36,36" fill="url(#star-light)"/>
+
+    <!-- Right Arm -->
+    <polygon points="59,26 36,36 46,38" fill="url(#star-dark)"/>
+    <polygon points="59,26 43,26 36,36" fill="url(#star-mid)"/>
+
+    <!-- Bottom Right Arm -->
+    <polygon points="50,56 36,36 36,46" fill="url(#star-dark)"/>
+    <polygon points="50,56 46,38 36,36" fill="url(#star-mid)"/>
+
+    <!-- Bottom Left Arm -->
+    <polygon points="22,56 36,46 36,36" fill="url(#star-mid)"/>
+    <polygon points="22,56 36,36 26,38" fill="url(#star-light)"/>
+
+    <!-- Left Arm -->
+    <polygon points="13,26 26,38 36,36" fill="url(#star-light)"/>
+    <polygon points="13,26 36,36 29,26" fill="url(#star-light)"/>
+
+    <!-- Center Apex Specular Flare -->
+    <circle cx="36" cy="36" r="3.2" fill="#ffffff" filter="drop-shadow(0 0 4px #ffffff)"/>
+  </g>
+
+  <!-- Orbital Ring (Front) -->
+  <path d="M58 29C64 31 62 35 52 39C42 43 26 45 16 42" stroke="url(#orbit-grad)" stroke-width="3" stroke-linecap="round" filter="drop-shadow(0 0 6px #38bdf8)"/>
+
+  <!-- Sparkling Stars -->
+  <path d="M58 14L59.5 17.5L63 19L59.5 20.5L58 24L56.5 20.5L53 19L56.5 17.5Z" fill="#ffffff"/>
+  <path d="M15 17L16 19.5L18.5 20.5L16 21.5L15 24L14 21.5L11.5 20.5L14 19.5Z" fill="#ffffff" opacity="0.8"/>
+</svg>

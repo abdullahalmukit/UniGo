@@ -1,64 +1,66 @@
 /*
- * Theme tokens. Components use only these variables, never raw colours.
- * Light values sit on :root; dark values on [data-theme="dark"], which the
- * theme code (and the script in index.html) sets for Dark, and for System when
- * the device is dark. Every text/background pair passes WCAG AA; see
- * src/styles/tokens.test.ts.
+ * Theme tokens — SUPREME TIER PREMIUM EDITION.
+ * Supreme-tier design system: luxury glassmorphism, multi-layer ambient shadows,
+ * vibrant fluid gradients, and precision micro-interactions.
+ * Light values sit on :root; dark values on [data-theme="dark"].
  */
 
 :root {
   color-scheme: light;
 
-  /* Surfaces and text (A5a polish palette) */
-  --color-bg: #f4f8fd;
+  /* ── Surfaces & text ── */
+  --color-bg: #f8f9fc;
   --color-surface: #ffffff;
-  --color-surface-muted: #eef3fa;
-  --color-border: #e1e8f2;
-  --color-text: #0f1b2d;
-  --color-text-muted: #4b5b72;
+  --color-surface-muted: #f1f3f9;
+  --color-border: #e2e5f0;
+  --color-text: #0f1729;
+  --color-text-muted: #5f6b87;
 
-  /* Brand */
-  --color-accent: #0a6fd6;
+  /* ── Brand accent: UniGo ocean blue ── */
+  --color-accent: #004e7a;
   --color-on-accent: #ffffff;
   --color-accent-soft: #f0f6fe;
-  --color-focus: #0a6fd6;
+  --color-focus: #004e7a;
 
-  /* Status chips (CLAUDE.md, accepted = indigo): background / text */
-  --status-green-bg: #e6f6ec;
-  --status-green-fg: #18794e;
-  --status-amber-bg: #fff4d6;
-  --status-amber-fg: #8a5a00;
+  /* ── Status chips ── */
+  --status-green-bg: #e6f9ee;
+  --status-green-fg: #15803d;
+  --status-amber-bg: #fff7e0;
+  --status-amber-fg: #a16207;
   --status-indigo-bg: #eef0ff;
   --status-indigo-fg: #4338ca;
   --status-purple-bg: #f5ecfe;
   --status-purple-fg: #7e22ce;
-  --status-red-bg: #fdecec;
-  --status-red-fg: #c2261f;
-  --status-grey-bg: #eef1f5;
+  --status-red-bg: #fef2f2;
+  --status-red-fg: #d32020;
+  --status-grey-bg: #f1f3f9;
   --status-grey-fg: #556275;
 
   --color-badge: #c2261f;
   --color-on-badge: #ffffff;
-  --shadow-card: 0 1px 2px rgb(15 27 45 / 5%), 0 6px 18px rgb(15 27 45 / 6%);
-  --shadow-card-hover: 0 2px 4px rgb(15 27 45 / 6%), 0 12px 28px rgb(15 27 45 / 10%);
 
-  /* Logo: the round icon sits straight on light surfaces. */
+  /* ── Supreme-tier multi-layered shadows with violet tint ── */
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 62, 97, 0.06), 0 16px 40px rgba(0, 62, 97, 0.04);
+  --shadow-card-hover: 0 12px 32px rgba(0, 62, 97, 0.14), 0 24px 60px rgba(0, 62, 97, 0.1), 0 0 40px rgba(0, 78, 122, 0.18);
+
+  /* ── Logo ── */
   --logo-plate: transparent;
   --logo-plate-padding: 0;
   --logo-wordmark-filter: none;
 
-  /* Typography: one font stack (Inter, with Hind Siliguri for Bangla), three sizes */
+  /* ── Typography — supreme precision stack ── */
   --font-sans: "Inter Variable", "Hind Siliguri", system-ui, -apple-system, "Segoe UI", sans-serif;
-  --text-title: 1.25rem;
+  --text-title: 1.35rem;
   --text-body: 1rem;
   --text-caption: 0.8125rem;
   --weight-regular: 400;
-  --weight-medium: 500;
-  --weight-bold: 650;
+  --weight-medium: 550;
+  --weight-bold: 700;
+  --letter-spacing-tight: -0.03em;
 
-  /* Shape and spacing */
-  --radius-card: 16px;
-  --radius-control: 12px;
+  /* ── Shape & spacing — generous luxury proportion ── */
+  --radius-card: 20px;
+  --radius-control: 14px;
   --radius-pill: 999px;
   --space-1: 4px;
   --space-2: 8px;
@@ -66,56 +68,88 @@
   --space-4: 16px;
   --space-5: 24px;
   --space-6: 32px;
-  --tap-target: 44px;
+  --tap-target: 46px;
   --content-width: 1100px;
-  --bar-height: 56px;
-  --tabs-height: 64px;
+  --bar-height: 64px;
+  --tabs-height: 72px;
 
-  /* Layers (B3b-1). Every map container also isolates its own stacking
-     context, and these sit above the map library's own layers (up to 1000)
-     anyway, so bars, sheets, dialogs and toasts are never covered by a map. */
+  /* ── Layers ── */
   --z-bar: 1100;
   --z-tooltip: 1150;
   --z-drawer: 1200;
   --z-sheet: 1300;
   --z-toast: 1400;
+
+  /* ── Supreme luxury extras ── */
+  --gradient-primary: linear-gradient(135deg, #004e7a 0%, #0070a8 50%, #5ba8d6 100%);
+  --gradient-surface: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(241, 243, 249, 0.9) 100%);
+  --glass-bg: rgba(255, 255, 255, 0.78);
+  --glass-border: rgba(255, 255, 255, 0.55);
+  --glass-blur: blur(24px) saturate(190%);
+  --glow-accent: 0 0 25px rgba(0, 62, 97, 0.25);
+  --transition-smooth: cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* ── Extended supreme variables ── */
+  --shadow-button-primary: 0 4px 16px rgba(0, 62, 97, 0.4);
+  --shadow-button-hover: 0 8px 24px rgba(0, 62, 97, 0.55);
+  --shadow-elevated: 0 20px 48px -10px rgba(15, 23, 41, 0.12), 0 8px 20px -6px rgba(0, 62, 97, 0.08);
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.6);
+  --gradient-glow: radial-gradient(circle at 50% 0%, rgba(0, 78, 122, 0.18) 0%, transparent 75%);
+  --gradient-border: linear-gradient(135deg, rgba(255, 255, 255, 0.8), rgba(0, 78, 122, 0.35), rgba(255, 255, 255, 0.2));
 }
 
 [data-theme="dark"] {
   color-scheme: dark;
 
-  --color-bg: #0b1220;
-  --color-surface: #131c2e;
-  --color-surface-muted: #1a2539;
-  --color-border: #24324a;
-  --color-text: #e6edf7;
-  --color-text-muted: #9dabc2;
+  --color-bg: #09090b;
+  --color-surface: #111118;
+  --color-surface-muted: #18181f;
+  --color-border: #27273a;
+  --color-text: #f0f0f8;
+  --color-text-muted: #9898b0;
 
-  --color-accent: #4da3ff;
-  --color-on-accent: #0b1220;
-  --color-accent-soft: #14294a;
-  --color-focus: #4da3ff;
+  --color-accent: #5ba8d6;
+  --color-on-accent: #09090b;
+  --color-accent-soft: #0a2a3d;
+  --color-focus: #5ba8d6;
 
-  --status-green-bg: #10301f;
+  --status-green-bg: #052e16;
   --status-green-fg: #4ade80;
   --status-amber-bg: #3a2c0a;
   --status-amber-fg: #fbbf24;
-  --status-indigo-bg: #1e2150;
+  --status-indigo-bg: #1e1b4b;
   --status-indigo-fg: #a5b4fc;
   --status-purple-bg: #2d1b4e;
   --status-purple-fg: #d8b4fe;
   --status-red-bg: #3d1618;
-  --status-red-fg: #ff8a80;
-  --status-grey-bg: #222c3d;
+  --status-red-fg: #fca5a5;
+  --status-grey-bg: #1a1a24;
   --status-grey-fg: #a9b5c7;
 
-  --color-badge: #ff6b6b;
-  --color-on-badge: #0b1220;
-  --shadow-card: 0 1px 2px rgb(0 0 0 / 30%);
-  --shadow-card-hover: 0 8px 24px rgb(0 0 0 / 45%);
+  --color-badge: #f87171;
+  --color-on-badge: #09090b;
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.5), 0 8px 24px rgba(0, 112, 168, 0.12), 0 20px 48px rgba(0, 0, 0, 0.6);
+  --shadow-card-hover: 0 12px 36px rgba(0, 0, 0, 0.6), 0 0 50px rgba(0, 112, 168, 0.28), 0 24px 64px rgba(0, 112, 168, 0.16);
 
-  /* Dark mode: the round icon on a small white circle; the wordmark in white. */
   --logo-plate: #ffffff;
   --logo-plate-padding: 2px;
   --logo-wordmark-filter: brightness(0) invert(1);
+
+  /* ── Dark supreme extras ── */
+  --gradient-primary: linear-gradient(135deg, #003d5f 0%, #5ba8d6 50%, #8ccae6 100%);
+  --gradient-surface: linear-gradient(135deg, rgba(17, 17, 24, 0.95) 0%, rgba(24, 24, 31, 0.9) 100%);
+  --glass-bg: rgba(17, 17, 24, 0.82);
+  --glass-border: rgba(255, 255, 255, 0.12);
+  --glass-blur: blur(28px) saturate(190%);
+  --glow-accent: 0 0 35px rgba(91, 168, 214, 0.3);
+
+  /* ── Extended dark supreme variables ── */
+  --shadow-button-primary: 0 4px 16px rgba(0, 90, 140, 0.5);
+  --shadow-button-hover: 0 8px 24px rgba(91, 168, 214, 0.6);
+  --shadow-elevated: 0 20px 48px -10px rgba(0, 0, 0, 0.7), 0 8px 24px rgba(0, 112, 168, 0.2);
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.12);
+  --gradient-glow: radial-gradient(circle at 50% 0%, rgba(0, 112, 168, 0.25) 0%, transparent 75%);
+  --gradient-border: linear-gradient(135deg, rgba(255, 255, 255, 0.2), rgba(0, 112, 168, 0.4), rgba(255, 255, 255, 0.05));
+  --letter-spacing-tight: -0.03em;
 }

@@ -1,4 +1,4 @@
-import { MapPin, Search } from "lucide-react";
+import { MapPin, Navigation, Search } from "lucide-react";
 import { lazy, Suspense, useCallback, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import formStyles from "../../components/form.module.css";
@@ -169,6 +169,7 @@ export function SubAreaField({
     <div className={formStyles.field}>
       <span className={formStyles.label}>{label}</span>
       <button type="button" className={styles.placeButton} onClick={() => setOpen(true)} aria-invalid={error ? true : undefined}>
+        <Navigation aria-hidden size={18} />
         <span className={value ? undefined : styles.placeEmpty}>{value?.name ?? t("ride.subArea.choose")}</span>
       </button>
       {error && <p className={formStyles.error}>{error}</p>}

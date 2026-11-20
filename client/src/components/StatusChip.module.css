@@ -1,40 +1,69 @@
+/* ── Status Chips — SUPREME TIER LUXURY EDITION ── */
+
 .chip {
   display: inline-flex;
   align-items: center;
-  padding: 2px var(--space-3);
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 14px;
   border-radius: var(--radius-pill);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
-  line-height: 1.6;
+  font-size: 0.785rem;
+  font-weight: 750;
+  line-height: 1.4;
   white-space: nowrap;
+  letter-spacing: 0.025em;
+  border: 1px solid transparent;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  transition: transform 250ms cubic-bezier(0.4, 0, 0.2, 1),
+              box-shadow 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  user-select: none;
+}
+
+.chip:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
 }
 
 .green {
   background: var(--status-green-bg);
   color: var(--status-green-fg);
+  border-color: rgba(21, 128, 61, 0.22);
 }
 
 .amber {
   background: var(--status-amber-bg);
   color: var(--status-amber-fg);
+  border-color: rgba(161, 98, 7, 0.22);
 }
 
 .indigo {
   background: var(--status-indigo-bg);
   color: var(--status-indigo-fg);
+  border-color: rgba(67, 56, 202, 0.22);
 }
 
 .purple {
   background: var(--status-purple-bg);
   color: var(--status-purple-fg);
+  border-color: rgba(126, 34, 206, 0.22);
 }
 
 .red {
   background: var(--status-red-bg);
   color: var(--status-red-fg);
+  border-color: rgba(211, 32, 32, 0.22);
 }
 
 .grey {
   background: var(--status-grey-bg);
   color: var(--status-grey-fg);
+  border-color: rgba(85, 98, 117, 0.22);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chip,
+  .chip:hover {
+    transition: none;
+    transform: none;
+  }
 }

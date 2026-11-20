@@ -1,9 +1,10 @@
-/* Notifications page (B2c). Colours only from theme tokens. */
+/* ── Notifications — SUPREME TIER PREMIUM ── */
 
 .page {
   display: grid;
-  gap: var(--space-4);
-  max-width: 720px;
+  gap: var(--space-5);
+  max-width: 760px;
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .header {
@@ -13,6 +14,7 @@
   gap: var(--space-3);
 }
 
+/* Glassmorphic luxury notification list */
 .list {
   margin: 0;
   padding: 0;
@@ -21,29 +23,49 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   overflow: hidden;
+  box-shadow: var(--shadow-card);
+  transition: box-shadow 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
+
+.list:hover {
+  box-shadow: var(--shadow-card-hover);
+}
+
+.list > li {
+  animation: fadeInUp 400ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.list > li:nth-child(1) { animation-delay: 0ms; }
+.list > li:nth-child(2) { animation-delay: 50ms; }
+.list > li:nth-child(3) { animation-delay: 100ms; }
+.list > li:nth-child(4) { animation-delay: 150ms; }
+.list > li:nth-child(5) { animation-delay: 200ms; }
+.list > li:nth-child(6) { animation-delay: 250ms; }
 
 .list > li + li {
   border-top: 1px solid var(--color-border);
 }
 
 .item {
+  position: relative;
   display: flex;
   align-items: flex-start;
-  gap: var(--space-3);
+  gap: var(--space-4);
   width: 100%;
-  min-height: 64px;
-  padding: var(--space-3) var(--space-4);
+  min-height: 72px;
+  padding: var(--space-4) var(--space-5);
   border: 0;
   background: transparent;
   color: var(--color-text);
   font: inherit;
   text-align: start;
   cursor: pointer;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .item:hover {
-  background: var(--color-surface-muted);
+  background: var(--color-accent-soft);
+  padding-left: calc(var(--space-5) + 6px);
 }
 
 .item:focus-visible {
@@ -51,29 +73,48 @@
   outline-offset: -2px;
 }
 
+.unread {
+  background: linear-gradient(90deg, rgba(0, 78, 122, 0.05) 0%, transparent 100%);
+}
+
+.unread::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 3.5px;
+  background: var(--gradient-primary);
+}
+
+/* Glowing unread indicator */
 .dot {
   flex: none;
-  width: 8px;
-  height: 8px;
-  margin-top: 8px;
+  width: 9px;
+  height: 9px;
+  margin-top: 6px;
   border-radius: var(--radius-pill);
   background: transparent;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .unread .dot {
   background: var(--color-accent);
+  box-shadow: 0 0 10px rgba(0, 78, 122, 0.6);
+  animation: pulse-glow 2s ease-in-out infinite;
 }
 
 .text {
   display: grid;
   flex: 1;
   min-width: 0;
-  gap: 2px;
+  gap: 4px;
 }
 
 .top {
   display: flex;
   align-items: baseline;
+  justify-content: space-between;
   gap: var(--space-2);
 }
 
@@ -81,19 +122,41 @@
   flex: 1;
   min-width: 0;
   overflow-wrap: anywhere;
+  line-height: 1.4;
+  font-size: var(--text-body);
+  font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
+  color: var(--color-text);
 }
 
 .unread .title {
   font-weight: var(--weight-bold);
+  color: var(--color-text);
 }
 
 .time {
   flex: none;
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
 }
 
 .body {
   color: var(--color-text-muted);
   overflow-wrap: anywhere;
+  line-height: 1.5;
+  font-size: var(--text-caption);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .list > li {
+    animation: none;
+  }
+  .unread .dot {
+    animation: none;
+  }
+  .item:hover {
+    padding-left: var(--space-5);
+  }
 }

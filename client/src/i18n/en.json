@@ -43,7 +43,9 @@
     "upcomingTitle": "Upcoming",
     "seeAll": "See all",
     "upcomingEmpty": "No upcoming activities yet.",
+    "upcomingSubtitle": "When you schedule a ride, meal, or campus task, your live countdown and itinerary will appear here.",
     "browseServices": "Browse services",
+    "quickExplore": "Quick start:",
     "quickActionsTitle": "Quick actions",
     "quick": {
       "about": "About Us",
