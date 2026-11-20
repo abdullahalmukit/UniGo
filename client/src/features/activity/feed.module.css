@@ -1,80 +1,186 @@
-/* Activity and Upcoming (B3b-1). Colours only from theme tokens. */
+/* ── Activity & Upcoming — SUPREME TIER LUXURY EDITION ── */
 
 .page {
   display: grid;
-  gap: var(--space-4);
+  gap: var(--space-5);
   max-width: 760px;
+  animation: fadeInUp 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+/* ── Filter Chips Bar ── */
 .chips {
   display: flex;
   gap: var(--space-2);
   overflow-x: auto;
+  scrollbar-width: none;
+  padding: 2px 0;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
 }
 
 .chip {
   flex: none;
-  min-height: var(--tap-target);
+  min-height: 40px;
   padding: 0 var(--space-4);
-  border: 1px solid var(--color-border);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
-  color: var(--color-text);
+  color: var(--color-text-muted);
   font: inherit;
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   cursor: pointer;
+  user-select: none;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.chip:hover {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 78, 122, 0.12);
 }
 
 .chip[aria-pressed="true"],
 .chip[aria-selected="true"] {
-  border-color: var(--color-accent);
-  background: var(--color-accent);
+  border-color: transparent;
+  background: var(--gradient-primary);
   color: var(--color-on-accent);
+  font-weight: var(--weight-bold);
+  box-shadow: 0 4px 14px rgba(0, 62, 97, 0.35);
+  transform: translateY(-1px) scale(1.02);
 }
 
+.chip:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* ── Tabs: Luxury Underline Segment ── */
 .tabs {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
-  border-bottom: 1px solid var(--color-border);
+  border-bottom: 2px solid var(--color-border);
+  margin-top: var(--space-1);
 }
 
 .tab {
+  position: relative;
   min-height: var(--tap-target);
   border: 0;
   border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
   background: transparent;
   color: var(--color-text-muted);
   font: inherit;
   font-weight: var(--weight-medium);
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-control) var(--radius-control) 0 0;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: var(--color-accent-soft);
 }
 
 .tab[aria-selected="true"] {
   border-bottom-color: var(--color-accent);
-  color: var(--color-text);
+  color: var(--color-accent);
+  font-weight: var(--weight-bold);
+  background: transparent;
+  box-shadow: inset 0 -2px 0 var(--color-accent), 0 2px 8px rgba(0, 78, 122, 0.2);
 }
 
+/* ── List & Activity Feed Cards ── */
 .list {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
 .card {
+  position: relative;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
+  border-left: 4px solid var(--color-accent);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 4px 12px rgba(0, 62, 97, 0.06), 0 16px 40px rgba(0, 62, 97, 0.04);
+  overflow: hidden;
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+/* Gradient border mask effect */
+.card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1px;
+  background: linear-gradient(135deg, rgba(0, 78, 122, 0.5) 0%, transparent 40%, rgba(0, 112, 168, 0.3) 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 350ms var(--transition-smooth);
+  pointer-events: none;
+}
+
+/* Ambient glow on hover */
+.card::after {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 100%;
+  background: radial-gradient(circle at 50% 0%, rgba(0, 78, 122, 0.08), transparent 70%);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 350ms var(--transition-smooth);
+}
+
+.card:nth-child(1) { animation-delay: 0ms; }
+.card:nth-child(2) { animation-delay: 70ms; }
+.card:nth-child(3) { animation-delay: 140ms; }
+.card:nth-child(4) { animation-delay: 210ms; }
+.card:nth-child(5) { animation-delay: 280ms; }
+.card:nth-child(6) { animation-delay: 350ms; }
+.card:nth-child(7) { animation-delay: 420ms; }
+.card:nth-child(8) { animation-delay: 490ms; }
+
+.card:hover {
+  transform: translateY(-8px) scale(1.015);
+  box-shadow: var(--shadow-card-hover), 0 0 30px rgba(0, 78, 122, 0.12);
+  border-color: rgba(0, 78, 122, 0.3);
+  border-left-color: var(--color-accent);
+}
+
+.card:hover::before {
+  opacity: 1;
+}
+
+.card:hover::after {
+  opacity: 1;
 }
 
 .cardLink {
+  position: relative;
+  z-index: 1;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   color: var(--color-text);
   text-decoration: none;
 }
@@ -84,12 +190,15 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-2);
+  flex-wrap: wrap;
 }
 
 .kind {
   color: var(--color-text-muted);
   font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
 .when {
@@ -98,35 +207,53 @@
   flex-wrap: wrap;
   gap: var(--space-2);
   font-weight: var(--weight-bold);
+  font-size: 1.1rem;
+  letter-spacing: -0.01em;
 }
 
 .countdown {
-  padding: 2px var(--space-2);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px var(--space-3);
   border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  color: var(--color-text);
+  background: var(--gradient-primary);
+  color: #ffffff;
   font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  box-shadow: 0 2px 10px rgba(0, 78, 122, 0.35);
+  animation: pulse-glow 2.5s ease-in-out infinite;
+  letter-spacing: 0.01em;
 }
 
 .meta {
   display: flex;
   flex-wrap: wrap;
   gap: var(--space-3);
+  align-items: center;
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
 }
 
 .amount {
   color: var(--color-text);
   font-weight: var(--weight-bold);
+  font-size: 1.15rem;
+  letter-spacing: -0.02em;
 }
 
 .bookings {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: var(--space-3);
-  margin: 0;
-  padding: 0;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-3);
   list-style: none;
+  background: var(--color-surface-muted);
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
 }
 
 .booking {
@@ -134,6 +261,11 @@
   gap: var(--space-2);
   padding-top: var(--space-3);
   border-top: 1px solid var(--color-border);
+}
+
+.booking:first-child {
+  padding-top: 0;
+  border-top: 0;
 }
 
 .bookingTop {
@@ -144,18 +276,48 @@
 }
 
 .textLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--color-accent);
   font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
+  transition: all 200ms var(--transition-smooth);
+  text-decoration: none;
+}
+
+.textLink:hover {
+  opacity: 0.8;
+  transform: translateX(3px);
 }
 
 .actions {
+  position: relative;
+  z-index: 1;
   display: grid;
   gap: var(--space-2);
+  margin-top: var(--space-1);
 }
 
 .note {
   margin: 0;
+  padding: var(--space-2) var(--space-3);
+  border-radius: var(--radius-control);
+  background: var(--color-surface-muted);
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  border: 1px solid var(--color-border);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .card,
+  .countdown {
+    animation: none !important;
+  }
+  .card:hover,
+  .chip:hover,
+  .textLink:hover {
+    transform: none !important;
+  }
 }

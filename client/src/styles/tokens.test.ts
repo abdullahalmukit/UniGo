@@ -62,16 +62,16 @@ describe.each([
 describe("palette", () => {
   it("uses the agreed brand colours", () => {
     expect(light).toMatchObject({
-      "--color-bg": "#f4f8fd",
+      "--color-bg": "#f8f9fc",
       "--color-surface": "#ffffff",
-      "--color-accent": "#0a6fd6",
-      "--color-text": "#0f1b2d",
+      "--color-accent": "#004e7a",
+      "--color-text": "#0f1729",
     });
     expect(dark).toMatchObject({
-      "--color-bg": "#0b1220",
-      "--color-surface": "#131c2e",
-      "--color-accent": "#4da3ff",
-      "--color-text": "#e6edf7",
+      "--color-bg": "#09090b",
+      "--color-surface": "#111118",
+      "--color-accent": "#5ba8d6",
+      "--color-text": "#f0f0f8",
     });
   });
 });

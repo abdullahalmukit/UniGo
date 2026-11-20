@@ -23,11 +23,36 @@ export function Card({ children, className = "" }: { children: ReactNode; classN
   return <div className={`${styles.card} ${className}`}>{children}</div>;
 }
 
-export function EmptyState({ icon: Icon, text, action }: { icon: LucideIcon; text: string; action?: ReactNode }) {
+export function EmptyState({
+  icon: Icon,
+  illustration,
+  text,
+  subtitle,
+  action,
+  className = "",
+}: {
+  icon?: LucideIcon;
+  illustration?: string;
+  text: string;
+  subtitle?: string;
+  action?: ReactNode;
+  className?: string;
+}) {
   return (
-    <div className={styles.empty}>
-      <Icon className={styles.emptyIcon} aria-hidden strokeWidth={1.75} />
-      <p className={styles.emptyText}>{text}</p>
+    <div className={`${styles.empty} ${className}`}>
+      {illustration ? (
+        <div className={styles.emptyArtContainer}>
+          <img src={illustration} alt="" aria-hidden className={styles.emptyArt} width={76} height={76} />
+        </div>
+      ) : Icon ? (
+        <div className={styles.emptyIconContainer}>
+          <Icon className={styles.emptyIcon} aria-hidden strokeWidth={1.75} />
+        </div>
+      ) : null}
+      <div className={styles.emptyContent}>
+        <p className={styles.emptyText}>{text}</p>
+        {subtitle && <p className={styles.emptySubtitle}>{subtitle}</p>}
+      </div>
       {action}
     </div>
   );

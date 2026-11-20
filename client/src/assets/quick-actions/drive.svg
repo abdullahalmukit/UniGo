@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <filter id="car-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#0070a8" flood-opacity="0.45"/>
+    </filter>
+    <linearGradient id="car-body-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="40%" stop-color="#0070a8"/>
+      <stop offset="100%" stop-color="#003858"/>
+    </linearGradient>
+    <linearGradient id="windshield-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#64748b"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+    <linearGradient id="headlight-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="50%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="36" cy="40" r="26" fill="#0070a8" opacity="0.25" filter="blur(8px)"/>
+
+  <!-- Ground Road Shadow -->
+  <ellipse cx="36" cy="61" rx="25" ry="6" fill="#00253d" opacity="0.3"/>
+
+  <!-- 3D Sleek Sports Car (Front 3/4 View) -->
+  <g filter="url(#car-shadow)">
+    <!-- Wheels -->
+    <rect x="13" y="46" width="7" height="15" rx="3.5" fill="#0f172a"/>
+    <rect x="52" y="46" width="7" height="15" rx="3.5" fill="#0f172a"/>
+
+    <!-- Aerodynamic Chassis/Body -->
+    <path d="M22 28L25 18C26 15 28 14 31 14H41C44 14 46 15 47 18L50 28C57 30 60 36 60 45C60 52 56 56 50 57H22C16 56 12 52 12 45C12 36 15 30 22 28Z" fill="url(#car-body-grad)"/>
+
+    <!-- Tinted Windshield with Reflection -->
+    <path d="M25 27L27 19C27.5 17.5 29 17 31 17H41C43 17 44.5 17.5 45 19L47 27Z" fill="url(#windshield-grad)"/>
+    <polygon points="29,18 34,18 31,27 27,27" fill="#ffffff" opacity="0.3"/>
+
+    <!-- Hood Lines -->
+    <path d="M27 33L36 36L45 33" stroke="#38bdf8" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+
+    <!-- High-Intensity LED Headlights -->
+    <ellipse cx="19" cy="41" rx="4.5" ry="3" fill="url(#headlight-grad)" filter="drop-shadow(0 0 6px #38bdf8)"/>
+    <ellipse cx="53" cy="41" rx="4.5" ry="3" fill="url(#headlight-grad)" filter="drop-shadow(0 0 6px #38bdf8)"/>
+
+    <!-- Front Grille & License / UniGo Tag -->
+    <rect x="28" y="44" width="16" height="8" rx="2.5" fill="#0f172a" stroke="#38bdf8" stroke-width="1"/>
+    <!-- UniGo Glowing "U" Emblem on Hood -->
+    <circle cx="36" cy="31" r="2.8" fill="#ffffff" filter="drop-shadow(0 0 4px #38bdf8)"/>
+  </g>
+
+  <!-- Speed Motion Streaks -->
+  <line x1="8" y1="58" x2="16" y2="58" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+  <line x1="56" y1="58" x2="64" y2="58" stroke="#38bdf8" stroke-width="2" stroke-linecap="round" opacity="0.7"/>
+</svg>

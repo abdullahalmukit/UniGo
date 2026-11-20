@@ -1,19 +1,49 @@
+/* ── Profile Page — SUPREME TIER PREMIUM ── */
+
 .photoCard {
+  position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
+  gap: var(--space-5);
+  padding: var(--space-5);
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 62, 97, 0.05);
+  overflow: hidden;
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.photoCard::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.photoCard:hover {
+  transform: translateY(-3px) scale(1.008);
+  border-color: rgba(0, 78, 122, 0.25);
+  box-shadow: var(--shadow-card-hover), var(--glow-accent);
 }
 
 .photoText {
   flex: 1;
   display: grid;
-  gap: var(--space-2);
+  gap: var(--space-3);
   min-width: 0;
 }
 
 .name {
-  font-size: var(--text-title);
+  font-size: 1.5rem;
   font-weight: var(--weight-bold);
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  line-height: 1.25;
 }
 
 .photoButtons {
@@ -22,22 +52,28 @@
   gap: var(--space-2);
 }
 
+/* Metadata grid */
 .facts {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: var(--space-2) var(--space-4);
+  gap: var(--space-3) var(--space-5);
   margin: 0;
+  align-items: baseline;
 }
 
 .facts dt {
   color: var(--color-text-muted);
   font-size: var(--text-caption);
   align-self: center;
+  font-weight: var(--weight-medium);
+  letter-spacing: 0.01em;
 }
 
 .facts dd {
   margin: 0;
   min-width: 0;
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
 }
 
 .status {
@@ -48,31 +84,56 @@
 }
 
 .inlineLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   color: var(--color-accent);
   font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.inlineLink:hover {
+  opacity: 0.8;
+  transform: translateX(2px);
 }
 
 .locked {
   margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-left: 3px solid var(--status-amber-fg);
+  border-radius: var(--radius-control);
+  color: var(--color-text-muted);
+  font-size: var(--text-caption);
+  line-height: 1.45;
 }
 
 @media (max-width: 420px) {
   .photoCard {
     flex-direction: column;
     text-align: center;
+    padding: var(--space-4);
   }
-
   .photoButtons {
     justify-content: center;
   }
-
   .facts {
     grid-template-columns: 1fr;
-    gap: 2px;
+    gap: 4px;
   }
-
   .facts dd + dt {
-    margin-top: var(--space-2);
+    margin-top: var(--space-3);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .photoCard {
+    animation: none;
+  }
+  .photoCard:hover,
+  .inlineLink:hover {
+    transform: none;
   }
 }

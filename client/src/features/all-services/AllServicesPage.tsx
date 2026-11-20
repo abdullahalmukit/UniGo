@@ -72,13 +72,27 @@ export function AllServicesPage() {
 
       {/* Top 4 Service Categories */}
       <div className={styles.grid}>
-        {featureList.map(({ key, icon: Icon }) => (
-          <article key={key} className={styles.tile}>
-            <span className={styles.icon}>
-              <Icon aria-hidden strokeWidth={1.9} />
+        {featureList.map(({ key, icon: Icon, picture }) => (
+          <article key={key} className={`${styles.tile} ${styles[key] || ""}`}>
+            <span className={styles.tileBadge} aria-hidden>
+              <Icon strokeWidth={2.2} size={18} />
             </span>
-            <h2 className={styles.name}>{t(`features.${key}.name`)}</h2>
-            <p className={styles.hint}>{t(`features.${key}.hint`)}</p>
+            <div className={styles.tileArt}>
+              <img
+                src={picture.src}
+                srcSet={picture.srcSet}
+                sizes={picture.sizes}
+                width={picture.width}
+                height={picture.height}
+                alt=""
+                decoding="async"
+                className={styles.tileImage}
+              />
+            </div>
+            <div className={styles.tileInfo}>
+              <h2 className={styles.name}>{t(`features.${key}.name`)}</h2>
+              <p className={styles.hint}>{t(`features.${key}.hint`)}</p>
+            </div>
             <div className={styles.actions}>
               {isGuest ? (
                 <>
@@ -106,14 +120,21 @@ export function AllServicesPage() {
 
       {/* Unified All-Service Requests Feed (feature/all-service-requests) */}
       <section className={styles.feedSection} aria-label={t("services.requestsTitle")}>
-        <div className={styles.sectionHeader}>
-          <h2 className={styles.sectionTitle}>{t("services.requestsTitle")}</h2>
-          <p className={styles.sectionSubtitle}>{t("services.requestsSubtitle")}</p>
+        <div className={styles.sectionTag}>
+          <span className={styles.pulseDot} aria-hidden />
+          <span>LIVE CAMPUS FEED</span>
         </div>
 
-        <div className={styles.feedControls}>
+        <div className={styles.feedHeadingRow}>
+          <div className={styles.feedTitles}>
+            <h2 className={styles.sectionTitle}>{t("services.requestsTitle")}</h2>
+            <p className={styles.sectionSubtitle}>{t("services.requestsSubtitle")}</p>
+          </div>
+
           <div className={styles.searchBar}>
-            <Search className={styles.searchIcon} size={18} aria-hidden />
+            <span className={styles.searchIconWrapper} aria-hidden>
+              <Search className={styles.searchIcon} size={18} />
+            </span>
             <input
               type="search"
               className={styles.searchInput}
@@ -123,7 +144,9 @@ export function AllServicesPage() {
               aria-label={t("services.searchPlaceholder")}
             />
           </div>
+        </div>
 
+        <div className={styles.chipsWrapper}>
           <div className={styles.chips} role="group" aria-label={t("services.requestsTitle")}>
             {FEATURES.map(({ key, labelKey }) => (
               <button
@@ -157,7 +180,7 @@ export function AllServicesPage() {
             icon={SearchX}
             text={t("services.emptyRequests")}
             action={
-              <Link to="/service/requests/new" className={buttonStyles.secondary} style={{ marginTop: "12px" }}>
+              <Link to="/service/requests/new" className={styles.emptyAction}>
                 + {t("service.newRequest")}
               </Link>
             }

@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <filter id="home-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#059669" flood-opacity="0.4"/>
+    </filter>
+    <linearGradient id="roof-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="45%" stop-color="#10b981"/>
+      <stop offset="100%" stop-color="#047857"/>
+    </linearGradient>
+    <linearGradient id="wall-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+    <linearGradient id="plus-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="glow-light" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="100%" stop-color="#f59e0b"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="36" cy="40" r="26" fill="#10b981" opacity="0.22" filter="blur(8px)"/>
+
+  <!-- Ground Shadow -->
+  <ellipse cx="36" cy="60" rx="23" ry="6" fill="#047857" opacity="0.2"/>
+
+  <!-- 3D Cottage House -->
+  <g filter="url(#home-shadow)">
+    <!-- Chimney & Smoke -->
+    <rect x="42" y="16" width="7" height="14" rx="2" fill="#047857"/>
+    <circle cx="47" cy="13" r="3" fill="#ffffff" opacity="0.6"/>
+    <circle cx="51" cy="9" r="4" fill="#ffffff" opacity="0.4"/>
+
+    <!-- Walls -->
+    <rect x="18" y="32" width="36" height="26" rx="4" fill="url(#wall-grad)"/>
+
+    <!-- Overhanging Gable Roof -->
+    <path d="M12 34L36 14L60 34L54 36L36 20L18 36Z" fill="url(#roof-grad)"/>
+
+    <!-- Warm Glowing Window -->
+    <rect x="39" y="37" width="10" height="10" rx="3" fill="url(#glow-light)" stroke="#b45309" stroke-width="1"/>
+    <line x1="44" y1="37" x2="44" y2="47" stroke="#b45309" stroke-width="0.8"/>
+    <line x1="39" y1="42" x2="49" y2="42" stroke="#b45309" stroke-width="0.8"/>
+
+    <!-- Arched Cozy Doorway -->
+    <path d="M24 58V43C24 40.5 26 38.5 28.5 38.5C31 38.5 33 40.5 33 43V58Z" fill="#0f172a"/>
+    <circle cx="31" cy="49" r="1.2" fill="#fef08a"/>
+  </g>
+
+  <!-- Floating 3D "Add +" Pill Badge -->
+  <g filter="drop-shadow(0 4px 8px rgba(2,132,199,0.45))">
+    <circle cx="52" cy="22" r="11" fill="url(#plus-grad)" stroke="#ffffff" stroke-width="2"/>
+    <path d="M52 16V28M46 22H58" stroke="#ffffff" stroke-width="3" stroke-linecap="round"/>
+  </g>
+</svg>

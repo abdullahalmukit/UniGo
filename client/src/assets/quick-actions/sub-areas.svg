@@ -1,0 +1,53 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <filter id="map-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#7c3aed" flood-opacity="0.4"/>
+    </filter>
+    <linearGradient id="fold-1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#8b5cf6"/>
+      <stop offset="100%" stop-color="#6d28d9"/>
+    </linearGradient>
+    <linearGradient id="fold-2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#7c3aed"/>
+      <stop offset="100%" stop-color="#5b21b6"/>
+    </linearGradient>
+    <linearGradient id="fold-3" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#a78bfa"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <linearGradient id="radar-cyan" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#67e8f9"/>
+      <stop offset="100%" stop-color="#06b6d4"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="36" cy="38" r="26" fill="#7c3aed" opacity="0.25" filter="blur(8px)"/>
+
+  <!-- 3D Tri-Fold Map in Isometric Perspective -->
+  <g filter="url(#map-shadow)">
+    <!-- Panel 1 (Left) -->
+    <polygon points="12,24 28,18 28,52 12,58" fill="url(#fold-1)"/>
+    <!-- Panel 2 (Center) -->
+    <polygon points="28,18 44,24 44,58 28,52" fill="url(#fold-2)"/>
+    <!-- Panel 3 (Right) -->
+    <polygon points="44,24 60,18 60,52 44,58" fill="url(#fold-3)"/>
+
+    <!-- Map Contours & Trails -->
+    <path d="M14 36 Q 20 40 28 32 Q 36 24 44 40 Q 52 46 58 34" fill="none" stroke="#e0e7ff" stroke-width="2.2" stroke-linecap="round" opacity="0.8"/>
+    <path d="M16 46 Q 22 48 28 42 Q 36 36 44 48 Q 50 52 56 42" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+    <path d="M15 28 Q 20 30 28 24 Q 38 18 44 30" fill="none" stroke="#c4b5fd" stroke-width="1.5" stroke-linecap="round" opacity="0.5"/>
+  </g>
+
+  <!-- Holographic Floating GPS Radar Beacon -->
+  <g filter="drop-shadow(0 4px 10px rgba(6,182,212,0.6))">
+    <ellipse cx="36" cy="42" rx="10" ry="4" stroke="url(#radar-cyan)" stroke-width="1.8" fill="none"/>
+    <circle cx="36" cy="42" r="3" fill="#06b6d4"/>
+    <!-- Pin Above Center -->
+    <path d="M36 20C32.7 20 30 22.7 30 26C30 30 36 38 36 38C36 38 42 30 42 26C42 22.7 39.3 20 36 20Z" fill="url(#radar-cyan)"/>
+    <circle cx="36" cy="25" r="2" fill="#ffffff"/>
+  </g>
+
+  <!-- Sparkling Star -->
+  <circle cx="56" cy="14" r="1.5" fill="#ffffff"/>
+</svg>

@@ -1,34 +1,69 @@
+/* ── Brand Logo — SUPREME TIER LUXURY EDITION ── */
+
 .mark {
   display: inline-flex;
   align-items: center;
-  gap: 10px;
+  gap: 12px;
+  cursor: pointer;
+  user-select: none;
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mark:hover {
+  opacity: 0.95;
+  transform: translateY(-1px);
 }
 
 .iconPlate {
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
   padding: var(--logo-plate-padding);
   border-radius: 50%;
   background: var(--logo-plate);
+  box-shadow: 0 2px 10px rgba(0, 78, 122, 0.18), 0 0 12px rgba(0, 112, 168, 0.1);
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mark:hover .iconPlate {
+  box-shadow: 0 4px 22px rgba(0, 78, 122, 0.4), 0 0 24px rgba(0, 112, 168, 0.25);
+  transform: scale(1.08) rotate(3deg);
 }
 
 .icon {
   display: block;
   width: 32px;
   height: 32px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.12));
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* 2519 x 613 source: about 66 x 16 */
 .wordmark {
   display: block;
   height: 16px;
   width: auto;
   filter: var(--logo-wordmark-filter);
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mark:hover .wordmark {
+  transform: translateX(1px);
 }
 
 .logo {
   display: inline-block;
   width: 100%;
-  max-width: 280px;
+  max-width: 290px;
+  filter: drop-shadow(0 4px 18px rgba(0, 78, 122, 0.18));
+  transition: transform 350ms cubic-bezier(0.4, 0, 0.2, 1),
+              filter 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.logo:hover {
+  transform: translateY(-2px) scale(1.02);
+  filter: drop-shadow(0 8px 30px rgba(0, 78, 122, 0.3));
 }
 
 .logoLight,
@@ -36,6 +71,7 @@
   display: block;
   width: 100%;
   height: auto;
+  transition: opacity 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .logoDark,
@@ -45,4 +81,18 @@
 
 :global([data-theme="dark"]) .logoDark {
   display: block;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mark,
+  .mark:hover,
+  .iconPlate,
+  .mark:hover .iconPlate,
+  .wordmark,
+  .mark:hover .wordmark,
+  .logo,
+  .logo:hover {
+    transition: none;
+    transform: none;
+  }
 }

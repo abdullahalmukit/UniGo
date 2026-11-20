@@ -1,18 +1,18 @@
 import {
-  CarFront,
   ExternalLink,
-  HousePlus,
-  Info,
-  LifeBuoy,
-  Map as MapIcon,
-  MapPin,
-  Star,
-  TicketPercent,
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 import { featureList } from "../../app/feature-list";
+import aboutArt from "../../assets/quick-actions/about.svg";
+import savedAddressesArt from "../../assets/quick-actions/saved-addresses.svg";
+import addHomeArt from "../../assets/quick-actions/add-home.svg";
+import subAreasArt from "../../assets/quick-actions/sub-areas.svg";
+import promosArt from "../../assets/quick-actions/promos.svg";
+import driveArt from "../../assets/quick-actions/drive.svg";
+import supportArt from "../../assets/quick-actions/support.svg";
+import rateUsArt from "../../assets/quick-actions/rate-us.svg";
 import { BottomSheet } from "../../components/form";
 import { buttonStyles, Section } from "../../components/ui";
 import type { Banner, SpotlightItem } from "../content/content-api";
@@ -22,15 +22,20 @@ import styles from "./HomePage.module.css";
 
 const SEEN_STORIES_KEY = "unigo_seen_stories";
 
-const quickActions: { key: string; icon: typeof Info; to?: string }[] = [
-  { key: "about", icon: Info },
-  { key: "savedAddresses", icon: MapPin, to: "/account/addresses" },
-  { key: "addHome", icon: HousePlus, to: "/account/addresses/new?label=HOME" },
-  { key: "subAreas", icon: MapIcon, to: "/account/sub-areas" },
-  { key: "promos", icon: TicketPercent, to: "/promos" },
-  { key: "drive", icon: CarFront, to: "/drive" },
-  { key: "support", icon: LifeBuoy, to: "/account/support" },
-  { key: "rateUs", icon: Star },
+const quickActions: {
+  key: string;
+  image: string;
+  to?: string;
+  accentClass: string;
+}[] = [
+  { key: "about", image: aboutArt, accentClass: "qaAbout" },
+  { key: "savedAddresses", image: savedAddressesArt, to: "/account/addresses", accentClass: "qaSavedAddresses" },
+  { key: "addHome", image: addHomeArt, to: "/account/addresses/new?label=HOME", accentClass: "qaAddHome" },
+  { key: "subAreas", image: subAreasArt, to: "/account/sub-areas", accentClass: "qaSubAreas" },
+  { key: "promos", image: promosArt, to: "/promos", accentClass: "qaPromos" },
+  { key: "drive", image: driveArt, to: "/drive", accentClass: "qaDrive" },
+  { key: "support", image: supportArt, to: "/account/support", accentClass: "qaSupport" },
+  { key: "rateUs", image: rateUsArt, accentClass: "qaRateUs" },
 ];
 
 export function HomePage() {
@@ -134,31 +139,41 @@ export function HomePage() {
       </Section>
 
       <Section title={t("home.quickActionsTitle")}>
-        <ul className={styles.quickActions}>
-          {quickActions.map(({ key, icon: Icon, to }) => {
-            const content = (
-              <>
-                <span className={styles.quickIcon}>
-                  <Icon aria-hidden strokeWidth={1.9} />
-                </span>
-                <span>{t(`home.quick.${key}`)}</span>
-              </>
-            );
-            return (
-              <li key={key}>
-                {to ? (
-                  <Link to={to} className={styles.quickAction}>
-                    {content}
-                  </Link>
-                ) : (
-                  <button type="button" className={styles.quickAction} disabled>
-                    {content}
-                  </button>
-                )}
-              </li>
-            );
-          })}
-        </ul>
+        <div className={styles.quickActionsContainer}>
+          <ul className={styles.quickActions}>
+            {quickActions.map(({ key, image, to, accentClass }) => {
+              const content = (
+                <>
+                  <div className={`${styles.quickIconContainer} ${styles[accentClass] || ""}`}>
+                    <img
+                      src={image}
+                      alt=""
+                      aria-hidden
+                      className={styles.quickArtImage}
+                      width={52}
+                      height={52}
+                      loading="lazy"
+                    />
+                  </div>
+                  <span className={styles.quickLabel}>{t(`home.quick.${key}`)}</span>
+                </>
+              );
+              return (
+                <li key={key}>
+                  {to ? (
+                    <Link to={to} className={`${styles.quickAction} ${styles[accentClass] || ""}`}>
+                      {content}
+                    </Link>
+                  ) : (
+                    <button type="button" className={`${styles.quickAction} ${styles[accentClass] || ""}`} disabled>
+                      {content}
+                    </button>
+                  )}
+                </li>
+              );
+            })}
+          </ul>
+        </div>
       </Section>
 
       {spotlight.length > 0 && (

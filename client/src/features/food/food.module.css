@@ -1,21 +1,46 @@
-/* Food Delivery panels (B4). Colours only from theme tokens. */
+/* ── Food Delivery panels — SUPREME TIER PREMIUM ── */
 
 .panel {
+  position: relative;
   display: grid;
-  gap: var(--space-3);
-  padding: var(--space-4);
+  gap: var(--space-4);
+  padding: var(--space-5);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.panel::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+  opacity: 0.9;
+}
+
+.panel:hover {
+  transform: translateY(-2px);
+  border-color: rgba(0, 78, 122, 0.25);
+  box-shadow: var(--shadow-card-hover), var(--glow-accent);
 }
 
 .title {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: var(--space-2);
   margin: 0;
   font-size: var(--text-body);
   font-weight: var(--weight-bold);
+  letter-spacing: -0.015em;
+  color: var(--color-text);
 }
 
 .ok,
@@ -23,38 +48,50 @@
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  padding: 2px var(--space-2);
-  border-radius: 999px;
+  padding: 3px var(--space-3);
+  border-radius: var(--radius-pill);
   font-size: var(--text-caption);
+  font-weight: var(--weight-bold);
+  letter-spacing: 0.01em;
+  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .ok {
   background: var(--status-green-bg);
   color: var(--status-green-fg);
+  border: 1px solid rgba(21, 128, 61, 0.2);
+  box-shadow: 0 1px 3px rgba(21, 128, 61, 0.1);
 }
 
 .waiting {
   background: var(--status-amber-bg);
   color: var(--status-amber-fg);
+  border: 1px solid rgba(161, 98, 7, 0.2);
+  box-shadow: 0 1px 3px rgba(161, 98, 7, 0.1);
 }
 
 .facts {
   display: grid;
   grid-template-columns: max-content 1fr;
-  gap: var(--space-1) var(--space-3);
+  gap: var(--space-2) var(--space-4);
   margin: 0;
+  align-items: baseline;
 }
 
 .facts dt {
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  font-weight: var(--weight-medium);
 }
 
 .facts dd {
   margin: 0;
   white-space: pre-wrap;
+  color: var(--color-text);
+  font-weight: var(--weight-medium);
 }
 
+/* Payment method selector buttons */
 .methods {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -63,59 +100,117 @@
 
 .method {
   min-height: var(--tap-target);
-  border: 1px solid var(--color-border);
+  padding: 0 var(--space-2);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
+  font-weight: var(--weight-medium);
   cursor: pointer;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.method:hover:not([aria-checked="true"]) {
+  border-color: var(--color-accent);
+  background: var(--color-accent-soft);
+  transform: translateY(-2px);
+  box-shadow: 0 2px 8px rgba(0, 62, 97, 0.12);
 }
 
 .method[aria-checked="true"] {
   border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: var(--gradient-primary);
+  color: #ffffff;
   font-weight: var(--weight-bold);
+  box-shadow: 0 4px 14px rgba(0, 62, 97, 0.35);
+  transform: translateY(-1px);
+}
+
+.method:active {
+  transform: scale(0.97);
 }
 
 .approvals {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin: 0;
   padding-left: var(--space-4);
 }
 
 .receipt {
   display: grid;
-  gap: var(--space-1);
+  gap: var(--space-2);
   margin: 0;
 }
 
 .receipt img {
   max-width: 100%;
-  max-height: 320px;
-  border-radius: var(--radius-control);
+  max-height: 340px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--color-border);
   object-fit: contain;
   background: var(--color-bg);
+  box-shadow: var(--shadow-card);
+  transition: transform 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.receipt:hover img {
+  transform: scale(1.02);
 }
 
 .receipt figcaption {
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  line-height: 1.4;
 }
 
-/* Over-budget approval card inside the chat */
+/* Over-budget approval card inside chat */
 .card {
+  position: relative;
   display: grid;
-  gap: var(--space-2);
-  max-width: 320px;
-  padding: var(--space-3);
+  gap: var(--space-3);
+  max-width: 340px;
+  padding: var(--space-4);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
   background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+  overflow: hidden;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gradient-primary);
+}
+
+.card:hover {
+  transform: translateY(-3px);
+  border-color: rgba(0, 78, 122, 0.3);
+  box-shadow: var(--shadow-card-hover), var(--glow-accent);
 }
 
 .cardButtons {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: var(--space-2);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .panel {
+    animation: none;
+  }
+  .panel:hover,
+  .card:hover,
+  .method:hover,
+  .receipt:hover img,
+  .method:active {
+    transform: none;
+  }
 }

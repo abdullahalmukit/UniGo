@@ -1,19 +1,20 @@
-/* Uni Service Page (B5) */
+/* ── Service Page — SUPREME TIER PREMIUM ── */
 
 .page {
   display: flex;
   flex-direction: column;
-  gap: var(--space-4);
+  gap: var(--space-5);
   width: 100%;
   max-width: 100%;
   min-width: 0;
+  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--space-3);
+  gap: var(--space-4);
   flex-wrap: wrap;
 }
 
@@ -23,43 +24,58 @@
   flex-wrap: wrap;
 }
 
+/* Tabs Bar */
 .tabs {
   display: flex;
-  gap: var(--space-2);
+  gap: 4px;
   overflow-x: auto;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding-bottom: var(--space-1);
-  scrollbar-width: thin;
+  padding: 4px;
+  background: var(--color-surface-muted);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  scrollbar-width: none;
+}
+
+.tabs::-webkit-scrollbar {
+  display: none;
 }
 
 .tab {
   min-height: 44px;
-  padding: 0 var(--space-4);
-  border: 1px solid var(--color-border);
+  padding: 0 var(--space-5);
+  border: 0;
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
-  color: var(--color-text);
+  background: transparent;
+  color: var(--color-text-muted);
   font: inherit;
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.tab:hover {
-  background: var(--color-surface-muted);
+.tab:hover:not(.tabActive) {
+  color: var(--color-text);
+  background: rgba(0, 78, 122, 0.08);
+}
+
+.tab:active {
+  transform: scale(0.97);
 }
 
 .tabActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-text);
+  background: var(--gradient-primary);
+  color: #ffffff;
+  font-weight: var(--weight-bold);
+  box-shadow: 0 4px 14px rgba(0, 62, 97, 0.35);
 }
 
+/* Filters & Search */
 .filterSection {
   display: flex;
   flex-direction: column;
@@ -78,30 +94,38 @@
 
 .searchIcon {
   position: absolute;
-  left: var(--space-3);
+  left: var(--space-4);
   color: var(--color-text-muted);
   pointer-events: none;
+  transition: color 200ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .searchInput {
   width: 100%;
-  min-height: var(--tap-target);
-  padding: 0 var(--space-3) 0 calc(var(--space-3) + 26px);
-  border: 1px solid var(--color-border);
+  min-height: 48px;
+  padding: 0 var(--space-4) 0 calc(var(--space-4) + 28px);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-control);
   background: var(--color-surface);
   color: var(--color-text);
   font: inherit;
   font-size: var(--text-body);
   box-sizing: border-box;
-  transition: border-color 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 4px rgba(0, 78, 122, 0.12), var(--glow-accent);
 }
 
+.searchBar:focus-within .searchIcon {
+  color: var(--color-accent);
+}
+
+/* Category Filter Chips */
 .chips {
   display: flex;
   gap: var(--space-2);
@@ -109,14 +133,18 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  padding-bottom: var(--space-2);
-  scrollbar-width: thin;
+  padding: 2px 0 var(--space-2);
+  scrollbar-width: none;
+}
+
+.chips::-webkit-scrollbar {
+  display: none;
 }
 
 .chip {
-  min-height: 36px;
-  padding: 0 var(--space-3);
-  border: 1px solid var(--color-border);
+  min-height: 38px;
+  padding: 0 var(--space-4);
+  border: 1.5px solid var(--color-border);
   border-radius: var(--radius-pill);
   background: var(--color-surface);
   color: var(--color-text);
@@ -126,22 +154,35 @@
   cursor: pointer;
   white-space: nowrap;
   flex-shrink: 0;
-  transition: all 0.15s ease;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.02);
+  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-.chip:hover {
-  background: var(--color-surface-muted);
+.chip:hover:not(.chipActive) {
+  background: var(--color-accent-soft);
+  border-color: var(--color-accent);
+  color: var(--color-accent);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 62, 97, 0.12);
+}
+
+.chip:active {
+  transform: scale(0.96);
 }
 
 .chipActive {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: var(--color-accent-text);
+  background: var(--gradient-primary);
+  border-color: transparent;
+  color: #ffffff;
+  font-weight: var(--weight-bold);
+  box-shadow: 0 4px 14px rgba(0, 62, 97, 0.35);
+  transform: translateY(-1px);
 }
 
+/* Service Requests Grid with staggered fadeInUp */
 .list {
   display: grid;
-  gap: var(--space-3);
+  gap: var(--space-4);
   margin: 0;
   padding: 0;
   list-style: none;
@@ -150,10 +191,32 @@
   min-width: 0;
 }
 
+.list > li {
+  animation: fadeInUp 450ms cubic-bezier(0.4, 0, 0.2, 1) both;
+}
+
+.list > li:nth-child(1) { animation-delay: 0ms; }
+.list > li:nth-child(2) { animation-delay: 60ms; }
+.list > li:nth-child(3) { animation-delay: 120ms; }
+.list > li:nth-child(4) { animation-delay: 180ms; }
+.list > li:nth-child(5) { animation-delay: 240ms; }
+.list > li:nth-child(6) { animation-delay: 300ms; }
+
 @media (min-width: 768px) {
   .list {
     grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .page,
+  .list > li {
+    animation: none;
+  }
+  .tab:active,
+  .chip:hover,
+  .chip:active {
+    transform: none;
+  }
+}

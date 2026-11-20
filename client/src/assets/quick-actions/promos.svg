@@ -1,0 +1,42 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 72" width="72" height="72" fill="none">
+  <defs>
+    <filter id="ticket-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="7" stdDeviation="5" flood-color="#f59e0b" flood-opacity="0.45"/>
+    </filter>
+    <linearGradient id="gold-ticket" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a"/>
+      <stop offset="30%" stop-color="#fbbf24"/>
+      <stop offset="70%" stop-color="#f59e0b"/>
+      <stop offset="100%" stop-color="#b45309"/>
+    </linearGradient>
+    <linearGradient id="ticket-inner" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#78350f"/>
+      <stop offset="100%" stop-color="#451a03"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Ambient Glow -->
+  <circle cx="36" cy="38" r="26" fill="#f59e0b" opacity="0.25" filter="blur(8px)"/>
+
+  <!-- 3D Angled Golden VIP Ticket -->
+  <g filter="url(#ticket-shadow)" transform="rotate(-6 36 36)">
+    <!-- Base Ticket Outline with Semicircular Notches -->
+    <path d="M12 22C12 18 15 15 19 15H53C57 15 60 18 60 22V32C56.7 32 54 34.7 54 38C54 41.3 56.7 44 60 44V54C60 58 57 61 53 61H19C15 61 12 58 12 54V44C15.3 44 18 41.3 18 38C18 34.7 15.3 32 12 32V22Z" fill="url(#gold-ticket)"/>
+
+    <!-- Inner Core Badge -->
+    <path d="M15 24C15 21 17 19 20 19H52C55 19 57 21 57 24V30.5C53.5 31.8 51 35 51 38C51 41 53.5 44.2 57 45.5V52C57 55 55 57 52 57H20C17 57 15 55 15 52V45.5C18.5 44.2 21 41 21 38C21 35 18.5 31.8 15 30.5V24Z" fill="url(#ticket-inner)" stroke="#fef08a" stroke-width="1.2"/>
+
+    <!-- Dashed Tear-Off Coupon Line -->
+    <line x1="44" y1="21" x2="44" y2="55" stroke="#fef08a" stroke-width="1.8" stroke-dasharray="3 3" opacity="0.8"/>
+
+    <!-- Big 3D Bold "%" Badge -->
+    <text x="24" y="44" font-family="system-ui, sans-serif" font-weight="900" font-size="20" fill="url(#gold-ticket)" filter="drop-shadow(0 2px 4px rgba(0,0,0,0.4))">%</text>
+
+    <!-- Star Stamp on Stub -->
+    <polygon points="50,33 51.5,36.5 55,37 52.5,39.5 53.2,43 50,41 46.8,43 47.5,39.5 45,37 48.5,36.5" fill="url(#gold-ticket)"/>
+  </g>
+
+  <!-- Sparkle Bursts -->
+  <path d="M56 12L57.5 15.5L61 17L57.5 18.5L56 22L54.5 18.5L51 17L54.5 15.5Z" fill="#ffffff"/>
+  <path d="M14 50L15 52.5L17.5 53.5L15 54.5L14 57L13 54.5L10.5 53.5L13 52.5Z" fill="#ffffff" opacity="0.8"/>
+</svg>

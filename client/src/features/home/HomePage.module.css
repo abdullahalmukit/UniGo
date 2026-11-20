@@ -1,30 +1,83 @@
-/* Service cards: 2 x 2 on phones, 1 x 4 on desktop. White card, soft shadow,
-   bold title top-left, one-line subtitle, tag bottom-left, 3D art bottom-right. */
+/* ── Home Page — SUPREME TIER LUXURY EDITION ── */
+
+/* Feature cards: 3D perspective grid with luxury cards */
 .features {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: var(--space-3);
+  gap: var(--space-4);
+  perspective: 1200px;
 }
 
 .featureCard {
   position: relative;
   display: flex;
   flex-direction: column;
-  min-height: 184px;
-  padding: var(--space-4);
+  min-height: 200px;
+  padding: var(--space-5);
   overflow: hidden;
   background: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
-  transition:
-    transform 160ms ease,
-    box-shadow 160ms ease;
+  border-radius: calc(var(--radius-card) + 4px);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 6px 16px rgba(0, 62, 97, 0.05), 0 16px 36px rgba(0, 62, 97, 0.03);
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 400ms var(--transition-smooth), border-color 400ms var(--transition-smooth);
+  transform-style: preserve-3d;
+  animation: fadeInUp 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
+.featureCard:nth-child(1) { animation-delay: 0ms; }
+.featureCard:nth-child(2) { animation-delay: 80ms; }
+.featureCard:nth-child(3) { animation-delay: 160ms; }
+.featureCard:nth-child(4) { animation-delay: 240ms; }
+
+/* Gradient border with mask technique */
+.featureCard::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  padding: 1.5px;
+  background: linear-gradient(135deg, rgba(0, 78, 122, 0.8) 0%, rgba(0, 112, 168, 0.6) 50%, transparent 100%);
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  opacity: 0;
+  transition: opacity 400ms var(--transition-smooth);
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Ambient glow effect */
+.featureCard::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: inherit;
+  background: radial-gradient(circle at 50% 100%, rgba(0, 78, 122, 0.35), transparent 70%);
+  opacity: 0;
+  filter: blur(16px);
+  z-index: -1;
+  transition: opacity 400ms var(--transition-smooth);
+  pointer-events: none;
+}
+
+/* 3D hover lift & multi-layer shadow explosion */
 .featureCard:hover {
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
+  transform: perspective(1000px) translateY(-10px) scale(1.03) rotateX(2deg);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04), 0 20px 40px rgba(0, 78, 122, 0.18), 0 32px 64px rgba(0, 90, 140, 0.14), 0 0 0 1px rgba(0, 78, 122, 0.25);
+  border-color: rgba(0, 78, 122, 0.35);
+}
+
+.featureCard:hover::before {
+  opacity: 1;
+}
+
+.featureCard:hover::after {
+  opacity: 1;
+}
+
+.featureCard:active {
+  transform: perspective(1000px) translateY(-4px) scale(0.99) rotateX(1deg);
+  transition-duration: 150ms;
 }
 
 .featureName {
@@ -32,16 +85,24 @@
   z-index: 1;
   font-size: var(--text-title);
   font-weight: var(--weight-bold);
-  line-height: 1.25;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+  color: var(--color-text);
+  transition: color 300ms var(--transition-smooth);
+}
+
+.featureCard:hover .featureName {
+  color: var(--color-accent);
 }
 
 .featureHint {
   position: relative;
   z-index: 1;
-  margin-top: 2px;
+  margin-top: 6px;
   overflow: hidden;
   color: var(--color-text-muted);
   font-size: var(--text-caption);
+  letter-spacing: -0.01em;
   white-space: nowrap;
   text-overflow: ellipsis;
 }
@@ -51,28 +112,42 @@
   z-index: 1;
   align-self: flex-start;
   margin-top: auto;
-  padding: 3px var(--space-2);
+  padding: 5px 14px;
   border-radius: var(--radius-pill);
   background: var(--color-accent-soft);
   color: var(--color-accent);
   font-size: 0.75rem;
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
   line-height: 1.4;
+  letter-spacing: 0.02em;
+  border: 1px solid rgba(0, 78, 122, 0.12);
+  box-shadow: 0 2px 6px rgba(0, 78, 122, 0.08);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-/* The picture box: 92 x 72 on phones, 128 x 96 on desktop (the sizes
-   build-brand-assets.mjs makes). On phones the cards are too narrow for the tag
-   and the picture to share the bottom row, so the picture sits just above it. */
+.featureCard:hover .featureTag {
+  background: var(--gradient-primary);
+  color: #ffffff;
+  border-color: transparent;
+  box-shadow: 0 4px 16px rgba(0, 78, 122, 0.45);
+  transform: translateX(3px) scale(1.05);
+}
+
 .featureArt {
   position: absolute;
-  right: 10px;
+  right: 12px;
   bottom: 46px;
   display: flex;
   align-items: flex-end;
   justify-content: flex-end;
-  width: 92px;
-  height: 72px;
+  width: 96px;
+  height: 76px;
   pointer-events: none;
+  transition: transform 450ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 450ms var(--transition-smooth);
+}
+
+.featureCard:hover .featureArt {
+  transform: scale(1.14) translateY(-6px) rotate(2deg);
 }
 
 .featureArt img {
@@ -81,6 +156,12 @@
   max-height: 100%;
   width: auto;
   height: auto;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.12));
+  transition: filter 350ms var(--transition-smooth);
+}
+
+.featureCard:hover .featureArt img {
+  filter: drop-shadow(0 12px 24px rgba(0, 78, 122, 0.28));
 }
 
 .seeAll {
@@ -89,109 +170,316 @@
   min-height: var(--tap-target);
   color: var(--color-accent);
   font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
+  font-weight: var(--weight-bold);
+  letter-spacing: -0.01em;
+  transition: all 250ms var(--transition-smooth);
+  gap: var(--space-1);
 }
 
-/* Quick actions: small cards, brand-colour icons; one sideways row on phones,
-   centred on desktop. */
+.seeAll:hover {
+  gap: var(--space-2);
+  transform: translateX(3px);
+}
+
+/* ── Quick actions: SUPREME TIER LUXURY 3D ACTION DOCK ── */
+.quickActionsContainer {
+  position: relative;
+  width: 100%;
+}
+
 .quickActions {
   display: flex;
   gap: var(--space-3);
   margin: 0 calc(-1 * var(--space-4));
-  padding: var(--space-1) var(--space-4) var(--space-2);
+  padding: var(--space-3) var(--space-4) var(--space-5);
   overflow-x: auto;
   scroll-snap-type: x proximity;
   list-style: none;
+  scrollbar-width: none;
+}
+
+.quickActions::-webkit-scrollbar {
+  display: none;
 }
 
 .quickActions li {
   scroll-snap-align: start;
+  flex: 0 0 auto;
+}
+
+@media (min-width: 900px) {
+  .quickActions {
+    display: grid;
+    grid-template-columns: repeat(8, 1fr);
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-2) 0 var(--space-4);
+    overflow-x: visible;
+  }
+
+  .quickActions li {
+    width: 100%;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 899px) {
+  .quickActions {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: var(--space-3);
+    margin: 0;
+    padding: var(--space-2) 0 var(--space-4);
+    overflow-x: visible;
+  }
+
+  .quickActions li {
+    width: 100%;
+  }
 }
 
 .quickAction {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: flex-start;
   gap: var(--space-2);
-  width: 84px;
-  min-height: 92px;
-  padding: var(--space-3) var(--space-1);
+  width: 100%;
+  min-width: 98px;
+  min-height: 122px;
+  padding: var(--space-3) 8px var(--space-3);
   background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: calc(var(--radius-card) + 4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 62, 97, 0.05);
   color: var(--color-text);
-  font-size: 0.75rem;
-  line-height: 1.25;
-  text-align: center;
+  text-decoration: none;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 400ms var(--transition-smooth), border-color 400ms var(--transition-smooth);
+}
+
+:global([data-theme="dark"]) .quickAction {
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.06);
+}
+
+.quickAction:hover {
+  transform: translateY(-8px) scale(1.05);
+}
+
+.quickAction:active {
+  transform: translateY(-2px) scale(0.98);
 }
 
 .quickAction:disabled {
   cursor: default;
+  opacity: 0.75;
 }
 
+/* 3D Icon Container & Ambient Spotlights */
+.quickIconContainer {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 58px;
+  height: 58px;
+  border-radius: 18px;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 400ms var(--transition-smooth);
+}
+
+.quickArtImage {
+  display: block;
+  width: 48px;
+  height: 48px;
+  object-fit: contain;
+  filter: drop-shadow(0 6px 12px rgba(0, 0, 0, 0.22));
+  animation: quickFloat 4s ease-in-out infinite;
+  transition: transform 400ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 400ms var(--transition-smooth);
+}
+
+@keyframes quickFloat {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+.quickAction:hover .quickArtImage {
+  transform: scale(1.15) translateY(-5px);
+  animation-play-state: paused;
+}
+
+/* Category-specific Ambient Radial Spotlights and Hover Glows */
+.qaAbout .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(0, 112, 168, 0.25), rgba(0, 78, 122, 0.06) 70%, transparent 100%);
+}
+.qaAbout:hover {
+  border-color: rgba(0, 112, 168, 0.5);
+  box-shadow: 0 12px 30px rgba(0, 112, 168, 0.25), 0 0 20px rgba(0, 112, 168, 0.15);
+}
+
+.qaSavedAddresses .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(244, 63, 94, 0.25), rgba(225, 29, 72, 0.06) 70%, transparent 100%);
+}
+.qaSavedAddresses:hover {
+  border-color: rgba(244, 63, 94, 0.5);
+  box-shadow: 0 12px 30px rgba(244, 63, 94, 0.25), 0 0 20px rgba(244, 63, 94, 0.15);
+}
+
+.qaAddHome .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.06) 70%, transparent 100%);
+}
+.qaAddHome:hover {
+  border-color: rgba(16, 185, 129, 0.5);
+  box-shadow: 0 12px 30px rgba(16, 185, 129, 0.25), 0 0 20px rgba(16, 185, 129, 0.15);
+}
+
+.qaSubAreas .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(124, 58, 237, 0.25), rgba(109, 40, 217, 0.06) 70%, transparent 100%);
+}
+.qaSubAreas:hover {
+  border-color: rgba(124, 58, 237, 0.5);
+  box-shadow: 0 12px 30px rgba(124, 58, 237, 0.25), 0 0 20px rgba(124, 58, 237, 0.15);
+}
+
+.qaPromos .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(245, 158, 11, 0.25), rgba(217, 119, 6, 0.06) 70%, transparent 100%);
+}
+.qaPromos:hover {
+  border-color: rgba(245, 158, 11, 0.5);
+  box-shadow: 0 12px 30px rgba(245, 158, 11, 0.25), 0 0 20px rgba(245, 158, 11, 0.15);
+}
+
+.qaDrive .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(2, 132, 199, 0.25), rgba(0, 112, 168, 0.06) 70%, transparent 100%);
+}
+.qaDrive:hover {
+  border-color: rgba(2, 132, 199, 0.5);
+  box-shadow: 0 12px 30px rgba(2, 132, 199, 0.25), 0 0 20px rgba(2, 132, 199, 0.15);
+}
+
+.qaSupport .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(6, 182, 212, 0.25), rgba(13, 148, 136, 0.06) 70%, transparent 100%);
+}
+.qaSupport:hover {
+  border-color: rgba(6, 182, 212, 0.5);
+  box-shadow: 0 12px 30px rgba(6, 182, 212, 0.25), 0 0 20px rgba(6, 182, 212, 0.15);
+}
+
+.qaRateUs .quickIconContainer {
+  background: radial-gradient(circle at 50% 50%, rgba(234, 179, 8, 0.25), rgba(202, 138, 4, 0.06) 70%, transparent 100%);
+}
+.qaRateUs:hover {
+  border-color: rgba(234, 179, 8, 0.5);
+  box-shadow: 0 12px 30px rgba(234, 179, 8, 0.25), 0 0 20px rgba(234, 179, 8, 0.15);
+}
+
+/* Quick Action Label */
+.quickLabel {
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  line-height: 1.25;
+  color: var(--color-text);
+  text-align: center;
+  margin-top: 2px;
+  overflow-wrap: break-word;
+  word-break: break-word;
+  transition: color 250ms var(--transition-smooth);
+}
+
+/* Backward compatibility for .quickIcon if referenced elsewhere */
 .quickIcon {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 50%;
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
+  width: 44px;
+  height: 44px;
+  border-radius: 16px;
+  background: var(--gradient-primary);
+  color: #ffffff;
 }
 
-.quickIcon svg {
-  width: 20px;
-  height: 20px;
-}
-
-/* Spotlight: story-style cards in one sideways row. */
+/* ── Spotlight: premium story cards with animated rotating gradient rings ── */
 .stories {
   display: flex;
   gap: var(--space-3);
   margin: 0 calc(-1 * var(--space-4));
-  padding: var(--space-1) var(--space-4) var(--space-2);
+  padding: var(--space-2) var(--space-4) var(--space-4);
   overflow-x: auto;
   scroll-snap-type: x mandatory;
   list-style: none;
+  scrollbar-width: none;
 }
+
+.stories::-webkit-scrollbar { display: none; }
 
 .story {
   flex: none;
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
-  gap: 2px;
-  width: 128px;
-  height: 184px;
+  gap: 6px;
+  width: 136px;
+  height: 196px;
   padding: var(--space-3);
   scroll-snap-align: start;
-  background: linear-gradient(180deg, var(--color-accent-soft) 0%, var(--color-surface) 70%);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  background: var(--gradient-surface);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border: 1px solid var(--glass-border);
+  border-radius: calc(var(--radius-card) + 4px);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 78, 122, 0.06);
+  transition: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* The "unseen" ring; seen state lives in local storage (A2 decision 12). */
+.story:hover {
+  transform: translateY(-8px) scale(1.03);
+  box-shadow: 0 14px 32px rgba(0, 78, 122, 0.18), var(--glow-accent);
+  border-color: rgba(0, 78, 122, 0.35);
+}
+
 .storyRing {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 48px;
-  height: 48px;
+  width: 54px;
+  height: 54px;
   margin-bottom: auto;
-  border: 2px solid var(--color-accent);
+  border: 3px solid transparent;
   border-radius: 50%;
-  background: var(--color-surface);
-  box-shadow: inset 0 0 0 3px var(--color-surface);
+  background-image: var(--gradient-primary);
+  background-origin: border-box;
+  background-clip: padding-box, border-box;
+  box-shadow: inset 0 0 0 3px var(--color-surface), 0 0 16px rgba(0, 78, 122, 0.3);
   color: var(--color-accent);
   overflow: hidden;
+  transition: all 350ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.story:hover .storyRing {
+  transform: scale(1.08) rotate(6deg);
+  box-shadow: inset 0 0 0 3px var(--color-surface), 0 0 24px rgba(0, 78, 122, 0.5);
 }
 
 .storyRingSeen {
-  border-color: var(--color-border);
+  border: 2px solid var(--color-border);
+  background-image: none;
+  background: var(--color-surface);
   box-shadow: none;
+  opacity: 0.8;
+}
+
+.story:hover .storyRingSeen {
+  box-shadow: none;
+  transform: scale(1.04);
 }
 
 .storyButton {
@@ -204,60 +492,12 @@
   text-align: left;
 }
 
-/* Banners (B8): promo & announcement cards */
-.banners {
-  display: flex;
-  gap: var(--space-3);
-  margin: 0 calc(-1 * var(--space-4));
-  padding: var(--space-1) var(--space-4) var(--space-2);
-  overflow-x: auto;
-  scroll-snap-type: x mandatory;
-  list-style: none;
-}
-
-.bannerCard {
-  flex: none;
-  width: min(88vw, 360px);
-  height: 130px;
-  border-radius: var(--radius-card);
-  overflow: hidden;
-  position: relative;
-  border: 1px solid var(--color-border);
-  box-shadow: var(--shadow-card);
-  scroll-snap-align: start;
-  text-decoration: none;
-  display: block;
-}
-
-.bannerImage {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
-}
-
-.bannerOverlay {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  padding: var(--space-2) var(--space-3);
-  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.75) 100%);
-  color: #ffffff;
-}
-
-.bannerTitle {
-  font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  line-height: 1.25;
-  margin: 0;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6);
-}
-
 .storyTitle {
   font-size: var(--text-caption);
   font-weight: var(--weight-bold);
   line-height: 1.3;
+  letter-spacing: -0.01em;
+  color: var(--color-text);
 }
 
 .storyNote {
@@ -265,52 +505,130 @@
   font-size: 0.75rem;
 }
 
+/* ── Banners: luxury cinematic promo cards with parallax hover ── */
+.banners {
+  display: flex;
+  gap: var(--space-4);
+  margin: 0 calc(-1 * var(--space-4));
+  padding: var(--space-2) var(--space-4) var(--space-4);
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  list-style: none;
+  scrollbar-width: none;
+}
+
+.banners::-webkit-scrollbar { display: none; }
+
+.bannerCard {
+  flex: none;
+  width: min(88vw, 400px);
+  height: 150px;
+  border-radius: calc(var(--radius-card) + 4px);
+  overflow: hidden;
+  position: relative;
+  border: 1px solid var(--glass-border);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.06), 0 12px 30px rgba(0, 78, 122, 0.08);
+  scroll-snap-align: start;
+  text-decoration: none;
+  display: block;
+  transition: all 400ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bannerCard:hover {
+  transform: translateY(-8px) scale(1.02);
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.16), 0 0 30px rgba(0, 78, 122, 0.2);
+  border-color: rgba(0, 78, 122, 0.35);
+}
+
+.bannerImage {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform 650ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.bannerCard:hover .bannerImage {
+  transform: scale(1.08) translateY(-2px);
+}
+
+.bannerOverlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: var(--space-4);
+  background: linear-gradient(180deg, transparent 0%, rgba(0, 0, 0, 0.35) 40%, rgba(0, 0, 0, 0.88) 100%);
+  color: #ffffff;
+}
+
+.bannerTitle {
+  font-size: 0.95rem;
+  font-weight: var(--weight-bold);
+  line-height: 1.3;
+  letter-spacing: -0.02em;
+  margin: 0;
+  text-shadow: 0 2px 8px rgba(0, 0, 0, 0.7);
+}
+
 @media (min-width: 768px) {
   .features {
     grid-template-columns: repeat(4, 1fr);
-    gap: var(--space-4);
+    gap: var(--space-5);
   }
 
   .featureCard {
-    min-height: 184px;
+    min-height: 200px;
   }
 
   .featureArt {
-    right: 12px;
-    bottom: 12px;
-    width: 128px;
-    height: 96px;
+    right: 14px;
+    bottom: 14px;
+    width: 132px;
+    height: 100px;
   }
 
   .quickActions {
     flex-wrap: wrap;
     justify-content: center;
     margin: 0;
-    padding: var(--space-1) 0 var(--space-2);
+    padding: var(--space-2) 0 var(--space-4);
     overflow: visible;
   }
 
   .quickAction {
-    width: 104px;
+    width: 112px;
+    min-height: 108px;
   }
 
   .stories {
     margin: 0;
-    padding: var(--space-1) 0 var(--space-2);
+    padding: var(--space-2) 0 var(--space-4);
   }
 
   .story {
-    width: 152px;
-    height: 216px;
+    width: 160px;
+    height: 232px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .featureCard {
-    transition: none;
+  .featureCard,
+  .quickAction,
+  .quickIcon,
+  .story,
+  .storyRing,
+  .bannerCard,
+  .bannerImage,
+  .featureArt {
+    transition: none !important;
+    animation: none !important;
   }
 
-  .featureCard:hover {
-    transform: none;
+  .featureCard:hover,
+  .quickAction:hover,
+  .story:hover,
+  .bannerCard:hover {
+    transform: none !important;
   }
 }

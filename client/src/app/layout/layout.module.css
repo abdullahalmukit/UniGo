@@ -1,16 +1,46 @@
+/* ── App Layout — SUPREME TIER Luxury Glass UI ── */
+
 .shell {
   min-height: 100dvh;
   display: flex;
   flex-direction: column;
+  position: relative;
+}
+
+.shell::before {
+  content: "";
+  position: fixed;
+  top: -160px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(1000px, 100vw);
+  height: 400px;
+  background: radial-gradient(ellipse 60% 50% at 50% 20%, rgba(0, 78, 122, 0.12) 0%, rgba(91, 168, 214, 0.04) 60%, transparent 80%);
+  pointer-events: none;
+  z-index: 0;
 }
 
 .logo {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-target);
+  padding: var(--space-1) var(--space-2);
+  border-radius: var(--radius-control);
+  position: relative;
+  transition: transform 300ms var(--transition-bounce), filter 300ms var(--transition-smooth), opacity 200ms var(--transition-smooth);
 }
 
-/* Phone top bar */
+.logo:hover {
+  opacity: 1;
+  transform: translateY(-1px) scale(1.03);
+  filter: drop-shadow(0 4px 14px rgba(0, 62, 97, 0.3));
+}
+
+.logo:active {
+  transform: translateY(0) scale(0.97);
+}
+
+/* ── Phone top bar: supreme frosted glass ── */
 
 .topBar {
   position: sticky;
@@ -20,17 +50,32 @@
   align-items: center;
   justify-content: space-between;
   min-height: var(--bar-height);
-  padding: env(safe-area-inset-top) var(--space-3) 0 var(--space-4);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  padding: max(env(safe-area-inset-top), 8px) var(--space-4) 8px var(--space-4);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 20px -2px rgba(15, 23, 41, 0.04), 0 2px 8px -1px rgba(0, 62, 97, 0.05);
+}
+
+.topBar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 78, 122, 0.45) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 .iconLinks {
   display: flex;
-  gap: var(--space-1);
+  align-items: center;
+  gap: var(--space-2);
 }
 
-/* Icon links (bell, account) with badge and tooltip */
+/* ── Icon links with badge and tooltip ── */
 
 .iconButton {
   position: relative;
@@ -40,21 +85,35 @@
   width: var(--tap-target);
   height: var(--tap-target);
   border-radius: var(--radius-pill);
-  color: var(--color-text);
+  color: var(--color-text-muted);
+  background: rgba(255, 255, 255, 0.45);
+  border: 1px solid var(--glass-border);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03);
 }
 
 .iconButton:hover {
-  background: var(--color-surface-muted);
+  background: var(--color-accent-soft);
+  color: var(--color-accent);
+  border-color: rgba(0, 78, 122, 0.3);
+  transform: translateY(-2px) scale(1.06);
+  box-shadow: 0 6px 18px rgba(0, 62, 97, 0.22);
+}
+
+.iconButton:active {
+  transform: translateY(0) scale(0.96);
 }
 
 .iconButton.active {
   color: var(--color-accent);
   background: var(--color-accent-soft);
+  border-color: rgba(0, 78, 122, 0.35);
+  box-shadow: var(--glow-accent), 0 2px 10px rgba(0, 62, 97, 0.15);
 }
 
 .iconBadge {
   position: absolute;
-  top: 4px;
+  top: 2px;
   right: 2px;
   min-width: 18px;
   height: 18px;
@@ -67,40 +126,68 @@
   font-weight: var(--weight-bold);
   line-height: 14px;
   text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(194, 38, 31, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 .iconButton[data-tooltip]::after {
   content: attr(data-tooltip);
   position: absolute;
-  top: calc(100% + 6px);
+  top: calc(100% + 10px);
   right: 0;
   z-index: var(--z-tooltip);
-  padding: var(--space-1) var(--space-2);
-  border-radius: 8px;
-  background: var(--color-text);
-  color: var(--color-surface);
+  padding: 6px var(--space-3);
+  border-radius: 10px;
+  background: rgba(15, 23, 41, 0.94);
+  color: #ffffff;
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
   white-space: nowrap;
   pointer-events: none;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  box-shadow: 0 10px 25px -4px rgba(0, 0, 0, 0.25), 0 4px 10px -2px rgba(0, 0, 0, 0.1);
   opacity: 0;
-  transition: opacity 120ms ease;
+  transform: translateY(-6px) scale(0.96);
+  transition: opacity 200ms var(--transition-smooth), transform 200ms var(--transition-bounce);
 }
 
 .iconButton[data-tooltip]:hover::after,
 .iconButton[data-tooltip]:focus-visible::after {
   opacity: 1;
+  transform: translateY(0) scale(1);
 }
 
-/* Desktop top navbar */
+/* ── Desktop top navbar: supreme glass with glowing gradient accent ── */
 
 .desktopBar {
   display: none;
   position: sticky;
   top: 0;
   z-index: var(--z-bar);
-  background: var(--color-surface);
-  border-bottom: 1px solid var(--color-border);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-bottom: 1px solid var(--glass-border);
+  box-shadow: 0 4px 24px -2px rgba(15, 23, 41, 0.04), 0 12px 32px -8px rgba(0, 62, 97, 0.05);
+  transition: background 300ms var(--transition-smooth), box-shadow 300ms var(--transition-smooth);
+}
+
+.desktopBar::after {
+  content: "";
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: var(--gradient-primary);
+  opacity: 0.8;
+  box-shadow: 0 0 12px rgba(0, 78, 122, 0.45);
 }
 
 .desktopInner {
@@ -109,7 +196,7 @@
   justify-content: space-between;
   gap: var(--space-5);
   max-width: var(--content-width);
-  min-height: 64px;
+  min-height: 72px;
   margin: 0 auto;
   padding: 0 var(--space-5);
 }
@@ -119,60 +206,106 @@
   align-items: center;
   flex-wrap: wrap;
   justify-content: flex-end;
-  gap: var(--space-1);
+  gap: var(--space-2);
+  position: relative;
 }
 
 .desktopLink {
   display: inline-flex;
   align-items: center;
   min-height: var(--tap-target);
-  padding: 0 var(--space-3);
+  padding: 0 var(--space-4);
   border-radius: var(--radius-control);
   color: var(--color-text-muted);
   font-weight: var(--weight-medium);
+  font-size: 0.9375rem;
+  letter-spacing: -0.01em;
+  position: relative;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.desktopLink::after {
+  content: "";
+  position: absolute;
+  bottom: 6px;
+  left: 50%;
+  right: 50%;
+  height: 2.5px;
+  border-radius: 999px;
+  background: var(--gradient-primary);
+  opacity: 0;
+  transform: scaleX(0);
+  box-shadow: 0 0 10px rgba(0, 78, 122, 0.55);
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .desktopLink:hover {
   color: var(--color-text);
   background: var(--color-surface-muted);
+  transform: translateY(-1px);
+}
+
+.desktopLink:hover::after {
+  left: var(--space-3);
+  right: var(--space-3);
+  opacity: 0.75;
+  transform: scaleX(1);
 }
 
 .desktopLink.active {
   color: var(--color-accent);
   background: var(--color-accent-soft);
+  font-weight: var(--weight-bold);
+  box-shadow: 0 2px 10px rgba(0, 62, 97, 0.08);
+}
+
+.desktopLink.active::after {
+  left: var(--space-3);
+  right: var(--space-3);
+  opacity: 1;
+  transform: scaleX(1);
 }
 
 .divider {
   width: 1px;
-  height: 24px;
+  height: 28px;
   margin: 0 var(--space-2);
-  background: var(--color-border);
+  background: linear-gradient(180deg, transparent, var(--color-border) 25%, var(--color-border) 75%, transparent);
+  opacity: 0.8;
 }
 
-/* Content */
+/* ── Content ── */
 
 .main {
   flex: 1;
   width: 100%;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: var(--space-4) var(--space-4) calc(var(--tabs-height) + env(safe-area-inset-bottom) + var(--space-5));
+  padding: var(--space-5) var(--space-4) calc(var(--tabs-height) + env(safe-area-inset-bottom) + var(--space-5));
+  animation: fadeInUp 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  position: relative;
+  z-index: 1;
 }
 
 .splash {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: var(--space-4);
+  justify-content: center;
+  gap: var(--space-5);
   padding: var(--space-6) 0;
+  min-height: 50vh;
   color: var(--color-text-muted);
+  animation: fadeInUp 700ms cubic-bezier(0.4, 0, 0.2, 1) both;
 }
 
 .splashLogo {
-  max-width: 240px;
+  max-width: 260px;
+  filter: drop-shadow(0 14px 32px rgba(0, 62, 97, 0.18));
+  animation: float 4s ease-in-out infinite;
 }
 
-/* Phone bottom tabs */
+/* ── Phone bottom tabs: supreme frosted glass floating docked bar ── */
 
 .bottomTabs {
   position: fixed;
@@ -181,9 +314,24 @@
   display: grid;
   grid-template-columns: repeat(5, 1fr);
   min-height: var(--tabs-height);
-  padding-bottom: env(safe-area-inset-bottom);
-  background: var(--color-surface);
-  border-top: 1px solid var(--color-border);
+  padding-top: 4px;
+  padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  border-top: 1px solid var(--glass-border);
+  box-shadow: 0 -4px 24px -2px rgba(15, 23, 41, 0.05), 0 -12px 36px rgba(0, 62, 97, 0.05);
+}
+
+.bottomTabs::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1.5px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 78, 122, 0.4) 50%, transparent 100%);
+  pointer-events: none;
 }
 
 .tab {
@@ -191,44 +339,99 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  min-height: var(--tabs-height);
-  padding: var(--space-1);
+  gap: 4px;
+  min-height: calc(var(--tabs-height) - 8px);
+  padding: var(--space-2) var(--space-1);
   color: var(--color-text-muted);
   text-align: center;
+  position: relative;
+  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+  user-select: none;
+}
+
+.tab:active {
+  transform: scale(0.95);
 }
 
 .tab.active {
   color: var(--color-accent);
 }
 
+.tab.active::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 32px;
+  height: 3.5px;
+  border-radius: 0 0 4px 4px;
+  background: var(--gradient-primary);
+  box-shadow: 0 2px 10px rgba(0, 78, 122, 0.6), 0 0 16px rgba(0, 112, 168, 0.4);
+  animation: scale-in 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.tab.active::after {
+  content: "";
+  position: absolute;
+  inset: 4px 6px;
+  border-radius: var(--radius-control);
+  background: radial-gradient(circle at 50% 15%, rgba(0, 78, 122, 0.12) 0%, transparent 75%);
+  pointer-events: none;
+  z-index: -1;
+}
+
 .tab.active .tabLabel {
   font-weight: var(--weight-bold);
+  color: var(--color-accent);
+  letter-spacing: -0.01em;
 }
 
 .tabIcon {
   position: relative;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 300ms var(--transition-bounce), filter 300ms var(--transition-smooth);
+}
+
+.tab.active .tabIcon {
+  transform: translateY(-2px) scale(1.15);
+  filter: drop-shadow(0 4px 8px rgba(0, 62, 97, 0.35));
+}
+
+.tab:hover .tabIcon {
+  transform: translateY(-1px) scale(1.08);
 }
 
 .tabLabel {
-  font-size: 0.6875rem;
-  line-height: 1.2;
+  font-size: 0.72rem;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  transition: color 250ms var(--transition-smooth), font-weight 250ms var(--transition-smooth);
 }
 
 .badge {
   position: absolute;
-  top: -4px;
-  right: -10px;
+  top: -5px;
+  right: -12px;
   min-width: 18px;
   height: 18px;
   padding: 0 5px;
   border-radius: var(--radius-pill);
   background: var(--color-badge);
   color: var(--color-on-badge);
+  border: 2px solid var(--color-surface);
   font-size: 0.6875rem;
   font-weight: var(--weight-bold);
-  line-height: 18px;
+  line-height: 14px;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 12px rgba(194, 38, 31, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @media (min-width: 768px) {
@@ -242,21 +445,26 @@
   }
 
   .main {
-    padding: var(--space-5) var(--space-5) var(--space-6);
+    padding: var(--space-6) var(--space-5) var(--space-6);
   }
 }
 
-/* The unread count next to the desktop Inbox link (B2b) */
+/* Desktop Inbox unread badge */
 .inlineBadge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   min-width: 18px;
   height: 18px;
-  margin-left: var(--space-1);
-  padding: 0 5px;
+  margin-left: var(--space-2);
+  padding: 0 6px;
   border-radius: var(--radius-pill);
   background: var(--color-badge);
   color: var(--color-on-badge);
   font-size: 0.6875rem;
   font-weight: var(--weight-bold);
-  line-height: 18px;
+  line-height: 1;
   text-align: center;
+  box-shadow: 0 0 12px rgba(194, 38, 31, 0.6), 0 2px 4px rgba(0, 0, 0, 0.15);
+  animation: badge-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
