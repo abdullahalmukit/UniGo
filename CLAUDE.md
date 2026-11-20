@@ -56,7 +56,7 @@ Every person is a **User**. Admin-verified users become **Riders** and can also 
 | Jobs | BullMQ + Redis (node-cron only for an early prototype) |
 | Email | SMTP / transactional service (OTP, password reset, fallback notifications) |
 | Files | Private storage + signed URLs for verification documents; public storage for spotlight media |
-| AI (later) | Separate Python service with scikit-learn |
+| AI | Stage 1 rule-based matching inside the Node server (B9 #1); a separate Python service with scikit-learn only for Stage 2, once real data exists |
 
 ---
 
@@ -181,7 +181,7 @@ Nobody can finalise completion alone. This applies to all features except carpoo
 | Service (preferred date/time) | now + 15 min | now + 7 days |
 | Carpool booking start date | tomorrow | within the schedule |
 
-An `OPEN` item that reaches its start time with no accepter → `EXPIRED`.
+An `OPEN` item still unaccepted 15 minutes after its start time → `EXPIRED` (grace period, B3a-1). Until then it can still be accepted.
 
 ### 5.7 Editing and safe acceptance
 - Before acceptance: creator can edit, upgrade (raise amount) or delete. After acceptance: details locked, only cancel.
@@ -323,7 +323,7 @@ Conventions: Prisma models in PascalCase, mapped to snake_case tables (`@@map`);
 
 | Job | Trigger |
 | --- | --- |
-| Expire OPEN items | at start time |
+| Expire OPEN items | 15 minutes after start time (grace period, B3a-1) |
 | Auto-complete | 24 h after completion request, unless disputed |
 | Auto-close NOT_MARKED | 6 h after start, if still ACCEPTED |
 | Release carpool seat hold | 24 h after rider accepts, or at start date |
@@ -705,7 +705,7 @@ Authored by Shawon Sarkar on branch `shawon/b4-food`; for this step only the dev
 | 7 | Order confirmation | Either participant saves items, food price, delivery charge and payment method (`PUT …/order`); saving counts as the saver's confirmation and clears the other's, and `order_version` goes up. The other confirms with `POST …/order/confirm { version }`; an old version answers `ORDER_CHANGED`. When both have confirmed: `CONFIRM_ORDER` → ORDER_CONFIRMED. Any change after that runs the new engine action `REOPEN_ORDER` (ORDER_CONFIRMED → no sub-status) and needs confirming again. Saving the same details again is a confirmation. The details lock at the receipt (`ORDER_LOCKED`) or once the payment is PAID (`ORDER_PAID`). Every step locks the activity row first. |
 | 8 | Receipt | `POST …/receipt`, multipart (`receipt` JPG/PNG ≤ 5 MB, first bytes checked, re-encoded with the B2b chat-image rules, no EXIF, stored in `food-receipts/`) and `actualCost`. Accepter only, only from ORDER_CONFIRMED, → `COLLECT_FOOD` (FOOD_COLLECTED, IN_PROGRESS). Food still has no Start; the receipt is the only way to IN_PROGRESS. The photo is also posted in the chat. Participants see it through 10-minute signed links, admins through 5-minute links. |
 | 9 | Payment record | Created on accept (`afterTake`, so a lost race writes nothing) with the estimate: food cost = estimated budget, delivery charge = offered charge (0 when none), amount = their sum. While UNPAID it follows the confirmed order, an approved higher price and the receipt's actual cost; once PAID it no longer changes. |
-| 10 | Limits | Food budget, confirmed price, approval amount and receipt cost ৳10–৳5,000; delivery charge 0 or ৳10–৳1,000; quantity 1–20; restaurant name 150, items and details 1000 characters (`rules.food`). Expected delivery time 15 minutes to 24 hours ahead (`rules.creationWindow`), and it is the activity's start: an OPEN request expires at it. No grace period (B3a-1 comes later). |
+| 10 | Limits | Food budget, confirmed price, approval amount and receipt cost ৳10–৳5,000; delivery charge 0 or ৳10–৳1,000; quantity 1–20; restaurant name 150, items and details 1000 characters (`rules.food`). Expected delivery time 15 minutes to 24 hours ahead (`rules.creationWindow`), and it is the activity's start: an OPEN request expires 15 minutes after it (B3a-1). |
 | 11 | Accepting | Any VERIFIED student on an ACTIVE account through `acceptActivity()`: not their own (`OWN_ITEM`), not blocked either way (`NOT_AVAILABLE`), 90-minute conflict for both (`TIME_CONFLICT`), start not passed; the atomic take answers `ALREADY_TAKEN` to the loser of a race (tested with two at once). Open and daily limits and the sub-area notification (B2c engine, its exclusions tested for food) apply on creation. |
 | 12 | Chat | New message kind `APPROVAL` with `messages.ref_id` (the approval); the card shows its current state. New system codes `ORDER_UPDATED`, `ORDER_CONFIRMED`, `BUDGET_APPROVED`, `BUDGET_REJECTED`. Migration `b4_food`. |
 | 13 | Activity, Upcoming, Home | Food items join `/api/activity` and `/api/upcoming` (merged by time with rides); My Orders and Accepted Orders on `/food` are the Activity feed with `feature=food`. All Services and Home open `/food`. `onAccountLocked()` already covered food (OPEN requests cancelled, accepted ones carry on, the other participant told); now tested through the food API. |
@@ -753,6 +753,29 @@ Authored by Shawon (developer's request). Completes Carpool (B6a + B6b).
 | 9 | Admin Carpool (17) | `/api/admin/carpool` (`kind` posts / bookings / contracts, status, person search), `GET /posts/:id` (with bookings and the rider's record), `GET /bookings/:id` (contract, sessions, payments, history, reviews), `GET /riders/:id` (suspension and every session the rider cancelled), `POST /posts/:id/close` (reason; CLOSED `ADMIN_REMOVED`, pending requests cancelled by UniGo, held seats and contracts carry on, audited `CARPOOL_POST_CLOSED_BY_ADMIN`). Moderators and Super Admins; suspension Super Admin only. Screens `/admin/carpool`, `/admin/carpool/posts/:id`, `/admin/carpool/bookings/:id`. |
 | 10 | Rider Dashboard | `activeCarpoolContracts`, `carpoolSessionCancellations` (sessions the rider cancelled) and `carpoolEarnings` (PAID carpool months); `earnings` now includes them. |
 | 11 | Booking page | `GET /api/carpool/bookings/:id` adds `payments`, `history` (per contract month: completed, not marked, cancelled by me / the other person, closed) and `renewal`; `contract` adds `termination`, `endedAt`, `terminatedAt`. |
+
+### B3a-1 and content fixes (2026-11-21)
+
+Recorded after the fact: the grace period came in commit 8f62e42 without a decisions-log entry; the developer confirmed keeping it.
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Grace period | An OPEN item can still be accepted or booked until 15 minutes after its start time (`rules.activity.expiryGracePeriod`); `START_TIME_PASSED` after that. The expiry job and the sweeper expire it then, not at the start time. Lists keep showing it during those 15 minutes. Applies to every expiring type (ride, food, service requests and carpool booking requests). Tests updated to match. |
+| 2 | Content image links | Banner and promo images (`imageUrl`) must be an `https://` link or a path on this site starting with `/` (not `//`); anything else answers 400. |
+
+### B9 – AI-assisted matching, Stage 1 (2026-11-21)
+
+Authored by Shawon (developer's request). Proposal §20 Stage 1 and item 3; Stage 2 (trained model) and ranked sub-area alerts are later.
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Where it runs | In the Node server (`server/src/modules/matching`), not a separate service. The Python/scikit-learn service comes only with Stage 2. |
+| 2 | Score | `score.ts`: weighted average of parts from 0 to 1 that have data: pickup and destination closeness (1 at the same place, 0 at 5 km), route direction (1 same way, 0 opposite), time closeness (0 at 2 hours; carpool by minute of day, 0 at 90 minutes, across midnight), rating ((r − 1) / 4) and completion rate. A person with no rating or rate yet counts as 0.5, never as bad. Weights pickup 3, destination 3, route 1.5, time 2, rating 1, completion 1. Up to 3 reasons ("Pickup 0.4 km away", "10 min apart", "Same direction", "Rated 4.8", "95% completed") from parts ≥ 0.6. Every number in `rules.matching`. |
+| 3 | Suggestions | `GET /api/matching/suggestions?feature=ride|carpool|food|service` with `from` (one of my own OPEN ride requests → ride offers; my own OPEN offer → passenger requests) or a pickup and/or destination (+ optional `time`, `seats`, `target`). Candidates come from the normal list functions (first 3 pages), so the same visibility rules apply: open items only, Active riders' offers, no blocked users either way, nothing past start + grace; my own items are left out; offers without enough seats and requests with more passengers than my seats are left out. Top 5 by default (max 10). Verified students only; 30 a minute per account. Errors `MATCH_CONTEXT_REQUIRED`, `MATCH_SOURCE_NOT_FOUND`, `MATCH_SOURCE_CLOSED`. Never an email or phone. |
+| 4 | Screens | "Best matches" card with score, reasons and a link to the item: on my OPEN ride request (offers) and my OPEN ride offer (passenger requests); on the Ride, Food and Carpool lists once a place filter is set. Only a recommendation: the user opens the item and decides. Nothing shown when there are no matches. |
+| 5 | Category hint | `GET /api/matching/service-category?text=` suggests one of the six fixed categories from English and Bangla keywords (none for Custom, none on a tie or with fewer than 8 characters). The new-request form shows "This looks like …" with "Use it"; the user still picks. |
+| 6 | Suggestion log | New table `match_suggestions` (migration `b9_match_suggestions`): viewer, feature, target, candidate, source, rank, score, score parts, shown and taken times. The same viewer and candidate at most once an hour. Accepting a request, booking an offer or requesting a carpool seat marks a suggestion of it shown in the last day as taken. Never shown to users. |
+| 7 | Metrics | `GET /api/admin/matching/metrics?days=30` (Moderators and Super Admins): shown, taken, taken rate, precision@1/3/5 and per feature; a card on the admin dashboard. |
 
 ### Maps: Barikoi and live location; email delivery (2026-11-20)
 

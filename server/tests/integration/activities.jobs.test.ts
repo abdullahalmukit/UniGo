@@ -1,3 +1,4 @@
+import { rules } from "../../src/config/rules.js";
 import { describe, expect, it } from "vitest";
 import { runAccountStatusJob } from "../../src/jobs/account-status.job.js";
 import {
@@ -13,15 +14,20 @@ import { rescheduleAfterStartChange, scheduleActivityTimers } from "../../src/mo
 import { HOUR, MINUTE, createActivity, createRideOffer, fromNow, historyOf, storedActivity, verifiedUser } from "./activity-helpers.js";
 import { api, bearer, registerUser } from "./helpers.js";
 
+// B3a-1: OPEN items can be taken until 15 minutes after their start; they expire then.
+const GRACE = rules.activity.expiryGracePeriod;
+
 // Every job runs twice; the second run must change nothing.
 async function twice(run: () => Promise<boolean>) {
   return [await run(), await run()];
 }
 
 describe("expiry job", () => {
-  it("expires an OPEN item at its start time, once", async () => {
+  it("expires an OPEN item once its start time plus the grace period has passed, once", async () => {
     const user = await verifiedUser();
-    const item = await createActivity({ creatorId: user.id, startTime: fromNow(-MINUTE) });
+    const inGrace = await createActivity({ creatorId: user.id, startTime: fromNow(-MINUTE) });
+    expect(await runExpireJob(inGrace.id)).toBe(false);
+    const item = await createActivity({ creatorId: user.id, startTime: fromNow(-GRACE - MINUTE) });
 
     expect(await twice(() => runExpireJob(item.id))).toEqual([true, false]);
     expect(await storedActivity(item.id)).toMatchObject({ status: "EXPIRED", closureReason: "EXPIRED_UNACCEPTED" });
@@ -41,18 +47,18 @@ describe("expiry job", () => {
 
   it("does nothing for the old time after the start time was edited", async () => {
     const user = await verifiedUser();
-    const oldStart = fromNow(-MINUTE);
+    const oldStart = fromNow(-GRACE - MINUTE);
     const newStart = fromNow(2 * HOUR);
     const item = await createActivity({ creatorId: user.id, startTime: oldStart });
     await scheduleActivityTimers([item]);
-    expect([...scheduledJobs.keys()]).toEqual([`activity-expire-${item.id}-${oldStart.getTime()}`]);
+    expect([...scheduledJobs.keys()]).toEqual([`activity-expire-${item.id}-${oldStart.getTime() + GRACE}`]);
 
     const edited = await prisma.activity.update({ where: { id: item.id }, data: { startTime: newStart } });
     await rescheduleAfterStartChange(edited, oldStart);
 
-    expect([...scheduledJobs.keys()]).toEqual([`activity-expire-${item.id}-${newStart.getTime()}`]);
+    expect([...scheduledJobs.keys()]).toEqual([`activity-expire-${item.id}-${newStart.getTime() + GRACE}`]);
     // The old job still fires (it could not be removed in time): nothing happens.
-    expect(await runExpireJob(item.id, oldStart)).toBe(false);
+    expect(await runExpireJob(item.id, new Date(oldStart.getTime() + GRACE))).toBe(false);
     expect((await storedActivity(item.id)).status).toBe("OPEN");
   });
 });

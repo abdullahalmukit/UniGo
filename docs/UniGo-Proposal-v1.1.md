@@ -251,7 +251,7 @@ A dispute needs a reason; evidence images are optional. The admin decides the fi
 | Service request (preferred date/time) | 15 minutes from now | 7 days from now |
 | Carpool booking start date | Tomorrow, on one of the post's ride days | Rider-defined, any date within the schedule; the contract may not end after the post's last day |
 
-Pickers disable invalid times, and the server repeats every check. An OPEN item that reaches its start time without an accepter becomes EXPIRED.
+Pickers disable invalid times, and the server repeats every check. An OPEN item can still be accepted until 15 minutes after its start time (grace period); still without an accepter then, it becomes EXPIRED.
 
 ### 7.7 Editing and safe acceptance
 
@@ -731,9 +731,9 @@ IDs are time-ordered UUIDs (v7), so they cannot be guessed in URLs.
 
 Matching starts as an explainable rule-based score and moves to a trained model only when real data exists.
 
-1. **Stage 1 – rule-based score:** rank riders and requests by pickup distance, route similarity, time difference, seats, rating and completion rate, with tunable weights.
+1. **Stage 1 – rule-based score (built in B9):** rank riders and requests by pickup distance, route similarity, time difference, seats, rating and completion rate, with tunable weights. Shown as "Best matches" with a short reason for each, on a user's own open ride request or offer and on the Ride, Food and Carpool lists once a place is chosen. Every suggestion shown and whether it was taken is logged for Stage 2 and the metrics below.
 2. **Stage 2 – learned model:** train on synthetic data plus pilot-usage data (accepted vs ignored suggestions).
-3. **Service classification:** suggest the main category from the task description.
+3. **Service classification (built in B9, keyword-based):** suggest the main category from the task description; the user still picks.
 4. **Sub-area alerts:** rank who should be notified first.
 
 Evaluation: precision@k of suggestions, suggestion acceptance rate, and time-to-accept compared with no ranking. AI only recommends; users always choose, and AI never approves users or riders.

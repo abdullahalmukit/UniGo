@@ -23,6 +23,7 @@ import {
   type EditInput,
   type OrderInput,
 } from "./food.validation.js";
+import { markSuggestionTaken } from "../matching/matching.service.js";
 
 // Food Delivery (proposal section 10). Verified students only; RESTRICTED
 // accounts cannot create or accept (requireCanAct) but can still see, cancel
@@ -63,7 +64,9 @@ foodRouter.post("/requests/:id/upgrade", requireCanAct, validateBody(upgradeSche
 });
 
 foodRouter.post("/requests/:id/accept", requireCanAct, async (req, res) => {
-  res.json(await fillPersonStats({ request: await acceptFoodRequest(me(req), id(req.params.id)) }));
+  const request = await acceptFoodRequest(me(req), id(req.params.id));
+  markSuggestionTaken(me(req), id(req.params.id));
+  res.json(await fillPersonStats({ request }));
 });
 
 // --- After acceptance: order details, over-budget approval, receipt (10.3, 10.4)

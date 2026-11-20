@@ -29,6 +29,7 @@ import { rules } from "../../config/rules.js";
 import { listFareSettings, setRatePerKm } from "../ride/fare.service.js";
 import { adminCancelActivity, adminCancelOffer, getAdminRideActivity, getAdminRideOffer, listAdminRides } from "../ride/ride.admin.service.js";
 import { hideReview } from "../reviews/reviews.service.js";
+import { matchingMetrics } from "../matching/matching.service.js";
 import {
   adminCloseCarpoolPost,
   getAdminCarpoolBooking,
@@ -175,6 +176,12 @@ const carpoolQuery = z.object({
   page,
 });
 const carpoolSuspendSchema = adminReason.extend({ endsAt: z.coerce.date() });
+
+// ---- B9: matching metrics (proposal section 20 evaluation) ----------------------
+adminRouter.get("/matching/metrics", async (req, res) => {
+  const { days } = parseInput(z.object({ days: z.coerce.number().int().min(1).max(365).default(30) }), req.query);
+  res.json(await matchingMetrics(days));
+});
 
 adminRouter.get("/carpool", async (req, res) => {
   res.json(await listAdminCarpool(parseInput(carpoolQuery, req.query)));

@@ -12,6 +12,7 @@ import { listRides, type RideFilters, type RideItem } from "./ride-api";
 import { RideCard } from "./RideCard";
 import { PlaceField, SubAreaField } from "./Pickers";
 import styles from "./ride.module.css";
+import { BestMatches } from "../matching/BestMatches";
 
 type Tab = "all" | "requests" | "offers";
 const TABS: Tab[] = ["all", "requests", "offers"];
@@ -97,6 +98,16 @@ export function RidePage() {
             {t("auth.retry")}
           </button>
         </FormAlert>
+      )}
+      {(filters.pickup || filters.destination) && (
+        <BestMatches
+          query={{
+            feature: "ride",
+            target: tab === "requests" ? "requests" : "offers",
+            pickup: filters.pickup ?? null,
+            destination: filters.destination ?? null,
+          }}
+        />
       )}
       {!items && !failed && <SkeletonList rows={3} />}
       {items && items.length === 0 && <EmptyState icon={Car} text={filterCount > 0 ? t("ride.emptyFiltered") : t("ride.empty")} />}

@@ -39,6 +39,7 @@ import {
   type RequestEditInput,
   type RequestInput,
 } from "./ride.validation.js";
+import { markSuggestionTaken } from "../matching/matching.service.js";
 
 // Ride Sharing (proposal section 8). Verified students only; RESTRICTED
 // accounts cannot create, accept or book (requireCanAct) but can still see,
@@ -84,7 +85,9 @@ rideRouter.post("/requests/:id/upgrade", requireCanAct, validateBody(upgradeSche
 });
 
 rideRouter.post("/requests/:id/accept", requireCanAct, validateBody(acceptSchema), async (req, res) => {
-  res.json(await fillPersonStats({ request: await acceptRideRequest(me(req), id(req.params.id), (req.body as z.infer<typeof acceptSchema>).vehicleId) }));
+  const request = await acceptRideRequest(me(req), id(req.params.id), (req.body as z.infer<typeof acceptSchema>).vehicleId);
+  markSuggestionTaken(me(req), id(req.params.id));
+  res.json(await fillPersonStats({ request }));
 });
 
 // --- Ride offers
@@ -114,7 +117,9 @@ rideRouter.delete("/offers/:id", async (req, res) => {
 });
 
 rideRouter.post("/offers/:id/bookings", requireCanAct, validateBody(bookSchema), async (req, res) => {
-  res.status(201).json(await fillPersonStats({ booking: await bookRideOffer(me(req), id(req.params.id), (req.body as z.infer<typeof bookSchema>).seats) }));
+  const booking = await bookRideOffer(me(req), id(req.params.id), (req.body as z.infer<typeof bookSchema>).seats);
+  markSuggestionTaken(me(req), id(req.params.id));
+  res.status(201).json(await fillPersonStats({ booking }));
 });
 
 rideRouter.get("/bookings/:activityId", async (req, res) => {

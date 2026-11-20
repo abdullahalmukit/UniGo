@@ -434,7 +434,10 @@
     "OWN_TERMINATION_REQUEST": "The other person answers your request.",
     "NO_TERMINATION_REQUEST": "There is no request to end this contract early.",
     "NO_ACTIVE_CONTRACT": "There is no running contract.",
-    "RENEW_NOT_AVAILABLE": "This contract cannot be renewed now."
+    "RENEW_NOT_AVAILABLE": "This contract cannot be renewed now.",
+    "MATCH_CONTEXT_REQUIRED": "Choose a place, or open one of your own requests, to see matches.",
+    "MATCH_SOURCE_CLOSED": "This item is no longer open.",
+    "MATCH_SOURCE_NOT_FOUND": "Your request or offer was not found."
   },
   "verification": {
     "title": "Verify your student status",
@@ -1048,6 +1051,15 @@
       "contract": "Contract",
       "post": "Post",
       "openPost": "Open the post"
+    },
+    "matching": {
+      "title": "Suggested matches (last 30 days)",
+      "shown": "Shown",
+      "taken": "Taken",
+      "acceptanceRate": "Taken rate",
+      "precisionAt1": "Precision@1",
+      "precisionAt3": "Precision@3",
+      "precisionAt5": "Precision@5"
     }
   },
   "support": {
@@ -2202,5 +2214,24 @@
       "UNAVAILABLE": "Your location is not available right now."
     },
     "mapUnsupported": "The map cannot be shown on this device. You can still type the address."
+  },
+  "matching": {
+    "title": "Best matches",
+    "offersForRequest": "Best ride offers for your request",
+    "requestsForOffer": "Passenger requests that fit your offer",
+    "hint": "Suggested by UniGo from place, time and the person's record. You decide.",
+    "score": "{{percent}}% match",
+    "scoreLabel": "{{percent}} percent match",
+    "reasons": {
+      "PICKUP_NEAR": "Pickup {{km}} km away",
+      "DESTINATION_NEAR": "Destination {{km}} km away",
+      "SAME_DIRECTION": "Same direction",
+      "TIME_CLOSE_one": "{{count}} min apart",
+      "TIME_CLOSE_other": "{{count}} min apart",
+      "HIGH_RATING": "Rated {{rating}}",
+      "RELIABLE": "{{percent}}% completed"
+    },
+    "categoryHint": "This looks like {{category}}.",
+    "useCategory": "Use it"
   }
 }

@@ -45,6 +45,7 @@ import {
   type PostEditInput,
   type PostInput,
 } from "./carpool.validation.js";
+import { markSuggestionTaken } from "../matching/matching.service.js";
 
 // Carpool (proposal section 9, B6a). Verified students only; RESTRICTED
 // accounts cannot create, request, accept or agree (requireCanAct) but can
@@ -102,7 +103,9 @@ carpoolRouter.get("/posts/:id/quote", async (req, res) => {
 // --- Booking requests, held seats and contracts
 
 carpoolRouter.post("/posts/:id/bookings", requireCanAct, validateBody(bookingSchema), async (req, res) => {
-  res.status(201).json(await fillPersonStats({ booking: await requestCarpoolBooking(me(req), id(req.params.id), req.body as BookingInput) }));
+  const booking = await requestCarpoolBooking(me(req), id(req.params.id), req.body as BookingInput);
+  markSuggestionTaken(me(req), id(req.params.id));
+  res.status(201).json(await fillPersonStats({ booking }));
 });
 
 carpoolRouter.get("/bookings/:activityId", async (req, res) => {

@@ -1,3 +1,4 @@
+import { rules } from "../../src/config/rules.js";
 import { describe, expect, it } from "vitest";
 import { scheduledJobs } from "../../src/jobs/scheduler.js";
 import { prisma } from "../../src/lib/prisma.js";
@@ -5,6 +6,9 @@ import { assertNoTimeConflict } from "../../src/modules/activities/conflict.js";
 import { acceptActivity } from "../../src/modules/activities/engine.js";
 import { lockUsers, runActivityTransaction } from "../../src/modules/activities/transaction.js";
 import { HOUR, MINUTE, createActivity, fromNow, historyOf, outcomeCode, storedActivity, verifiedUser } from "./activity-helpers.js";
+
+// B3a-1: OPEN items can be taken until 15 minutes after their start; they expire then.
+const GRACE = rules.activity.expiryGracePeriod;
 
 const ROUNDS = 5;
 
@@ -28,10 +32,11 @@ describe("atomic accept (CLAUDE.md 5.7)", () => {
     const [passenger, rider] = await Promise.all([verifiedUser(), verifiedUser()]);
     const start = fromNow(2 * HOUR);
     const ride = await createActivity({ type: "RIDE_REQUEST", creatorId: passenger.id, startTime: start });
-    scheduledJobs.set(`activity-expire-${ride.id}-${start.getTime()}`, {
+    const expireAt = new Date(start.getTime() + GRACE);
+    scheduledJobs.set(`activity-expire-${ride.id}-${expireAt.getTime()}`, {
       name: "activity-expire",
-      jobId: `activity-expire-${ride.id}-${start.getTime()}`,
-      runAt: start,
+      jobId: `activity-expire-${ride.id}-${expireAt.getTime()}`,
+      runAt: expireAt,
       data: { id: ride.id },
     });
 
@@ -47,14 +52,19 @@ describe("atomic accept (CLAUDE.md 5.7)", () => {
     expect([...scheduledJobs.values()][1].runAt).toEqual(new Date(start.getTime() - 30 * MINUTE));
   });
 
-  it("refuses an item whose start time has passed, without waiting for the expiry job", async () => {
+  it("refuses an item whose start time plus the grace period has passed, without waiting for the expiry job", async () => {
     const [creator, accepter] = await Promise.all([verifiedUser(), verifiedUser()]);
-    const started = await createActivity({ creatorId: creator.id, startTime: fromNow(-MINUTE) });
-    const now = await createActivity({ creatorId: creator.id, startTime: fromNow(HOUR) });
+    const started = await createActivity({ creatorId: creator.id, startTime: fromNow(-GRACE - MINUTE) });
+    const later = await createActivity({ creatorId: creator.id, startTime: fromNow(HOUR) });
+    const inGrace = await createActivity({ creatorId: creator.id, startTime: fromNow(-MINUTE) });
 
     expect(await outcomeCode(acceptActivity(started.id, accepter.id))).toBe("START_TIME_PASSED");
-    expect(await outcomeCode(acceptActivity(now.id, accepter.id, { now: now.startTime }))).toBe("START_TIME_PASSED");
+    expect(await outcomeCode(acceptActivity(later.id, accepter.id, { now: new Date(later.startTime.getTime() + GRACE + MINUTE) }))).toBe(
+      "START_TIME_PASSED",
+    );
     expect((await storedActivity(started.id)).status).toBe("OPEN");
+    // B3a-1: still within 15 minutes after the start, it can be taken
+    expect(await outcomeCode(acceptActivity(inGrace.id, accepter.id))).toBe("OK");
   });
 
   it("refuses your own item, a blocked user and a restricted account", async () => {

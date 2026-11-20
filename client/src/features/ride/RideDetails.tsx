@@ -36,6 +36,7 @@ import { useRiderStatus } from "./ride-hooks";
 import { ReasonField, RideActions } from "./RideActions";
 import { PersonRow, Route, taka, VehicleLine } from "./RideCard";
 import styles from "./ride.module.css";
+import { BestMatches } from "../matching/BestMatches";
 
 const TERMINAL = ["COMPLETED", "CANCELLED", "EXPIRED", "NOT_MARKED"];
 
@@ -109,6 +110,7 @@ export function RequestDetailPage() {
         <ContactRow phone={request.phone} name={(request.role === "PASSENGER" ? request.rider : request.passenger)?.name} />
       </section>
 
+      {isOpen && request.mine && <BestMatches query={{ feature: "ride", from: request.id }} title={t("matching.offersForRequest")} />}
       {isOpen && request.mine && (
         <div className={styles.actions}>
           <Link to={`/ride/requests/${request.id}/edit`} className={buttonStyles.secondary}>
@@ -301,6 +303,7 @@ export function OfferDetailPage() {
       <SubPageHeader title={t("ride.kind.offer")} back="/ride" action={<span className={styles.kind}>{t(`ride.postStatus.${offer.status}`)}</span>} />
       <OfferSummary offer={offer} />
       <TripMap pickup={offer.pickup} destination={offer.destination} />
+      {offer.mine && open && <BestMatches query={{ feature: "ride", from: offer.id }} title={t("matching.requestsForOffer")} />}
 
       {offer.mine && (
         <section className={styles.section}>

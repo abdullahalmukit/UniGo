@@ -20,6 +20,7 @@ import {
   type CreateServiceInput,
   type EditServiceInput,
 } from "./service.validation.js";
+import { markSuggestionTaken } from "../matching/matching.service.js";
 
 export const serviceRouter = Router();
 
@@ -61,6 +62,7 @@ serviceRouter.patch("/requests/:id", requireCanAct, validateBody(editServiceSche
 // Accept request
 serviceRouter.post("/requests/:id/accept", requireCanAct, async (req, res) => {
   const request = await acceptServiceRequest(me(req), id(req.params.id));
+  markSuggestionTaken(me(req), id(req.params.id));
   res.json(await fillPersonStats({ request }));
 });
 

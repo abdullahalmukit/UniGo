@@ -82,6 +82,31 @@ export const rules = {
     adminPageSize: 20,
   },
 
+  // B9: AI-assisted matching, Stage 1 (proposal section 20). An explainable
+  // rule-based score; AI only recommends, users always choose.
+  matching: {
+    // Weight of each part of the score; parts without data are left out
+    weights: { pickup: 3, destination: 3, route: 1.5, time: 2, rating: 1, completion: 1 },
+    // Distance at which pickup or destination closeness falls to 0
+    radiusKm: 5,
+    // Time difference at which time closeness falls to 0 (rides, food, service)
+    timeWindow: 2 * HOUR,
+    // Carpool: departure-minute difference at which it falls to 0
+    carpoolMinuteWindow: 90,
+    // Pages of candidates read from the normal lists (30 each)
+    candidatePages: 3,
+    limit: { default: 5, max: 10 },
+    // A part counts as a reason to show ("why") from this value (0-1)
+    reasonFrom: 0.6,
+    // The same suggestion to the same viewer is logged at most once per hour
+    logEvery: HOUR,
+    // A suggestion counts as taken when acted on within this time
+    takenWithin: DAY,
+    perUser: { window: MINUTE, max: 30 },
+    // Service category hint: at least this many characters of description
+    categoryHintMinLength: 8,
+  },
+
   reviews: {
     // A review can be written this long after completion; then both are published
     window: 7 * DAY,

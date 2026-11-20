@@ -45,7 +45,8 @@ describe("Redis down while jobs are queued after a commit (B2b decision 1)", () 
     expect(logged.some((line) => line.includes("sweeper"))).toBe(true);
 
     // The work a lost job would have done is done by the sweeper (no Redis needed).
-    const overdue = await createActivity({ creatorId: passenger.id, startTime: fromNow(-MINUTE) });
+    // B3a-1: overdue = start time plus the 15-minute grace period has passed
+    const overdue = await createActivity({ creatorId: passenger.id, startTime: fromNow(-rules.activity.expiryGracePeriod - MINUTE) });
     expect((await runActivitySweep()).expired).toBe(1);
     expect((await storedActivity(overdue.id)).status).toBe("EXPIRED");
     expect((await storedActivity(ride.id)).status).toBe("IN_PROGRESS");

@@ -15,6 +15,7 @@ import { adminStudentVerificationsRouter } from "./modules/admin/student-verific
 import { authRouter } from "./modules/auth/auth.routes.js";
 import { filesRouter } from "./modules/files/files.routes.js";
 import { geoRouter } from "./modules/geo/geo.routes.js";
+import { matchingRouter } from "./modules/matching/matching.routes.js";
 import { healthRouter } from "./modules/health/health.routes.js";
 import { registerNotificationListeners } from "./modules/notifications/listeners.js";
 import { notificationsRouter, pushRouter, pushSubscriptionsRouter } from "./modules/notifications/notifications.routes.js";
@@ -65,6 +66,7 @@ app.use("/api/activity", activityFeedRouter);
 app.use("/api/upcoming", upcomingRouter);
 app.use("/api/users", usersRouter);
 app.use("/api/geo", geoRouter);
+app.use("/api/matching", matchingRouter);
 app.use("/api/chats", chatRouter);
 app.use("/api/reports", reportsRouter);
 app.use("/api/disputes", disputesRouter);

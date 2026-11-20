@@ -1,3 +1,4 @@
+import { rules } from "../../src/config/rules.js";
 import { describe, expect, it } from "vitest";
 import { scheduledJobs } from "../../src/jobs/scheduler.js";
 import { prisma } from "../../src/lib/prisma.js";
@@ -94,8 +95,10 @@ describe("editing, upgrading and deleting an OPEN request", () => {
       .send({ startTime: newStart.toISOString(), passengerCount: 2, notes: "" });
     expect(edited.status).toBe(200);
     expect(edited.body.request).toMatchObject({ passengerCount: 2, notes: null });
-    expect(scheduledJobs.has(`activity-expire-${created.id}-${newStart.getTime()}`)).toBe(true);
-    expect(scheduledJobs.has(`activity-expire-${created.id}-${new Date(created.startTime).getTime()}`)).toBe(false);
+    // B3a-1: the expiry job runs 15 minutes after the start (grace period)
+    const grace = rules.activity.expiryGracePeriod;
+    expect(scheduledJobs.has(`activity-expire-${created.id}-${newStart.getTime() + grace}`)).toBe(true);
+    expect(scheduledJobs.has(`activity-expire-${created.id}-${new Date(created.startTime).getTime() + grace}`)).toBe(false);
 
     const lower = await api().post(`/api/rides/requests/${created.id}/upgrade`).set(bearer(passenger.accessToken)).send({ offeredAmount: 100 });
     expect(lower.body.error.code).toBe("AMOUNT_NOT_HIGHER");

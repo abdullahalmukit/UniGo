@@ -434,7 +434,10 @@
     "OWN_TERMINATION_REQUEST": "আপনার অনুরোধের উত্তর অন্য ব্যক্তি দেবেন।",
     "NO_TERMINATION_REQUEST": "এই চুক্তি আগে শেষ করার কোনো অনুরোধ নেই।",
     "NO_ACTIVE_CONTRACT": "কোনো চলমান চুক্তি নেই।",
-    "RENEW_NOT_AVAILABLE": "এই চুক্তি এখন নবায়ন করা যাবে না।"
+    "RENEW_NOT_AVAILABLE": "এই চুক্তি এখন নবায়ন করা যাবে না।",
+    "MATCH_CONTEXT_REQUIRED": "মিল দেখতে একটি জায়গা বেছে নিন, বা আপনার নিজের একটি অনুরোধ খুলুন।",
+    "MATCH_SOURCE_CLOSED": "এটি আর খোলা নেই।",
+    "MATCH_SOURCE_NOT_FOUND": "আপনার অনুরোধ বা অফার পাওয়া যায়নি।"
   },
   "verification": {
     "title": "আপনার শিক্ষার্থী পরিচয় যাচাই করুন",
@@ -1048,6 +1051,15 @@
       "contract": "চুক্তি",
       "post": "পোস্ট",
       "openPost": "পোস্টটি খুলুন"
+    },
+    "matching": {
+      "title": "সাজেস্ট করা মিল (গত ৩০ দিন)",
+      "shown": "দেখানো হয়েছে",
+      "taken": "নেওয়া হয়েছে",
+      "acceptanceRate": "নেওয়ার হার",
+      "precisionAt1": "Precision@1",
+      "precisionAt3": "Precision@3",
+      "precisionAt5": "Precision@5"
     }
   },
   "support": {
@@ -2202,5 +2214,24 @@
       "UNAVAILABLE": "আপনার লোকেশন এখন পাওয়া যাচ্ছে না।"
     },
     "mapUnsupported": "এই ডিভাইসে ম্যাপ দেখানো যাচ্ছে না। ঠিকানা লিখে দিতে পারবেন।"
+  },
+  "matching": {
+    "title": "সেরা মিল",
+    "offersForRequest": "আপনার অনুরোধের জন্য সেরা রাইড অফার",
+    "requestsForOffer": "আপনার অফারের সাথে মেলে এমন যাত্রীর অনুরোধ",
+    "hint": "জায়গা, সময় ও ব্যক্তির রেকর্ড দেখে UniGo এগুলো সাজেস্ট করেছে। সিদ্ধান্ত আপনার।",
+    "score": "{{percent}}% মিল",
+    "scoreLabel": "{{percent}} শতাংশ মিল",
+    "reasons": {
+      "PICKUP_NEAR": "পিকআপ {{km}} কিমি দূরে",
+      "DESTINATION_NEAR": "গন্তব্য {{km}} কিমি দূরে",
+      "SAME_DIRECTION": "একই দিকে",
+      "TIME_CLOSE_one": "{{count}} মিনিটের ব্যবধান",
+      "TIME_CLOSE_other": "{{count}} মিনিটের ব্যবধান",
+      "HIGH_RATING": "রেটিং {{rating}}",
+      "RELIABLE": "{{percent}}% সম্পন্ন"
+    },
+    "categoryHint": "এটি {{category}} মনে হচ্ছে।",
+    "useCategory": "এটি নিন"
   }
 }

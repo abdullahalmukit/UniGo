@@ -415,6 +415,7 @@ model User {
   carpoolPosts                 CarpoolPost[]
   carpoolTerminationRequests   CarpoolContract[]
   carpoolPaymentsMarked        CarpoolMonthlyPayment[]
+  matchSuggestions             MatchSuggestion[]
   foodReceipts                 FoodReceipt[]
   foodOrdersUpdated            FoodRequest[]           @relation("FoodOrderUpdater")
   foodApprovalsRequested       FoodBudgetApproval[]    @relation("FoodApprovalRequester")
@@ -1640,4 +1641,38 @@ model AuditLog {
   @@index([targetUserId, createdAt])
   @@index([createdAt])
   @@map("audit_logs")
+}
+
+// ============================================================================
+// B9: AI-assisted matching, Stage 1 (proposal section 20)
+// ============================================================================
+
+// Every suggestion shown to a user and whether they took it (accepted the
+// request, booked the offer or asked for the carpool seat) within a day.
+// Training data for Stage 2 and the precision@k / acceptance metrics. Never
+// shown to users.
+model MatchSuggestion {
+  id          String    @id @default(uuid(7)) @db.Char(36)
+  viewerId    String    @map("viewer_id") @db.Char(36)
+  // ride | carpool | food | service
+  feature     String    @db.VarChar(16)
+  // ride_offer | ride_request | carpool_post | food | service
+  target      String    @db.VarChar(16)
+  candidateId String    @map("candidate_id") @db.Char(36)
+  // The viewer's own request or offer the suggestions were for, if any
+  sourceId    String?   @map("source_id") @db.Char(36)
+  rank        Int       @db.TinyInt
+  score       Decimal   @db.Decimal(5, 4)
+  // The score's parts, for Stage 2 features
+  components  Json
+  shownAt     DateTime  @map("shown_at")
+  takenAt     DateTime? @map("taken_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  viewer User @relation(fields: [viewerId], references: [id], onDelete: Cascade)
+
+  @@index([viewerId, candidateId, shownAt])
+  @@index([shownAt])
+  @@map("match_suggestions")
 }

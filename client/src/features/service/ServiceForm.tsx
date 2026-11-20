@@ -3,6 +3,7 @@ import { useEffect, useState, type FormEvent } from "react";
 import { useTranslation } from "react-i18next";
 import { Navigate, useNavigate, useParams, useSearchParams } from "react-router";
 import { FormAlert, SubmitButton, TextField } from "../../components/form";
+import { buttonStyles } from "../../components/ui";
 import formStyles from "../../components/form.module.css";
 import { useToast } from "../../components/toast";
 import { formErrors, type FormErrors } from "../../lib/errors";
@@ -22,6 +23,7 @@ import {
   type ServiceRequest,
 } from "./service-api";
 import { categoryLabel, categorySafetyWarning } from "./ServiceCard";
+import { getCategoryHint } from "../matching/matching-api";
 
 const noErrors: FormErrors = { fields: {} };
 
@@ -201,6 +203,14 @@ function ServiceForm({ existing, template }: { existing: ServiceRequest | null; 
           max={2000}
           error={errors.fields.description}
         />
+        {!existing && (
+          <CategoryHint
+            text={`${serviceTitle} ${taskTitle} ${description}`}
+            selectedId={categoryId}
+            categories={categories}
+            onUse={setCategoryId}
+          />
+        )}
       </section>
 
       <section className={styles.section}>
@@ -328,3 +338,49 @@ function ServiceForm({ existing, template }: { existing: ServiceRequest | null; 
     </form>
   );
 }
+
+// B9 (proposal 20, item 3): suggests the main category from what the user
+// typed. Only a hint; the user picks the category.
+function CategoryHint({
+  text,
+  selectedId,
+  categories,
+  onUse,
+}: {
+  text: string;
+  selectedId: string;
+  categories: ServiceCategory[];
+  onUse: (categoryId: string) => void;
+}) {
+  const { t } = useTranslation();
+  const [hint, setHint] = useState<string | null>(null);
+  useEffect(() => {
+    const trimmed = text.trim();
+    if (trimmed.length < 8) {
+      setHint(null);
+      return;
+    }
+    let cancelled = false;
+    const timer = setTimeout(() => {
+      getCategoryHint(trimmed).then(
+        (result) => !cancelled && setHint(result.suggestion?.categoryId ?? null),
+        () => !cancelled && setHint(null),
+      );
+    }, 600);
+    return () => {
+      cancelled = true;
+      clearTimeout(timer);
+    };
+  }, [text]);
+  const category = categories.find((c) => c.id === hint);
+  if (!category || category.id === selectedId) return null;
+  return (
+    <FormAlert tone="info">
+      {t("matching.categoryHint", { category: categoryLabel(category.code, t, category.name) })}{" "}
+      <button type="button" className={buttonStyles.secondary} onClick={() => onUse(category.id)}>
+        {t("matching.useCategory")}
+      </button>
+    </FormAlert>
+  );
+}
+

@@ -61,11 +61,20 @@ const spotlightUpdateSchema = spotlightCreateSchema.partial().extend({
   mediaUrl: z.string().trim().min(1).max(512).optional(),
 });
 
+// Images and media (developer decision 2026-11-20): an https:// link or a path
+// on this site ("/..."), nothing else.
+const mediaLink = z
+  .string()
+  .trim()
+  .min(1)
+  .max(512)
+  .refine((value) => /^https:\/\/[^\s]+$/i.test(value) || /^\/(?!\/)\S*$/.test(value), "Use an https:// link or a path on this site");
+
 // Promo schemas
 const promoCreateSchema = z.object({
   title: z.string().trim().min(1).max(150),
   description: z.string().trim().optional(),
-  imageUrl: z.string().trim().max(512).optional(),
+  imageUrl: mediaLink.optional(),
   promoCode: z.string().trim().max(50).optional(),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date(),
@@ -76,7 +85,7 @@ const promoUpdateSchema = promoCreateSchema.partial();
 // Banner schemas
 const bannerCreateSchema = z.object({
   title: z.string().trim().min(1).max(150),
-  imageUrl: z.string().trim().min(1).max(512),
+  imageUrl: mediaLink,
   linkUrl: z.string().trim().max(512).optional(),
   startsAt: z.coerce.date(),
   endsAt: z.coerce.date(),

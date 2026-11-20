@@ -13,8 +13,9 @@ import { listActivity, useFeedRefresh, type FeedItem, type Tab as FeedTab } from
 import { useRiderStatus } from "../ride/ride-hooks";
 import { PlaceField } from "../ride/Pickers";
 import styles from "../ride/ride.module.css";
-import { searchCarpools, WEEKDAYS, type CarpoolFilters, type CarpoolPost } from "./carpool-api";
+import { dhakaDate, searchCarpools, weekdayOf, WEEKDAYS, type CarpoolFilters, type CarpoolPost } from "./carpool-api";
 import { CarpoolCard, useCarpoolConfig } from "./carpool-shared";
+import { BestMatches } from "../matching/BestMatches";
 
 type Tab = "search" | "posts" | "bookings";
 
@@ -57,6 +58,16 @@ export function CarpoolPage() {
       {tab === "search" ? <SearchList /> : <MyCarpool role={tab === "posts" ? "requested" : "accepted"} />}
     </div>
   );
+}
+
+// The time a carpool match is ranked against: the chosen weekday (next one)
+// at the chosen "from" time, in Asia/Dhaka. Undefined without a time.
+function carpoolMatchTime(day: number | undefined, timeFrom: string | undefined) {
+  if (!timeFrom) return undefined;
+  const today = dhakaDate(0);
+  const todayDay = weekdayOf(today);
+  const ahead = day === undefined ? 0 : (day - todayDay + 7) % 7;
+  return new Date(`${dhakaDate(ahead)}T${timeFrom}:00+06:00`).toISOString();
 }
 
 function SearchList() {
@@ -105,6 +116,16 @@ function SearchList() {
             {t("auth.retry")}
           </button>
         </FormAlert>
+      )}
+      {(filters.pickup || filters.destination) && (
+        <BestMatches
+          query={{
+            feature: "carpool",
+            pickup: filters.pickup ?? null,
+            destination: filters.destination ?? null,
+            time: carpoolMatchTime(filters.day, filters.timeFrom),
+          }}
+        />
       )}
       {!items && !failed && <SkeletonList rows={3} />}
       {items && items.length === 0 && <EmptyState icon={Repeat} text={filterCount > 0 ? t("carpool.emptyFiltered") : t("carpool.empty")} />}

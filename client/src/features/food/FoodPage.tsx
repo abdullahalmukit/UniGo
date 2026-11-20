@@ -13,6 +13,7 @@ import styles from "../ride/ride.module.css";
 import { listFood, type FoodCardItem, type FoodFilters } from "./food-api";
 import { FoodCard } from "./FoodCard";
 import { useFoodConfig } from "./food-shared";
+import { BestMatches } from "../matching/BestMatches";
 
 type Tab = "available" | "mine" | "accepted";
 const TABS: Tab[] = ["available", "mine", "accepted"];
@@ -100,6 +101,9 @@ function AvailableList() {
             {t("auth.retry")}
           </button>
         </FormAlert>
+      )}
+      {(filters.restaurant || filters.delivery) && (
+        <BestMatches query={{ feature: "food", pickup: filters.restaurant ?? null, destination: filters.delivery ?? null }} />
       )}
       {!items && !failed && <SkeletonList rows={3} />}
       {items && items.length === 0 && <EmptyState icon={UtensilsCrossed} text={filterCount > 0 ? t("food.emptyFiltered") : t("food.empty")} />}
