@@ -48,7 +48,7 @@ Every person is a **User**. Admin-verified users become **Riders** and can also 
 | Frontend | React, responsive, mobile-first, PWA (installable, Web Push) |
 | i18n | Bangla + English (react-i18next) |
 | Theme | Light, Dark, System |
-| Maps | OpenStreetMap + Leaflet; Nominatim search (debounced, cached); OSRM for route distance |
+| Maps | Barikoi + MapLibre (tiles, search, reverse geocode, routes, ETA, live ride location); OpenStreetMap / Nominatim / OSRM fallback without a key (Maps decision log) |
 | Backend | Node.js + Express, REST API |
 | Database | MySQL + Prisma ORM |
 | Auth | JWT access + refresh tokens, email/password + Google sign-in |
@@ -735,3 +735,15 @@ Authored by Shawon Sarkar on branch `shawon/b6-carpool`; for this step only the 
 | 15 | Activity and Upcoming (Q12) | Activity: a rider's posts under Requested by me with their requests and contracts inside (Active while not CLOSED or a booking is unfinished, never Ongoing, History otherwise); a passenger's requests, held seats and contracts under Accepted by me, by status. Upcoming: ACCEPTED sessions in the next 7 days; the rider sees one card per post and ride time with its passengers. |
 | 16 | Screens | `/carpool` (Search with day, time, pickup and destination 1/2/5 km filters; My carpool posts for riders; My bookings), `/carpool/posts/new` and `/:id/edit`, `/carpool/posts/:id` (rider mini profile, stats, masked vehicle, rider's session cancellations, prices; the rider's requests with Accept/Decline; the passenger's request form with a server quote), `/carpool/bookings/:id` (hold, Agree, give up the seat, sessions). Open carpool posts on the public profile. Carpool notifications open the booking page. No map on lists. |
 | 17 | Endpoints | `GET /api/carpool` (search), `/api/carpool/config`; posts: `POST /api/carpool/posts`, `GET` and `PATCH /:id`, `POST /:id/seats`, `/:id/pause`, `/:id/resume`, `DELETE /:id`, `GET /:id/quote`, `POST /:id/bookings`; bookings: `GET /api/carpool/bookings/:activityId`, `POST /:activityId/accept`, `/reject`, `/withdraw`, `/agree`. Giving up a held seat uses `POST /api/activities/:id/cancel`. |
+
+### Maps: Barikoi and live location; email delivery (2026-11-20)
+
+Requested by the developer (authored by Shawon).
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Map provider | Barikoi replaces OpenStreetMap when `BARIKOI_API_KEY` is set in `server/.env` (`MAP_PROVIDER` forces `barikoi` or `osm`; tests use `osm`). Place search (`/v2/api/search/autocomplete/place`), address lookup (`/v2/api/search/reverse/geocode`) and road routes (`/v2/api/route`) go through the server proxy `/api/geo`, so the key is never in API calls from the browser and never logged. The Nominatim one-per-second queue applies only to Nominatim. |
+| 2 | Map tiles | Leaflet replaced by MapLibre GL (`maplibre-gl` 6.16.0, its own lazy chunk). `GET /api/geo/config` gives the Barikoi light and dark style links (they carry the key, which Barikoi tiles need in the browser: restrict the key to the site's domain in the Barikoi dashboard); without Barikoi an OpenStreetMap raster style is used. The map follows the app theme. Devices without WebGL see a message instead of a map. |
+| 3 | Route map | `GET /api/geo/route` (30 a minute per account): distance (m), driving time (s) and the road line, cached a day. Shown as a trip card on ride request, offer and booking pages (pickup and destination pins, route line, distance, time). The suggested fare uses the same route. |
+| 4 | Live location | During an ACCEPTED or IN_PROGRESS ride request or ride booking, either participant can press "Share my live location". Socket events `location:share` → the other participant's `location:update`; `location:stop` (and closing the page or disconnecting) → `location:stopped`. Server checks participation, status, type and blocks (cached 30 s per socket) and drops updates less than 2 s apart (`rules.liveLocation`). Nothing is stored or logged. The card shows the time to the pickup (accepted) or the destination (started) from the moving position, asked again after 150 m or 30 s. Food, Service and Carpool are not included yet. |
+| 5 | Email delivery | Cause of "OTP never arrives": in development `EMAIL_TRANSPORT` defaults to `console`, which only prints emails in the server console. The server now says so at startup and checks SMTP (`verify`) when SMTP is on. `SMTP_SECURE` added (default: TLS on port 465, STARTTLS required otherwise), with timeouts. A verification-code email that fails answers `EMAIL_NOT_SENT` (503) and clears the unsent code so the user can ask again at once. `npm run email:test -w server -- you@example.com` sends a test email. |

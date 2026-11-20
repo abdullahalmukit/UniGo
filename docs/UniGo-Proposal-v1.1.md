@@ -691,7 +691,7 @@ IDs are time-ordered UUIDs (v7), so they cannot be guessed in URLs.
 | Real-time | Socket.IO for chat and live notifications |
 | Background jobs | BullMQ + Redis (delayed jobs); node-cron acceptable for an early prototype |
 | Email | SMTP / transactional email service for OTP and fallback notifications |
-| Maps | OpenStreetMap + Leaflet; Nominatim for search (debounced, cached); OSRM for route distance and suggested fare |
+| Maps | Barikoi (Bangladesh maps) with MapLibre: map tiles, place search, address lookup, road routes and arrival times, through the server, which holds the key; OpenStreetMap (Nominatim, OSRM) is the fallback without a Barikoi key. Live location during an accepted or started ride, opt-in, shown only to the other participant and never stored |
 | File storage | Private storage for verification documents (signed URLs); public storage for spotlight media |
 | AI (later) | Python service with scikit-learn |
 

@@ -1,8 +1,9 @@
 import { api } from "./api";
 
-// Place search and address lookup (CLAUDE.md 9, Maps). Since B3a they go
-// through the UniGo server (/api/geo), which keeps OpenStreetMap Nominatim's
-// one-request-per-second rule for the whole app and caches answers. Here the
+// Place search and address lookup (CLAUDE.md 9, Maps). They go through the
+// UniGo server (/api/geo), which asks Barikoi (or OpenStreetMap Nominatim
+// without a Barikoi key, keeping its one-request-per-second rule) and caches
+// answers. Here the
 // answers are also cached in memory and in sessionStorage; callers debounce
 // typing before calling `search`.
 

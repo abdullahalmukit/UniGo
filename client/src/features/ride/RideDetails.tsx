@@ -10,6 +10,7 @@ import { ReportSheet } from "../activity/ReportSheet";
 import { BottomSheet, FormAlert } from "../../components/form";
 import formStyles from "../../components/form.module.css";
 import { StatusChip } from "../../components/StatusChip";
+import { TripMap } from "../../components/trip/TripMap";
 import { useToast } from "../../components/toast";
 import { buttonStyles } from "../../components/ui";
 import { ApiError } from "../../lib/api";
@@ -93,6 +94,14 @@ export function RequestDetailPage() {
         </span>
         {request.notes && <p>{request.notes}</p>}
       </section>
+      <TripMap
+        pickup={request.pickup}
+        destination={request.destination}
+        activityId={request.id}
+        status={request.status}
+        participant={participant && Boolean(request.rider)}
+        peerName={(request.role === "PASSENGER" ? request.rider : request.passenger)?.name}
+      />
       <section className={styles.section}>
         <PersonRow person={request.passenger} caption={t("ride.role.passenger")} />
         {request.rider && <PersonRow person={request.rider} caption={t("ride.role.rider")} />}
@@ -291,6 +300,7 @@ export function OfferDetailPage() {
     <div className={styles.narrow}>
       <SubPageHeader title={t("ride.kind.offer")} back="/ride" action={<span className={styles.kind}>{t(`ride.postStatus.${offer.status}`)}</span>} />
       <OfferSummary offer={offer} />
+      <TripMap pickup={offer.pickup} destination={offer.destination} />
 
       {offer.mine && (
         <section className={styles.section}>
@@ -445,6 +455,14 @@ function BookingView({ booking, reload, language }: { booking: RideBooking; relo
     <div className={styles.narrow}>
       <SubPageHeader title={t("ride.booking.title")} back={`/ride/offers/${booking.offer.id}`} action={<StatusChip status={booking.status} />} />
       <OfferSummary offer={booking.offer} />
+      <TripMap
+        pickup={booking.offer.pickup}
+        destination={booking.offer.destination}
+        activityId={booking.activityId}
+        status={booking.status}
+        participant
+        peerName={other?.name}
+      />
       <section className={styles.section}>
         <div className={styles.row}>
           <span>{t("ride.seatsCount", { count: booking.seatsBooked })}</span>

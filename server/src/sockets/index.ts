@@ -6,6 +6,7 @@ import { rules } from "../config/rules.js";
 import { userFromAccessToken } from "../middleware/authenticate.js";
 import { onChatEvent, type ChatEvent } from "../modules/chat/chat-events.js";
 import { assertChatParticipant, markChatRead, messageViewById, sendTextMessage, unreadTotal } from "../modules/chat/chat.service.js";
+import { createLiveLocationGate, locationSchema, stopSchema } from "../modules/geo/live-location.js";
 import { AppError } from "../utils/app-error.js";
 import { setSocketServer, userRoom } from "./registry.js";
 
@@ -143,7 +144,40 @@ export function attachSockets(httpServer: HttpServer) {
       }
     });
 
-    socket.on("disconnect", () => clearTimeout(data.expiryTimer));
+    // Live location during a ride: relayed to the other participant only,
+    // never stored. Updates closer than rules.liveLocation.minInterval are dropped.
+    const liveLocation = createLiveLocationGate(userId);
+    const sharing = new Map<string, string>();
+
+    socket.on("location:share", async (payload: unknown, ack?: Ack) => {
+      try {
+        const update = locationSchema.parse(payload);
+        const peer = await liveLocation.peer(update.activityId);
+        if (!liveLocation.take(update.activityId)) return ack?.({ ok: true, dropped: true });
+        sharing.set(update.activityId, peer);
+        io.to(userRoom(peer)).emit("location:update", { ...update, userId, at: new Date().toISOString() });
+        ack?.({ ok: true });
+      } catch (error) {
+        ack?.(errorPayload(error));
+      }
+    });
+
+    const stopSharing = (activityId: string) => {
+      const peer = sharing.get(activityId);
+      sharing.delete(activityId);
+      liveLocation.forget(activityId);
+      if (peer) io.to(userRoom(peer)).emit("location:stopped", { activityId, userId });
+    };
+
+    socket.on("location:stop", (payload: unknown) => {
+      const parsed = stopSchema.safeParse(payload);
+      if (parsed.success) stopSharing(parsed.data.activityId);
+    });
+
+    socket.on("disconnect", () => {
+      clearTimeout(data.expiryTimer);
+      for (const activityId of [...sharing.keys()]) stopSharing(activityId);
+    });
   });
 
   const stopListening = onChatEvent((event) => void pushChatEvent(io, event));

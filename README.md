@@ -68,7 +68,7 @@ University-only, peer-to-peer Progressive Web App (PWA) for verified students ac
 | **Queue & Jobs** | Redis + BullMQ (activity sweeps, expiry, auto-complete) |
 | **Realtime** | Socket.IO (instant chat, live status updates, notifications) |
 | **i18n & Theme** | Bangla (`bn`) + English (`en`), Light + Dark themes |
-| **Maps & Geo** | Leaflet, OpenStreetMap, Nominatim proxy with 1 req/sec rate limit |
+| **Maps & Geo** | Barikoi + MapLibre (tiles, search, reverse geocode, routes, ETA, live ride location); OpenStreetMap/Nominatim/OSRM fallback without a key |
 
 ---
 

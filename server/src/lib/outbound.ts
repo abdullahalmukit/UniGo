@@ -1,6 +1,6 @@
 import { env } from "../config/env.js";
 
-// Calls to outside services (Nominatim, OSRM). Tests replace the fetch, so
+// Calls to outside services (Barikoi, Nominatim, OSRM). Tests replace the fetch, so
 // they never reach the internet; without a replacement a test call fails.
 
 export type OutboundFetch = (url: string, init: { signal: AbortSignal; headers: Record<string, string> }) => Promise<{ ok: boolean; status: number; json(): Promise<unknown> }>;

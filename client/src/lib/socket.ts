@@ -77,6 +77,11 @@ class ChatSocket {
     };
   }
 
+  // Fire and forget (nothing happens while disconnected).
+  emit(event: string, payload: unknown) {
+    if (this.socket?.connected) this.socket.emit(event, payload);
+  }
+
   emitWithAck<T>(event: string, payload: unknown, timeoutMs = 8000) {
     return new Promise<T | AckError>((resolve, reject) => {
       if (!this.socket?.connected) {

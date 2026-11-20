@@ -1,42 +1,25 @@
-import { env } from "../../config/env.js";
 import { rules } from "../../config/rules.js";
 import { prisma } from "../../lib/prisma.js";
-import { getJson } from "../../lib/outbound.js";
-import { createTtlCache } from "../../lib/ttl-cache.js";
 import { recordAudit } from "../admin/audit-log.js";
+import { drivingRoute, resetGeoForTests } from "../geo/geo.service.js";
 
-// Suggested fare (proposal 8.2): OSRM driving distance x the admin's rate per
-// km. A recommendation only: the user sets the amount. For a passenger request
-// it is the total; for a ride offer the fare per seat. When OSRM does not
-// answer, or no rate is set, there is no suggestion and the forms still work.
+// Suggested fare (proposal 8.2): driving distance (Barikoi, or OSRM without a
+// Barikoi key) x the admin's rate per km. A recommendation only: the user sets
+// the amount. For a passenger request it is the total; for a ride offer the
+// fare per seat. When the route server does not answer, or no rate is set,
+// there is no suggestion and the forms still work.
 
 export type Point = { lat: number; lng: number };
 
-const distanceCache = createTtlCache<number>(rules.ride.fareEstimate.cacheSize, rules.ride.fareEstimate.cacheTtl);
-
 export function resetFareCacheForTests() {
-  distanceCache.clear();
+  resetGeoForTests();
 }
 
-// About 11 m: two forms with nearly the same points share one OSRM call.
-const key = (from: Point, to: Point) => [from.lat, from.lng, to.lat, to.lng].map((n) => n.toFixed(4)).join(",");
-
-// Driving distance in km, or null when OSRM cannot tell.
+// Driving distance in km, or null when the route server cannot tell.
 export async function routeDistanceKm(from: Point, to: Point): Promise<number | null> {
-  const cacheKey = key(from, to);
-  const hit = distanceCache.get(cacheKey);
-  if (hit !== undefined) return hit;
   try {
-    const coordinates = `${from.lng},${from.lat};${to.lng},${to.lat}`;
-    const body = (await getJson(`${env.OSRM_URL}/route/v1/driving/${coordinates}?overview=false`, rules.ride.fareEstimate.timeout)) as {
-      code?: string;
-      routes?: { distance?: number }[];
-    };
-    const metres = body.code === "Ok" ? body.routes?.[0]?.distance : undefined;
-    if (typeof metres !== "number" || !Number.isFinite(metres)) return null;
-    const km = Math.round(metres / 10) / 100;
-    distanceCache.set(cacheKey, km);
-    return km;
+    const route = await drivingRoute(from, to, rules.ride.fareEstimate.timeout);
+    return route ? Math.round(route.distanceMeters / 10) / 100 : null;
   } catch {
     return null;
   }

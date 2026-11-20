@@ -305,6 +305,8 @@
     "OTP_EXPIRED": "This code has expired. Ask for a new one.",
     "OTP_TOO_MANY_ATTEMPTS": "Too many wrong codes. Ask for a new code.",
     "OTP_RESEND_TOO_SOON": "Wait a moment before asking for a new code.",
+    "LIVE_LOCATION_NOT_AVAILABLE": "Live location is only for an accepted or started ride.",
+    "EMAIL_NOT_SENT": "We could not send the email right now. Try again in a moment.",
     "FILE_TOO_LARGE": "The file must be 5 MB or smaller.",
     "FILE_TYPE_NOT_ALLOWED": "Upload a JPG, PNG or PDF file.",
     "FILE_REQUIRED": "Choose a file to upload.",
@@ -2054,5 +2056,31 @@
       "pendingHint_one": "Saving declines {{count}} pending seat request.",
       "pendingHint_other": "Saving declines {{count}} pending seat requests."
     }
+  },
+  "trip": {
+    "title": "Route",
+    "mapLabel": "Route map",
+    "distance": "{{km}} km by road",
+    "driveTime": "about {{time}} by car",
+    "minutes_one": "{{count}} min",
+    "minutes_other": "{{count}} min",
+    "hoursMinutes": "{{hours}} h {{minutes}} min",
+    "loadingRoute": "Finding the route…",
+    "routeUnavailable": "The road route is not available right now.",
+    "etaPickup": "Reaches the pickup in about {{time}} ({{km}} km)",
+    "etaDestination": "Reaches the destination in about {{time}} ({{km}} km)",
+    "shareLocation": "Share my live location",
+    "stopSharing": "Stop sharing my location",
+    "privacy": "Only the other person on this ride sees your location, only while you share it. UniGo does not store it.",
+    "peerSharing": "{{name}} is sharing their live location",
+    "peerLastSeen": "{{name}}'s location: last seen {{minutes}} min ago",
+    "you": "You",
+    "otherPerson": "The other person",
+    "errors": {
+      "PERMISSION_DENIED": "Location access is blocked. Allow it for this site in your browser settings.",
+      "UNSUPPORTED": "This browser cannot share location.",
+      "UNAVAILABLE": "Your location is not available right now."
+    },
+    "mapUnsupported": "The map cannot be shown on this device. You can still type the address."
   }
 }

@@ -1,7 +1,7 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { rules } from "../../src/config/rules.js";
 import { prisma } from "../../src/lib/prisma.js";
-import { sentEmails } from "../../src/modules/email/email.service.js";
+import { failNextEmailsForTests, sentEmails } from "../../src/modules/email/email.service.js";
 import { api, bearer, createUniversity, files, registerUser } from "./helpers.js";
 
 const { otpLifetime, otpResendAfter, maxOtpAttempts } = rules.studentVerification;
@@ -35,6 +35,29 @@ async function pretendCodeWasSentEarlier(userId: string, ms: number) {
 }
 
 describe("university email verification", () => {
+  it("says so when the code email cannot be sent, and lets the user ask again at once", async () => {
+    const user = await student();
+    const email = `karim@${user.domain}`;
+    const error = vi.spyOn(console, "error").mockImplementation(() => {});
+
+    failNextEmailsForTests(1);
+    const failed = await send(user.accessToken, email);
+    expect(failed.status).toBe(503);
+    expect(failed.body.error.code).toBe("EMAIL_NOT_SENT");
+    expect(sentEmails).toHaveLength(0);
+    // No code is waiting, so the status shows none and there is no resend wait.
+    const status = await api().get("/api/verification/student").set(bearer(user.accessToken));
+    expect(status.body.emailCode).toBeNull();
+    // The log names the failure, never the address.
+    expect(error.mock.calls.flat().join(" ")).not.toContain(email);
+
+    const again = await send(user.accessToken, email);
+    expect(again.status).toBe(200);
+    expect(sentEmails).toHaveLength(1);
+    expect((await confirm(user.accessToken, lastCode())).status).toBe(200);
+    error.mockRestore();
+  });
+
   it("emails a 6-digit code to the university email, in the user's language, valid for 10 minutes", async () => {
     const user = await student("uni.edu.bd", { language: "BN" });
     const email = `rahim@${user.domain}`;

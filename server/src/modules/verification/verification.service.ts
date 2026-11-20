@@ -102,14 +102,25 @@ export async function sendEmailOtp(userId: string, email: string, now = new Date
     data: { universityEmail: email, otpHash: hashOtp(row.id, code), otpExpiresAt: expiresAt, otpAttempts: 0 },
   });
 
-  await sendEmail({
-    to: email,
-    ...studentVerificationOtpEmail(user.language, {
-      name: user.profile?.fullName ?? "",
-      code,
-      minutes: cfg.otpLifetime / 60_000,
-    }),
-  });
+  try {
+    await sendEmail({
+      to: email,
+      ...studentVerificationOtpEmail(user.language, {
+        name: user.profile?.fullName ?? "",
+        code,
+        minutes: cfg.otpLifetime / 60_000,
+      }),
+    });
+  } catch (error) {
+    // The code never reached the user: forget it, so they can ask again at
+    // once instead of waiting for the resend timer, and say so.
+    console.error(`Verification code email failed: ${error instanceof Error ? error.message : String(error)}`);
+    await prisma.studentVerification.updateMany({
+      where: { id: row.id, otpExpiresAt: expiresAt },
+      data: { otpHash: null, otpExpiresAt: null, otpAttempts: 0 },
+    });
+    throw new AppError(503, "EMAIL_NOT_SENT", "We could not send the email right now. Try again in a moment.");
+  }
 
   return { email, expiresAt, resendAvailableAt: resendAvailableAt(expiresAt) };
 }

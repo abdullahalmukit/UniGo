@@ -2,6 +2,7 @@ import { createServer } from "node:http";
 import { app } from "./app.js";
 import { env } from "./config/env.js";
 import { startJobs } from "./jobs/worker.js";
+import { reportEmailTransport } from "./modules/email/email.service.js";
 import { prisma } from "./lib/prisma.js";
 import { attachSockets } from "./sockets/index.js";
 
@@ -12,6 +13,7 @@ const sockets = attachSockets(server);
 
 server.listen(env.PORT, () => {
   console.log(`UniGo API listening on http://localhost:${env.PORT}`);
+  void reportEmailTransport();
 });
 
 // BullMQ background jobs (B2a): activity timers, the sweeper and the account

@@ -70,6 +70,7 @@ export const reportRateLimit = limiter(rules.reports.perUser.window, rules.repor
 
 // B3a: place search through the server, and the suggested fare (public OSRM)
 export const geoRateLimit = limiter(rules.geo.perUser.window, rules.geo.perUser.max, userKey);
+export const geoRouteRateLimit = limiter(rules.geo.route.perUser.window, rules.geo.route.perUser.max, userKey);
 export const fareEstimateRateLimit = limiter(rules.ride.fareEstimate.perUser.window, rules.ride.fareEstimate.perUser.max, userKey);
 
 // B2c: saving this device's push subscription

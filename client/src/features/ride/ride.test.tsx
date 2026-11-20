@@ -157,7 +157,7 @@ describe("the Ride page", () => {
     expect(screen.getByText("2 seats left")).toBeInTheDocument();
     // No map on the Ride page (B3b-1 E)
     expect(screen.queryByTestId("map-picker")).not.toBeInTheDocument();
-    expect(document.querySelector(".leaflet-container")).toBeNull();
+    expect(document.querySelector(".maplibregl-map")).toBeNull();
     // Only Active riders see Offer a Ride
     expect(screen.queryByRole("link", { name: "Offer a Ride" })).not.toBeInTheDocument();
 

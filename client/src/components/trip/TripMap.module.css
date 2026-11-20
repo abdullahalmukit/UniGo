@@ -1,0 +1,143 @@
+/* Ride route map with live location (Barikoi maps) */
+
+.card {
+  display: grid;
+  gap: var(--space-3);
+  padding: var(--space-4);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  background: var(--color-surface);
+  box-shadow: var(--shadow-card);
+}
+
+.mapWrap {
+  position: relative;
+  overflow: hidden;
+  height: 260px;
+  border-radius: var(--radius-control);
+  /* Map layers never cover sheets, toasts or bars (B3b-1 #6) */
+  isolation: isolate;
+}
+
+.map {
+  width: 100%;
+  height: 100%;
+  background: var(--color-surface-muted);
+}
+
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-4);
+  font-size: var(--text-body);
+}
+
+.fact {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font-weight: var(--weight-medium);
+}
+
+.fact svg {
+  color: var(--color-accent);
+}
+
+.live {
+  display: grid;
+  gap: var(--space-2);
+}
+
+.live button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-2);
+}
+
+.eta {
+  margin: 0;
+  font-weight: var(--weight-bold);
+  color: var(--color-text);
+}
+
+.muted {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+}
+
+.error {
+  margin: 0;
+  font-size: var(--text-caption);
+  color: var(--status-red-fg);
+}
+
+/* Map pins (DOM markers) */
+.pickupPin,
+.destinationPin,
+.mePin,
+.peerPin {
+  width: 18px;
+  height: 18px;
+  border: 3px solid var(--color-surface);
+  border-radius: 50%;
+  box-shadow: var(--shadow-card);
+}
+
+.pickupPin {
+  background: var(--status-green-fg);
+}
+
+.destinationPin {
+  background: var(--status-red-fg);
+}
+
+.mePin {
+  background: var(--color-accent);
+}
+
+.peerPin {
+  width: 22px;
+  height: 22px;
+  background: var(--status-indigo-fg);
+  animation: tripPulse 1.8s ease-out infinite;
+}
+
+.stale {
+  opacity: 0.5;
+  animation: none;
+}
+
+@keyframes tripPulse {
+  0% {
+    box-shadow: 0 0 0 0 var(--color-accent-soft);
+  }
+  100% {
+    box-shadow: 0 0 0 14px transparent;
+  }
+}
+
+@media (min-width: 768px) {
+  .mapWrap {
+    height: 320px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .peerPin {
+    animation: none;
+  }
+}
+
+.unsupported {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--space-4);
+  text-align: center;
+  font-size: var(--text-caption);
+  color: var(--color-text-muted);
+  background: var(--color-surface-muted);
+}

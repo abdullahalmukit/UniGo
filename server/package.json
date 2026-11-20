@@ -20,7 +20,8 @@
     "db:migrate": "prisma migrate dev",
     "db:seed": "prisma db seed",
     "db:seed:dev-chat": "tsx prisma/dev-chat-seed.ts",
-    "db:seed:samples": "tsx prisma/seed-sample-requests.ts"
+    "db:seed:samples": "tsx prisma/seed-sample-requests.ts",
+    "email:test": "tsx scripts/send-test-email.ts"
   },
   "devDependencies": {
     "@types/cookie-parser": "^1.4.10",

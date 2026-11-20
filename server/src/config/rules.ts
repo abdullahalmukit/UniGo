@@ -251,6 +251,18 @@ export const rules = {
     expiryGrace: 5 * 1000,
   },
 
+  // Live location during a ride (Barikoi maps). Opt-in by each participant,
+  // relayed to the other participant only, never stored.
+  liveLocation: {
+    // Activity types and statuses in which a participant may share
+    types: ["RIDE_REQUEST", "RIDE_BOOKING"] as const,
+    statuses: ["ACCEPTED", "IN_PROGRESS"] as const,
+    // Updates closer together than this are dropped
+    minInterval: 2 * 1000,
+    // How long a participant check is reused before the database is read again
+    accessCacheTtl: 30 * 1000,
+  },
+
   // B3a: Ride Sharing (proposal section 8, B3a decisions)
   ride: {
     // Offered amount of a passenger request and fare per seat of an offer, in taka
@@ -308,6 +320,9 @@ export const rules = {
     // Nominatim's usage policy: at most one request per second, from the whole server
     minInterval: 1000,
     timeout: 5000,
+    // Road route for the route map and arrival time (Barikoi or OSRM)
+    routeTimeout: 5000,
+    route: { perUser: { window: MINUTE, max: 30 } },
     cacheSize: 2000,
     cacheTtl: DAY,
     queryMaxLength: 200,

@@ -37,6 +37,8 @@ const envSchema = z
     SMTP_PORT: z.coerce.number().int().positive().default(587),
     SMTP_USER: optionalText,
     SMTP_PASSWORD: optionalText,
+    // "true" for implicit TLS (usually port 465); STARTTLS is used otherwise.
+    SMTP_SECURE: z.enum(["true", "false"]).optional(),
     MAIL_FROM: optionalText,
     // B2a: Redis for BullMQ background jobs (Memurai on Windows). Tests never
     // connect; they use the in-memory job scheduler.
@@ -45,6 +47,12 @@ const envSchema = z
     // servers by default; tests never call them.
     OSRM_URL: z.url().default("https://router.project-osrm.org"),
     NOMINATIM_URL: z.url().default("https://nominatim.openstreetmap.org"),
+    // Barikoi (Bangladesh maps): place search, address lookup and routes. With a
+    // key, Barikoi is used instead of Nominatim and OSRM; MAP_PROVIDER forces one.
+    // Tests use OpenStreetMap unless MAP_PROVIDER=barikoi is set for them.
+    BARIKOI_API_KEY: optionalText,
+    BARIKOI_URL: z.url().default("https://barikoi.xyz"),
+    MAP_PROVIDER: z.enum(["barikoi", "osm"]).optional(),
     // B2c: Web Push keys. Required in production; without them in development
     // push is off. Tests use the in-memory push transport.
     VAPID_PUBLIC_KEY: optionalText,
@@ -70,6 +78,9 @@ const envSchema = z
         if (!value[key]) ctx.addIssue({ code: "custom", path: [key], message: `${key} is required to send email by SMTP` });
       }
     }
+    if (value.MAP_PROVIDER === "barikoi" && !value.BARIKOI_API_KEY) {
+      ctx.addIssue({ code: "custom", path: ["BARIKOI_API_KEY"], message: "BARIKOI_API_KEY is required when MAP_PROVIDER=barikoi" });
+    }
     const vapid = ["VAPID_PUBLIC_KEY", "VAPID_PRIVATE_KEY", "VAPID_SUBJECT"] as const;
     const given = vapid.filter((key) => value[key]);
     if (value.NODE_ENV === "production" || given.length > 0) {
@@ -81,6 +92,7 @@ const envSchema = z
   .transform((value) => ({
     ...value,
     emailTransport: emailTransportFor(value),
+    mapProvider: mapProviderFor(value),
     // Tests record scheduled jobs in memory; everywhere else BullMQ runs them.
     jobsDriver: value.NODE_ENV === "test" ? ("memory" as const) : ("bullmq" as const),
     // Tests record pushes in memory; without VAPID keys push is off.
@@ -91,6 +103,12 @@ const envSchema = z
           ? ("webpush" as const)
           : ("off" as const),
   }));
+
+function mapProviderFor(value: { NODE_ENV: string; MAP_PROVIDER?: "barikoi" | "osm"; BARIKOI_API_KEY?: string }) {
+  if (value.MAP_PROVIDER) return value.MAP_PROVIDER;
+  if (value.NODE_ENV === "test") return "osm" as const;
+  return value.BARIKOI_API_KEY ? ("barikoi" as const) : ("osm" as const);
+}
 
 function emailTransportFor(value: { NODE_ENV: string; EMAIL_TRANSPORT?: "console" | "smtp" }) {
   if (value.NODE_ENV === "test") return "memory" as const;
