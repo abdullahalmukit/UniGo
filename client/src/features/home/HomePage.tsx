@@ -28,14 +28,14 @@ const quickActions: {
   to?: string;
   accentClass: string;
 }[] = [
-  { key: "about", image: aboutArt, accentClass: "qaAbout" },
+  { key: "about", image: aboutArt, to: "/about", accentClass: "qaAbout" },
   { key: "savedAddresses", image: savedAddressesArt, to: "/account/addresses", accentClass: "qaSavedAddresses" },
   { key: "addHome", image: addHomeArt, to: "/account/addresses/new?label=HOME", accentClass: "qaAddHome" },
   { key: "subAreas", image: subAreasArt, to: "/account/sub-areas", accentClass: "qaSubAreas" },
   { key: "promos", image: promosArt, to: "/promos", accentClass: "qaPromos" },
   { key: "drive", image: driveArt, to: "/drive", accentClass: "qaDrive" },
   { key: "support", image: supportArt, to: "/account/support", accentClass: "qaSupport" },
-  { key: "rateUs", image: rateUsArt, accentClass: "qaRateUs" },
+  { key: "rateUs", image: rateUsArt, to: "/account/rate-us", accentClass: "qaRateUs" },
 ];
 
 export function HomePage() {

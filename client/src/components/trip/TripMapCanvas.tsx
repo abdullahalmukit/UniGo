@@ -1,5 +1,4 @@
-import "maplibre-gl/dist/maplibre-gl.css";
-import * as maplibregl from "maplibre-gl";
+import { maplibregl } from "../maplibre";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../../app/theme-provider";

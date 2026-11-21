@@ -99,7 +99,7 @@ beforeEach(() => {
 });
 
 describe("Account & Settings", () => {
-  it("links every built menu and marks later ones as coming soon", async () => {
+  it("links every menu, nothing left as coming soon", async () => {
     renderAt("/account");
 
     expect(await screen.findByRole("link", { name: /Rina Akter/ })).toHaveAttribute("href", "/account/profile");
@@ -114,14 +114,13 @@ describe("Account & Settings", () => {
       ["Drive with UniGo", "/drive"],
       ["Promos", "/promos"],
       ["Support Request", "/account/support"],
+      ["Payment Methods", "/account/payment-methods"],
+      ["Policy", "/policy"],
+      ["Rate Us", "/account/rate-us"],
     ]) {
       expect(menu.getByRole("link", { name })).toHaveAttribute("href", href);
     }
-    for (const name of ["Payment Methods", "Policy", "Rate Us"]) {
-      const item = screen.getByText(name).closest("li")!;
-      expect(within(item).getByText("Coming soon")).toBeInTheDocument();
-      expect(within(item).queryByRole("link")).toBeNull();
-    }
+    expect(screen.queryByText("Coming soon")).toBeNull();
   });
 
   it("saves language and appearance to the account", async () => {

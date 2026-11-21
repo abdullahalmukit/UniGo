@@ -16,6 +16,9 @@ const envSchema = z
     NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
     PORT: z.coerce.number().int().positive().default(4000),
     CLIENT_URL: z.url().default("http://localhost:5173"),
+    // B10: how many reverse proxies (nginx, a host's load balancer) sit in
+    // front of the API, so rate limits see each user's own IP. 0 = none.
+    TRUST_PROXY: z.coerce.number().int().min(0).max(5).default(0),
     DATABASE_URL: z.string().startsWith("mysql://", "DATABASE_URL must start with mysql://"),
     DATABASE_CONNECT_TIMEOUT_MS: z.coerce.number().int().positive().default(3000),
     JWT_ACCESS_SECRET: z.string().min(32, "JWT_ACCESS_SECRET must be at least 32 characters"),

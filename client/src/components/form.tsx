@@ -3,6 +3,7 @@
 // bottom sheet (desktop: a centred panel).
 import { Eye, EyeOff, X } from "lucide-react";
 import { useEffect, useId, useRef, useState, type InputHTMLAttributes, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import styles from "./form.module.css";
 
@@ -125,7 +126,10 @@ export function BottomSheet({
   }, [open, onClose]);
 
   if (!open) return null;
-  return (
+  // Rendered at the end of <body>: inside a page card with a transform or a
+  // blur effect, a fixed backdrop would only cover that card and the sheet
+  // could run off the bottom of the screen.
+  return createPortal(
     <div className={styles.backdrop} onClick={onClose}>
       <div
         ref={panel}
@@ -143,8 +147,10 @@ export function BottomSheet({
             <X aria-hidden size={20} />
           </button>
         </div>
-        {children}
+        {/* Scrolls when the content is taller than the sheet, so nothing is cut off */}
+        <div className={styles.sheetContent}>{children}</div>
       </div>
-    </div>
+    </div>,
+    document.body,
   );
 }

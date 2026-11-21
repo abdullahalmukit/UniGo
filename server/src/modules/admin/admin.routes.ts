@@ -30,6 +30,7 @@ import { listFareSettings, setRatePerKm } from "../ride/fare.service.js";
 import { adminCancelActivity, adminCancelOffer, getAdminRideActivity, getAdminRideOffer, listAdminRides } from "../ride/ride.admin.service.js";
 import { hideReview } from "../reviews/reviews.service.js";
 import { matchingMetrics } from "../matching/matching.service.js";
+import { countAudience, listAnnouncements, sendAnnouncement, type Audience } from "../notifications/announcements.service.js";
 import {
   adminCloseCarpoolPost,
   getAdminCarpoolBooking,
@@ -176,6 +177,30 @@ const carpoolQuery = z.object({
   page,
 });
 const carpoolSuspendSchema = adminReason.extend({ endsAt: z.coerce.date() });
+
+// ---- Notifications (proposal 17): announcements to all or selected users ------
+const audienceSchema = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("ALL") }),
+  z.object({ kind: z.literal("UNIVERSITY"), universityId: z.string().trim().min(1).max(64) }),
+  z.object({ kind: z.literal("SUB_AREA"), subAreaId: z.string().trim().min(1).max(64) }),
+]);
+const announcementSchema = z.object({
+  title: z.string().trim().min(3).max(rules.notifications.announcement.titleMaxLength),
+  body: z.string().trim().min(3).max(rules.notifications.announcement.bodyMaxLength),
+  audience: audienceSchema,
+});
+
+adminRouter.get("/announcements", async (_req, res) => {
+  res.json({ announcements: await listAnnouncements() });
+});
+
+adminRouter.post("/announcements/count", validateBody(z.object({ audience: audienceSchema })), async (req, res) => {
+  res.json(await countAudience((req.body as { audience: Audience }).audience));
+});
+
+adminRouter.post("/announcements", validateBody(announcementSchema), async (req, res) => {
+  res.status(201).json(await sendAnnouncement(authUser(req).id, req.body as z.infer<typeof announcementSchema>, req.ip));
+});
 
 // ---- B9: matching metrics (proposal section 20 evaluation) ----------------------
 adminRouter.get("/matching/metrics", async (req, res) => {

@@ -24,13 +24,13 @@ const menu: { key: string; to?: string }[] = [
   { key: "drive", to: "/drive" },
   { key: "savedAddresses", to: "/account/addresses" },
   { key: "subAreas", to: "/account/sub-areas" },
-  { key: "paymentMethods" },
+  { key: "paymentMethods", to: "/account/payment-methods" },
   { key: "notifications", to: "/account/notifications" },
   { key: "blocked", to: "/account/blocked" },
   { key: "promos", to: "/promos" },
   { key: "support", to: "/account/support" },
-  { key: "policy" },
-  { key: "rateUs" },
+  { key: "policy", to: "/policy" },
+  { key: "rateUs", to: "/account/rate-us" },
 ];
 
 const languages: AppLanguage[] = ["bn", "en"];

@@ -1,7 +1,11 @@
 import "@testing-library/jest-dom/vitest";
-import { cleanup } from "@testing-library/react";
+import { cleanup, configure } from "@testing-library/react";
 import { afterEach, vi } from "vitest";
 import "../i18n";
+
+// findBy* and waitFor wait 1 s by default; a full parallel run is slower than
+// that on some machines, so tests failed at random. Wait up to 5 s.
+configure({ asyncUtilTimeout: 5000 });
 
 // No real Socket.IO connection in tests (B2b). Tests that need socket events
 // call fakeSocket.emit(event, payload).

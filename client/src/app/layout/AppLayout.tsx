@@ -1,7 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { NavLink, Outlet } from "react-router";
+import { NavLink, Outlet, useMatch } from "react-router";
 import { useUnreadTotal } from "../../features/inbox/unread";
 import { useNotificationUnread } from "../../features/notifications/notifications-api";
+import { Footer } from "./Footer";
 import { IconLink } from "./IconLink";
 import { Logo } from "./Logo";
 import { accountLink, bottomTabs, desktopLinks, notificationsLink } from "./nav-items";
@@ -14,6 +15,8 @@ export function AppLayout() {
   const { t } = useTranslation();
   // Unread chat messages (B2b) and notifications (B2c), kept live by the socket.
   const unread = { messages: useUnreadTotal(), notifications: useNotificationUnread() };
+  // An open chat fills the screen down to its message box: no footer there.
+  const inChat = useMatch("/inbox/:chatId") !== null;
 
   return (
     <div className={styles.shell}>
@@ -50,6 +53,8 @@ export function AppLayout() {
       <main className={styles.main}>
         <Outlet />
       </main>
+
+      {!inChat && <Footer />}
 
       <nav aria-label={t("nav.tabs")} className={styles.bottomTabs}>
         {bottomTabs.map(({ to, labelKey, icon: Icon, end }) => (

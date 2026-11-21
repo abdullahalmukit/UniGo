@@ -83,3 +83,12 @@ describe("FILE_SIGNING_SECRET", () => {
     expect(parseEnv(base).data?.PRIVATE_STORAGE_DIR).toBe("storage/private");
   });
 });
+
+describe("TRUST_PROXY (B10)", () => {
+  it("defaults to 0 and accepts a small number of proxies", () => {
+    expect(parseEnv({ ...base, NODE_ENV: "development" }).data?.TRUST_PROXY).toBe(0);
+    expect(parseEnv({ ...base, NODE_ENV: "development", TRUST_PROXY: "1" }).data?.TRUST_PROXY).toBe(1);
+    expect(parseEnv({ ...base, NODE_ENV: "development", TRUST_PROXY: "yes" }).success).toBe(false);
+  });
+});
+

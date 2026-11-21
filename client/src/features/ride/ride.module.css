@@ -360,7 +360,10 @@ a.person:hover .personName {
 }
 
 .pickerMap {
-  height: 240px;
+  /* Follows the screen: smaller on short phones, larger on tall screens */
+  --map-height: 100%;
+  flex-shrink: 0;
+  height: clamp(200px, 38dvh, 380px);
   border-radius: var(--radius-card);
   overflow: hidden;
   box-shadow: var(--shadow-card);

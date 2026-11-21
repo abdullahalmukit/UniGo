@@ -777,6 +777,29 @@ Authored by Shawon (developer's request). Proposal §20 Stage 1 and item 3; Stag
 | 6 | Suggestion log | New table `match_suggestions` (migration `b9_match_suggestions`): viewer, feature, target, candidate, source, rank, score, score parts, shown and taken times. The same viewer and candidate at most once an hour. Accepting a request, booking an offer or requesting a carpool seat marks a suggestion of it shown in the last day as taken. Never shown to users. |
 | 7 | Metrics | `GET /api/admin/matching/metrics?days=30` (Moderators and Super Admins): shown, taken, taken rate, precision@1/3/5 and per feature; a card on the admin dashboard. |
 
+### Remaining v1 pages and B10 release checks (2026-11-21)
+
+Authored by Shawon (developer's request).
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Admin › Notifications (§17) | Moderators and Super Admins send an announcement (title 3–100, message 3–500 characters, `rules.notifications.announcement`) to everyone, one university or the users who saved one sub-area: `POST /api/admin/announcements`, `POST /api/admin/announcements/count` (people it would reach), `GET /api/admin/announcements` (history from the Audit Log, action `ANNOUNCEMENT_SENT`). In-app + push (`ANNOUNCEMENT`), banned and suspended accounts left out, sent in the background in batches of 500 with key `ANNOUNCEMENT:<id>`. Screen `/admin/announcements`; the audience lists use the public university and sub-area lists. |
+| 2 | Rate Us (§5) | `POST /api/support/rate`: 1–5 stars and an optional comment (up to 1000 characters), stored as an `APP_FEEDBACK` support request (A2 #4), 3 a day per account (`rules.support.rateUs`; checked after validation, so a typo does not count). Screen `/account/rate-us`, from Account and the Home quick action. |
+| 3 | Information pages (§5) | `/about` and `/policy` (public), `/account/payment-methods`; texts in `info.*`. The Policy page (terms, privacy, safety, cancellation) is written from the rules in this file and the proposal and must be reviewed before release (`docs/RELEASE.md`). Nothing in Account is "Coming soon" any more. |
+| 4 | Reverse proxy | `TRUST_PROXY` (number of proxies, default 0) sets Express `trust proxy`, so rate limits see each user's IP in production. `x-powered-by` is off. The second Vite port is allowed by CORS in development only. |
+| 5 | Release checklist | `docs/RELEASE.md`: settings, secrets, SMTP, VAPID, Barikoi key restriction, first Super Admin, build and run, known limits (one API process because rate limits are in memory; the `npm audit` finding is in the Prisma CLI only). |
+
+### Footer and Meet the Developers (2026-11-21)
+
+Requested by the developer (authored by Shawon). Mukit stays the project owner.
+
+| # | Topic | Decision |
+| --- | --- | --- |
+| 1 | Footer | `client/src/app/layout/Footer.tsx` on every page of the main layout except an open chat: brand, tagline and contact (owner's email, Support request, Dhaka, Bangladesh), "Verified students only", four link columns (Services, Quick links, Account, Help & company), a "Built by students" strip with the three developers and a link to their page, the copyright line and Terms / Privacy / Safety links (anchors on `/policy`). Phones: columns two across, the footer ends above the bottom tabs (the tab space moved from `main` to the footer). Theme tokens only; texts in `footer.*`. |
+| 2 | Meet the Developers | Public page `/developers`: Md. Abdul Mukit (Project owner · Developer, portfolio mukit.swe.bd), Shawon Sarkar and Mohammad Alif (Developer), each with photo, email, GitHub and portfolio where given. Data in `client/src/features/developers/developers.ts`; texts in `developers.*`. External links open in a new tab with `noopener`. |
+| 3 | Photos | The developers' own photos, downloaded once from the given Google Drive links and saved as square WebP files at 160 and 320 px without metadata (`client/src/assets/developers/`), so the site never loads them from Google Drive. |
+| 4 | GitHub icon | Lucide no longer ships brand logos, so `components/GithubIcon.tsx` draws the GitHub mark for profile links. |
+
 ### Maps: Barikoi and live location; email delivery (2026-11-20)
 
 Requested by the developer (authored by Shawon).
@@ -788,3 +811,6 @@ Requested by the developer (authored by Shawon).
 | 3 | Route map | `GET /api/geo/route` (30 a minute per account): distance (m), driving time (s) and the road line, cached a day. Shown as a trip card on ride request, offer and booking pages (pickup and destination pins, route line, distance, time). The suggested fare uses the same route. |
 | 4 | Live location | During an ACCEPTED or IN_PROGRESS ride request or ride booking, either participant can press "Share my live location". Socket events `location:share` → the other participant's `location:update`; `location:stop` (and closing the page or disconnecting) → `location:stopped`. Server checks participation, status, type and blocks (cached 30 s per socket) and drops updates less than 2 s apart (`rules.liveLocation`). Nothing is stored or logged. The card shows the time to the pickup (accepted) or the destination (started) from the moving position, asked again after 150 m or 30 s. Food, Service and Carpool are not included yet. |
 | 5 | Email delivery | Cause of "OTP never arrives": in development `EMAIL_TRANSPORT` defaults to `console`, which only prints emails in the server console. The server now says so at startup and checks SMTP (`verify`) when SMTP is on. `SMTP_SECURE` added (default: TLS on port 465, STARTTLS required otherwise), with timeouts. A verification-code email that fails answers `EMAIL_NOT_SENT` (503) and clears the unsent code so the user can ask again at once. `npm run email:test -w server -- you@example.com` sends a test email. |
+| 6 | Map fix (2026-11-21) | Cause of the empty/black map: MapLibre looks for its worker file next to its own script, which Vite moves, so tiles were never drawn. `client/src/components/maplibre.ts` sets the worker URL (`maplibre-gl-worker.mjs?url`); every map imports MapLibre from there. |
+| 7 | Map size and sheets (2026-11-21) | Map heights follow the screen (`clamp()` on `dvh`: place picker 200–380 px, address map 220–440 px, trip map 220–440 px), and each map has a full-screen button where the browser supports it. Bottom sheets render in a portal on `<body>` (a page card's transform or blur had trapped the fixed backdrop inside the card, so sheets ran off the screen), and their content scrolls under the header. |
+| 8 | Client test timing (2026-11-21) | Client tests: 15 s per test and 5 s for Testing Library waits (`vitest.config.ts`, `src/test/setup.ts`), because a full parallel run failed at random on the 5 s / 1 s defaults. |

@@ -40,6 +40,10 @@ export const routes: RouteObject[] = [
       { index: true, element: <HomePage /> },
       { path: "services", element: <AllServicesPage /> },
       { path: "promos", lazy: page(() => import("../features/content/PromosPage"), (m) => m.PromosPage) },
+      // Proposal 5: public information pages
+      { path: "about", lazy: page(() => import("../features/account/InfoPages"), (m) => m.AboutPage) },
+      { path: "policy", lazy: page(() => import("../features/account/InfoPages"), (m) => m.PolicyPage) },
+      { path: "developers", lazy: page(() => import("../features/developers/DevelopersPage"), (m) => m.DevelopersPage) },
       {
         element: <RequireAuth />,
         children: [
@@ -57,6 +61,8 @@ export const routes: RouteObject[] = [
           { path: "account/sub-areas", element: <MySubAreasPage /> },
           { path: "account/notifications", element: <NotificationSettingsPage /> },
           { path: "account/blocked", element: <BlockedUsersPage /> },
+          { path: "account/payment-methods", lazy: page(() => import("../features/account/InfoPages"), (m) => m.PaymentMethodsPage) },
+          { path: "account/rate-us", lazy: page(() => import("../features/account/InfoPages"), (m) => m.RateUsPage) },
           // Support Requests (B7) — client side
           { path: "account/support", lazy: page(() => import("../features/account/SupportPage"), (m) => m.SupportPage) },
           { path: "account/support/:id", lazy: page(() => import("../features/account/SupportPage"), (m) => m.SupportDetailPage) },
@@ -136,6 +142,7 @@ export const routes: RouteObject[] = [
       { path: "rides/activities/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideActivityPage) },
       { path: "rides/offers/:id", lazy: page(() => import("../features/admin/AdminRideDetailPage"), (m) => m.AdminRideOfferPage) },
       // Food (B4): Moderators and Super Admins
+      { path: "announcements", lazy: page(() => import("../features/admin/AdminAnnouncementsPage"), (m) => m.AdminAnnouncementsPage) },
       { path: "carpool", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolPage) },
       { path: "carpool/posts/:id", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolPostPage) },
       { path: "carpool/bookings/:id", lazy: page(() => import("../features/admin/AdminCarpoolPage"), (m) => m.AdminCarpoolBookingPage) },

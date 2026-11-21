@@ -156,8 +156,7 @@ describe("Drive with UniGo", () => {
     expect(draft.nidFront.name).toBe("front.png");
     expect(draft.motorcycleLicence.name).toBe("lic.jpg");
     expect(await screen.findByText("An admin is reviewing your documents and vehicles.")).toBeInTheDocument();
-    // Many typed fields and file uploads: slow when every suite runs at once
-  }, 20_000);
+  });
 
   it("shows the server's error under the right vehicle field", async () => {
     riderApi.getRiderOverview.mockResolvedValue(overview());

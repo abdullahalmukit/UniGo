@@ -40,9 +40,16 @@ export const app = express();
 // B2c: notifications follow activity and chat changes.
 registerNotificationListeners();
 
+// B10: behind a reverse proxy, req.ip (and so every rate limit) must be the
+// user's address, not the proxy's.
+if (env.TRUST_PROXY > 0) app.set("trust proxy", env.TRUST_PROXY);
+app.disable("x-powered-by");
 app.use(helmet());
-// Allow both 5173 and 5174 in dev (Vite picks 5174 when 5173 is busy)
-const allowedOrigins = [env.CLIENT_URL, env.CLIENT_URL.replace("5173", "5174"), env.CLIENT_URL.replace("5174", "5173")];
+// Development also allows Vite's second port (5174 when 5173 is busy).
+const allowedOrigins =
+  env.NODE_ENV === "development"
+    ? [env.CLIENT_URL, env.CLIENT_URL.replace("5173", "5174"), env.CLIENT_URL.replace("5174", "5173")]
+    : [env.CLIENT_URL];
 app.use(cors({ origin: (origin, cb) => cb(null, !origin || allowedOrigins.includes(origin)), credentials: true }));
 app.use(express.json({ limit: "1mb" }));
 app.use(cookieParser());

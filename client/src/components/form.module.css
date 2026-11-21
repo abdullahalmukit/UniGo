@@ -291,6 +291,18 @@ select.input:focus {
   border-bottom: 1px solid var(--color-border);
 }
 
+.sheetContent {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  min-height: 0;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  /* Room for focus rings at the edges */
+  margin: 0 calc(-1 * var(--space-1));
+  padding: 2px var(--space-1);
+}
+
 .sheetTitle {
   font-size: var(--text-title);
   font-weight: 800;

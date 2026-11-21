@@ -1,9 +1,9 @@
-import "maplibre-gl/dist/maplibre-gl.css";
-import * as maplibregl from "maplibre-gl";
+import { maplibregl } from "./maplibre";
 import { LocateFixed, MapPin } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "../app/theme-provider";
+import { FullscreenButton } from "./FullscreenButton";
 import { mapStyle } from "../lib/map-config";
 import type { LatLng } from "./map-types";
 import styles from "./MapPicker.module.css";
@@ -31,6 +31,7 @@ export function MapPicker({
   const onMoveRef = useRef(onMove);
   onMoveRef.current = onMove;
   const initial = useRef({ center, zoom, theme: resolved });
+  const wrap = useRef<HTMLDivElement>(null);
   const [unsupported, setUnsupported] = useState(false);
 
   useEffect(() => {
@@ -95,7 +96,8 @@ export function MapPicker({
   };
 
   return (
-    <div className={styles.wrap}>
+    <div ref={wrap} className={styles.wrap}>
+      <FullscreenButton target={wrap} className={styles.expand} />
       {unsupported ? (
         <div className={styles.unsupported}>{t("trip.mapUnsupported")}</div>
       ) : (

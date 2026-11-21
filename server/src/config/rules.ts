@@ -260,6 +260,9 @@ export const rules = {
 
   // B7: support requests and app feedback
   support: {
+    // Rate Us (proposal 5): a 1-5 rating with an optional comment, at most
+    // this many a day per account
+    rateUs: { commentMaxLength: 1000, perUser: { window: DAY, max: 3 } },
     messageMinLength: 5,
     messageMaxLength: 2000,
     screenshotFolder: "support-screenshots" as const,
@@ -369,6 +372,10 @@ export const rules = {
   // B2c: notifications (proposal section 14, B2c decisions)
   notifications: {
     pageSize: 20,
+    // Admin announcements (proposal 17): title and message lengths, and how
+    // many recipients are notified per batch
+    announcement: { titleMaxLength: 100, bodyMaxLength: 500 },
+    announcementBatch: 500,
     // Reminder of an accepted activity, this long before its start (ride, food,
     // service with a time). Not scheduled when the activity is accepted later.
     reminderBeforeStart: 30 * MINUTE,

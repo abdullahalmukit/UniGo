@@ -13,7 +13,7 @@
 .mapWrap {
   position: relative;
   overflow: hidden;
-  height: 260px;
+  height: clamp(220px, 40dvh, 440px);
   border-radius: var(--radius-control);
   /* Map layers never cover sheets, toasts or bars (B3b-1 #6) */
   isolation: isolate;
@@ -118,10 +118,27 @@
   }
 }
 
-@media (min-width: 768px) {
-  .mapWrap {
-    height: 320px;
-  }
+.mapWrap:fullscreen {
+  height: 100%;
+  border-radius: 0;
+}
+
+.expand {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-pill);
+  background: var(--color-surface);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-card);
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

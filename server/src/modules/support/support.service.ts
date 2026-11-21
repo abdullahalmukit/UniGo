@@ -25,6 +25,16 @@ export async function createSupportRequest(userId: string, input: CreateSupportI
   return request;
 }
 
+// Rate Us (proposal 5, A2 decision 4): a support request with category
+// App Feedback and the rating; the comment is optional.
+export async function rateApp(userId: string, input: { rating: number; comment?: string }) {
+  const request = await prisma.supportRequest.create({
+    data: { userId, category: "APP_FEEDBACK", message: input.comment?.trim() ?? "", rating: input.rating, status: "OPEN" },
+    select: { id: true, rating: true, createdAt: true },
+  });
+  return request;
+}
+
 export async function listUserSupportRequests(userId: string) {
   const requests = await prisma.supportRequest.findMany({
     where: { userId },

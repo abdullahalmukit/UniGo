@@ -437,7 +437,8 @@
     "RENEW_NOT_AVAILABLE": "This contract cannot be renewed now.",
     "MATCH_CONTEXT_REQUIRED": "Choose a place, or open one of your own requests, to see matches.",
     "MATCH_SOURCE_CLOSED": "This item is no longer open.",
-    "MATCH_SOURCE_NOT_FOUND": "Your request or offer was not found."
+    "MATCH_SOURCE_NOT_FOUND": "Your request or offer was not found.",
+    "NO_RECIPIENTS": "Nobody matches this audience."
   },
   "verification": {
     "title": "Verify your student status",
@@ -534,7 +535,8 @@
       "spotlight": "Spotlight",
       "promos": "Promos",
       "banners": "Banners",
-      "carpool": "Carpool"
+      "carpool": "Carpool",
+      "announcements": "Notifications"
     },
     "dashboard": {
       "totalUsers": "Total users",
@@ -1060,6 +1062,27 @@
       "precisionAt1": "Precision@1",
       "precisionAt3": "Precision@3",
       "precisionAt5": "Precision@5"
+    },
+    "announcements": {
+      "new": "New announcement",
+      "to": "Send to",
+      "audience": {
+        "ALL": "Everyone",
+        "UNIVERSITY": "One university",
+        "SUB_AREA": "One sub-area"
+      },
+      "choose": "Choose…",
+      "title": "Title",
+      "body": "Message",
+      "willReach_one": "This will reach {{count}} person.",
+      "willReach_other": "This will reach {{count}} people.",
+      "send": "Send announcement",
+      "sent_one": "Sent to {{count}} person.",
+      "sent_other": "Sent to {{count}} people.",
+      "history": "Sent announcements",
+      "none": "No announcements yet.",
+      "people_one": "{{count}} person",
+      "people_other": "{{count}} people"
     }
   },
   "support": {
@@ -2233,5 +2256,177 @@
     },
     "categoryHint": "This looks like {{category}}.",
     "useCategory": "Use it"
+  },
+  "map": {
+    "fullscreen": "Show the map on the full screen",
+    "exitFullscreen": "Leave full screen"
+  },
+  "info": {
+    "about": {
+      "title": "About UniGo",
+      "lead": "UniGo is a university-only app where verified students help each other get around and get things done.",
+      "services": {
+        "title": "What you can do",
+        "points": [
+          "Ride Sharing: ask for a ride, or as a verified rider offer seats on your trip.",
+          "Carpool: book a seat on a weekly ride for one to four months.",
+          "Food Delivery: ask a fellow student to buy and bring food.",
+          "Uni Service: get help with shopping, parcels, documents, repairs and more."
+        ]
+      },
+      "trust": {
+        "title": "Built on trust",
+        "points": [
+          "Only students verified by their university email or ID card can use it.",
+          "Riders and their vehicles are checked by UniGo before they can drive.",
+          "Blind reviews, profile stats, reports and blocking keep everyone accountable.",
+          "UniGo does not take payments: you pay each other by cash, bKash or Nagad."
+        ]
+      },
+      "owner": {
+        "title": "Who runs UniGo",
+        "points": [
+          "UniGo is a project owned by Mukit."
+        ]
+      }
+    },
+    "payments": {
+      "title": "Payment methods",
+      "lead": "UniGo never takes or holds money. You pay each other directly, and UniGo only keeps a record of the amount, the method and whether it was paid.",
+      "methods": {
+        "CASH": "Pay in person when you meet.",
+        "BKASH": "Send to the other person's bKash number. Never share your PIN or OTP.",
+        "NAGAD": "Send to the other person's Nagad number. Never share your PIN or OTP."
+      },
+      "howTitle": "How it works",
+      "how": [
+        "After an activity is accepted, either of you picks the method you agreed on.",
+        "The person who receives the money marks it paid. A paid record cannot be changed.",
+        "Food keeps the food cost and the delivery charge separately.",
+        "Carpool has one record per contract month, unpaid at the start of each month.",
+        "Refunds and disagreements are settled between you; you can report a problem to UniGo."
+      ]
+    },
+    "policy": {
+      "title": "Policy",
+      "updated": "Terms, privacy, safety and cancellation rules.",
+      "terms": {
+        "title": "Terms of use",
+        "points": [
+          "UniGo is for verified university students only. One account per person; your details must be true.",
+          "Riders must hold a valid licence and use the vehicles UniGo approved.",
+          "UniGo connects students and keeps records. It is not a transport, delivery or payment company and does not handle money.",
+          "Be respectful and honest. Harassment, fraud, fake profiles and unsafe behaviour lead to warnings, restrictions, suspensions or a ban.",
+          "You can have at most 3 open requests or offers at a time and create at most 4 a day."
+        ]
+      },
+      "privacy": {
+        "title": "Privacy",
+        "points": [
+          "Your email is never shown to other users.",
+          "Your phone number is shown only to the other person of an accepted activity, and only while it is running.",
+          "ID cards, NID and licence files are kept in private storage and opened only by UniGo admins through short-lived links.",
+          "Profile and vehicle photos are re-saved without location data. Vehicle numbers are partly hidden from other students.",
+          "Live location is shared only when you turn it on, only with the other person of that ride, and is never stored.",
+          "Chats are private. Admins read a chat only when the activity is under dispute, and every such view is logged."
+        ]
+      },
+      "safety": {
+        "title": "Safety",
+        "points": [
+          "Check the other person's profile, rating and reviews before you accept or book.",
+          "Keep your conversations in the UniGo chat. You can report or block anyone from the chat or their profile.",
+          "Never share passwords, PINs or OTP codes with anyone, including UniGo.",
+          "Pharmacy help means buying or collecting only; nobody on UniGo gives medical advice.",
+          "If something goes wrong, raise a dispute or a report. UniGo reviews it and acts."
+        ]
+      },
+      "cancellation": {
+        "title": "Cancellation and completion",
+        "points": [
+          "Before anyone accepts, you can edit, raise the amount or delete for free.",
+          "After acceptance either side can cancel, but must give a reason. Cancelling less than 60 minutes before the start is a late cancellation and shows on your profile.",
+          "An open request can still be accepted up to 15 minutes after its start time; after that it expires.",
+          "One person marks an activity completed and the other confirms. With no answer in 24 hours it completes by itself.",
+          "An activity nobody started within 6 hours of its start is closed as not marked and counts against nobody.",
+          "Carpool rides are marked completed or cancelled one by one. A contract can end early only if both agree."
+        ]
+      }
+    },
+    "rate": {
+      "title": "Rate UniGo",
+      "lead": "How do you like UniGo? Your rating goes to the UniGo team.",
+      "star_one": "{{count}} star",
+      "star_other": "{{count}} stars",
+      "comment": "Anything to tell us? (optional)",
+      "send": "Send rating",
+      "thanks": "Thank you! Your rating was sent to the UniGo team."
+    }
+  },
+  "footer": {
+    "home": "UniGo home",
+    "tagline": "Rides, carpools, food and everyday help, shared between verified university students.",
+    "trust": "Verified students only",
+    "contact": {
+      "support": "Send a support request",
+      "location": "Dhaka, Bangladesh"
+    },
+    "navLabel": "Footer",
+    "columns": {
+      "services": "Services",
+      "quick": "Quick links",
+      "account": "Account",
+      "support": "Help & company"
+    },
+    "links": {
+      "ride": "Ride Sharing",
+      "carpool": "Carpool",
+      "food": "Food Delivery",
+      "service": "Uni Service",
+      "allServices": "All services",
+      "drive": "Drive with UniGo",
+      "home": "Home",
+      "upcoming": "Upcoming",
+      "activity": "Activity",
+      "inbox": "Inbox",
+      "notifications": "Notifications",
+      "promos": "Promos",
+      "settings": "Account & settings",
+      "profile": "Profile",
+      "verification": "Student verification",
+      "addresses": "Saved addresses",
+      "subAreas": "My sub-areas",
+      "paymentMethods": "Payment methods",
+      "help": "Support",
+      "about": "About UniGo",
+      "developers": "Meet the developers",
+      "policy": "Policy",
+      "rateUs": "Rate UniGo"
+    },
+    "team": {
+      "title": "Built by students",
+      "text": "UniGo is designed and developed by a small team of student developers.",
+      "meet": "Meet the developers"
+    },
+    "copyright": "© {{year}} UniGo. All rights reserved.",
+    "legal": {
+      "terms": "Terms of use",
+      "privacy": "Privacy",
+      "safety": "Safety"
+    }
+  },
+  "developers": {
+    "title": "Meet the developers",
+    "eyebrow": "Development team",
+    "heading": "The people behind UniGo",
+    "lead": "UniGo is built by three developers who wanted getting around campus, and getting things done, to be easier and safer for every student.",
+    "roles": {
+      "owner": "Project owner · Developer",
+      "developer": "Developer"
+    },
+    "email": "Email",
+    "portfolio": "Portfolio",
+    "photoOf": "Photo of {{name}}",
+    "githubOf": "{{name}} on GitHub"
   }
 }

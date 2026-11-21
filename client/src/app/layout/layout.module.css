@@ -281,7 +281,7 @@
   width: 100%;
   max-width: var(--content-width);
   margin: 0 auto;
-  padding: var(--space-5) var(--space-4) calc(var(--tabs-height) + env(safe-area-inset-bottom) + var(--space-5));
+  padding: var(--space-5) var(--space-4) var(--space-5);
   animation: fadeInUp 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
   position: relative;
   z-index: 1;

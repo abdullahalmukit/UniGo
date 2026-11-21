@@ -27,3 +27,10 @@ export const listSupportQuery = z.object({
 
 export type ListSupportQuery = z.infer<typeof listSupportQuery>;
 
+
+// Rate Us (proposal 5): stored as an APP_FEEDBACK support request
+export const rateUsSchema = z.object({
+  rating: z.coerce.number().int().min(1).max(5),
+  comment: z.string().trim().max(rules.support.rateUs.commentMaxLength).optional(),
+});
+export type RateUsInput = z.infer<typeof rateUsSchema>;

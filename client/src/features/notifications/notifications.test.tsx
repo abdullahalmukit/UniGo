@@ -107,7 +107,9 @@ describe("Notifications page", () => {
 describe("Notification bell", () => {
   it("shows the unread count and follows the socket", async () => {
     renderAt("/");
-    expect(await screen.findAllByRole("link", { name: "Notifications" })).toHaveLength(2);
+    // The two bells (the footer also has a plain "Notifications" link)
+    const bells = (await screen.findAllByRole("link", { name: "Notifications" })).filter((link) => !link.closest("footer"));
+    expect(bells).toHaveLength(2);
 
     // Phone top bar and desktop navbar each have the bell
     act(() => fakeSocket.emit("notification:new", { notification: item({}), unreadCount: 3 }));

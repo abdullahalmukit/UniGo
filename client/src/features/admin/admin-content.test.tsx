@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { createMemoryRouter, RouterProvider } from "react-router";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -224,7 +224,8 @@ describe("HomePage — spotlight section", () => {
     state.current = { status: "guest" };
     renderAt("/");
     // Services section is always present
-    expect(await screen.findByText("Services")).toBeInTheDocument();
+    // (scoped to the page: the footer has its own "Services" column)
+    expect(await within(screen.getByRole("main")).findByText("Services")).toBeInTheDocument();
     // Spotlight title should NOT appear when list is empty
     await waitFor(() => {
       expect(screen.queryByText("UniGo Spotlight")).not.toBeInTheDocument();

@@ -619,7 +619,7 @@ UniGo does not process any payment in version 1; it only records what users agre
 | Sub-Areas | Add, edit, remove sub-areas in the master list |
 | Fare Settings | Set the suggested fare rate per km |
 | Promos, Spotlight, Banners | Add, edit, delete, set start and end date |
-| Notifications | Send announcements to all or selected users |
+| Notifications | Send announcements to everyone, one university or the users of one sub-area (in-app and push); the number of people is shown before sending |
 | Audit Log | Read-only record of admin actions |
 
 Audit Log fields: admin, action, time, affected user or content, old value and new value.

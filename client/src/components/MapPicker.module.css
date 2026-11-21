@@ -2,7 +2,8 @@
 
 .wrap {
   position: relative;
-  height: 280px;
+  /* A parent can set --map-height (e.g. 100% inside the place picker) */
+  height: var(--map-height, clamp(220px, 42dvh, 440px));
   overflow: hidden;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
@@ -78,10 +79,31 @@
   transform: translateY(0) scale(0.96);
 }
 
-@media (min-width: 768px) {
-  .wrap {
-    height: 360px;
-  }
+/* Full screen (the expand button): the map fills the screen */
+.wrap:fullscreen {
+  height: 100%;
+  border: 0;
+  border-radius: 0;
+}
+
+.expand {
+  position: absolute;
+  top: var(--space-3);
+  right: var(--space-3);
+  z-index: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: var(--tap-target);
+  height: var(--tap-target);
+  border: 1px solid var(--glass-border);
+  border-radius: var(--radius-pill);
+  background: var(--glass-bg);
+  backdrop-filter: var(--glass-blur);
+  -webkit-backdrop-filter: var(--glass-blur);
+  color: var(--color-accent);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

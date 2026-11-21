@@ -2,6 +2,7 @@ import { Clock, LocateFixed, LocateOff, Route as RouteIcon } from "lucide-react"
 import { lazy, Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { fetchRoute, metresBetween, type LatLng, type Route } from "../../lib/map-config";
+import { FullscreenButton } from "../FullscreenButton";
 import { buttonStyles } from "../ui";
 import type { TripMarker } from "./TripMapCanvas";
 import styles from "./TripMap.module.css";
@@ -48,6 +49,7 @@ export function TripMap({
   peerName?: string;
 }) {
   const { t, i18n } = useTranslation();
+  const mapWrap = useRef<HTMLDivElement>(null);
   const [route, setRoute] = useState<Route | null>(null);
   const [routeFailed, setRouteFailed] = useState(false);
 
@@ -89,7 +91,8 @@ export function TripMap({
 
   return (
     <section className={styles.card} aria-label={t("trip.title")}>
-      <div className={styles.mapWrap}>
+      <div ref={mapWrap} className={styles.mapWrap}>
+        <FullscreenButton target={mapWrap} className={styles.expand} />
         <Suspense fallback={<div className={styles.map} aria-hidden />}>
           <TripMapCanvas pickup={pickup} destination={destination} route={route?.coordinates.length ? route.coordinates : null} markers={markers} />
         </Suspense>
