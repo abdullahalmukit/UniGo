@@ -12,25 +12,37 @@
   max-width: 680px;
   width: 100%;
   margin: 0 auto;
+  min-height: calc(100dvh - var(--bar-height) - var(--tabs-height) - var(--space-6));
+  align-content: center;
   animation: fadeInUp 500ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
 }
 
 form.narrow {
   position: relative;
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
+  background: rgba(255, 255, 255, 0.55);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
   border-radius: 28px;
   padding: var(--space-6);
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04), 0 24px 60px rgba(0, 62, 97, 0.08);
-  margin: var(--space-3) auto var(--space-8);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
+  box-shadow:
+    0 8px 32px rgba(0, 62, 97, 0.08),
+    0 24px 60px rgba(0, 62, 97, 0.06),
+    inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  margin: auto;
+  backdrop-filter: blur(28px) saturate(1.8);
+  -webkit-backdrop-filter: blur(28px) saturate(1.8);
+  min-height: auto;
+  align-content: start;
 }
 
 :global([data-theme="dark"]) form.narrow {
-  background: radial-gradient(ellipse 120% 70% at 50% 0%, rgba(0, 112, 168, 0.12) 0%, rgba(18, 18, 24, 0.96) 60%);
-  border-color: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4), 0 24px 64px rgba(0, 78, 122, 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  background: rgba(17, 17, 24, 0.5);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.5),
+    0 24px 64px rgba(0, 78, 122, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(32px) saturate(1.8);
+  -webkit-backdrop-filter: blur(32px) saturate(1.8);
 }
 
 form.narrow::before {
@@ -39,16 +51,16 @@ form.narrow::before {
   top: 0;
   left: 32px;
   right: 32px;
-  height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #0070a8 30%, #5ba8d6 70%, transparent 100%);
+  height: 2.5px;
+  background: linear-gradient(90deg, transparent 0%, rgba(0, 112, 168, 0.5) 20%, #0070a8 50%, rgba(91, 168, 214, 0.5) 80%, transparent 100%);
   border-radius: 2px;
 }
 
 @media (max-width: 640px) {
   form.narrow {
     padding: var(--space-5) var(--space-4);
-    border-radius: 20px;
-    margin: var(--space-1) auto var(--space-6);
+    border-radius: 24px;
+    margin: auto;
   }
 }
 
@@ -80,27 +92,43 @@ form.narrow::before {
 .tab {
   min-height: 44px;
   padding: 0 var(--space-5);
-  border: 1.5px solid var(--color-border);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
   border-radius: var(--radius-pill);
-  background: var(--color-surface);
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(1.5);
+  -webkit-backdrop-filter: blur(20px) saturate(1.5);
   color: var(--color-text);
   font: inherit;
   cursor: pointer;
   white-space: nowrap;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 6px rgba(0, 62, 97, 0.05);
   transition: all 250ms var(--transition-smooth);
 }
 
+:global([data-theme="dark"]) .tab {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
 .tab:hover {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 78, 122, 0.3);
+}
+
+:global([data-theme="dark"]) .tab:hover {
+  background: rgba(255, 255, 255, 0.1);
 }
 
 .tabActive {
-  border-color: var(--color-accent);
+  border-color: transparent;
   background: var(--gradient-primary);
   color: var(--color-on-accent);
   font-weight: var(--weight-bold);
-  box-shadow: 0 2px 8px rgba(99, 102, 241, 0.25);
+  box-shadow: 0 4px 14px rgba(0, 62, 97, 0.35);
+  backdrop-filter: none;
+  -webkit-backdrop-filter: none;
 }
 
 .filterSummary {
@@ -124,10 +152,12 @@ form.narrow::before {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
+  border: 1.5px solid var(--color-border);
+  border-radius: 22px;
   background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  box-shadow:
+    0 2px 8px rgba(0, 62, 97, 0.05),
+    0 8px 24px rgba(0, 62, 97, 0.04);
   color: var(--color-text);
   text-decoration: none;
   transition: all 350ms var(--transition-smooth);
@@ -135,8 +165,11 @@ form.narrow::before {
 
 .card:hover {
   transform: translateY(-2px);
-  box-shadow: var(--shadow-card-hover);
-  border-color: rgba(99, 102, 241, 0.2);
+  background: var(--color-surface);
+  box-shadow:
+    0 8px 24px rgba(0, 62, 97, 0.1),
+    0 16px 48px rgba(0, 62, 97, 0.08);
+  border-color: rgba(0, 78, 122, 0.2);
 }
 
 .cardLink {
@@ -235,10 +268,14 @@ a.person:hover .personName {
   display: grid;
   gap: var(--space-3);
   padding: var(--space-5);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  background: var(--color-surface);
-  box-shadow: var(--shadow-card);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 22px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(16px) saturate(1.4);
+  -webkit-backdrop-filter: blur(16px) saturate(1.4);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 8px rgba(0, 62, 97, 0.04);
 }
 
 .sectionTitle {
@@ -278,23 +315,27 @@ a.person:hover .personName {
   width: 100%;
   min-height: 54px;
   padding: 10px var(--space-4);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   color: var(--color-text);
   font: inherit;
   font-size: 0.95rem;
   font-weight: 550;
   text-align: start;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 8px rgba(0, 62, 97, 0.05);
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :global([data-theme="dark"]) .placeButton {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), inset 0 1px 1px rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  box-shadow: inset 0 1px 1px rgba(255, 255, 255, 0.04), 0 2px 6px rgba(0, 0, 0, 0.2);
 }
 
 .placeButton svg {
@@ -309,15 +350,18 @@ a.person:hover .personName {
 }
 
 .placeButton:hover {
-  border-color: #0070a8;
-  background: rgba(0, 112, 168, 0.05);
-  box-shadow: 0 0 0 4px rgba(0, 112, 168, 0.18), 0 4px 16px rgba(0, 78, 122, 0.12);
+  background: rgba(255, 255, 255, 0.55);
+  border-color: rgba(0, 78, 122, 0.3);
+  box-shadow:
+    0 0 0 3.5px rgba(0, 78, 122, 0.12),
+    0 4px 16px rgba(0, 78, 122, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
   transform: translateY(-1px);
 }
 
 :global([data-theme="dark"]) .placeButton:hover {
-  background: rgba(0, 112, 168, 0.12);
-  border-color: #5ba8d6;
+  background: rgba(0, 112, 168, 0.1);
+  border-color: rgba(91, 168, 214, 0.35);
 }
 
 .placeButton:hover svg {
@@ -403,17 +447,21 @@ a.person:hover .personName {
   display: flex;
   align-items: center;
   gap: var(--space-3);
-  min-height: 50px;
+  min-height: 52px;
   padding: var(--space-3) var(--space-4);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-card);
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.35);
+  backdrop-filter: blur(16px) saturate(1.3);
+  -webkit-backdrop-filter: blur(16px) saturate(1.3);
   cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
   transition: all 250ms var(--transition-smooth);
 }
 
 .choice:hover {
-  border-color: var(--color-accent);
-  background: var(--color-accent-soft);
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 78, 122, 0.3);
 }
 
 .choiceDisabled {
@@ -435,51 +483,68 @@ a.person:hover .personName {
 
 .select {
   width: 100%;
-  min-height: 50px;
+  min-height: 52px;
   padding: 0 var(--space-4);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   color: var(--color-text);
   font: inherit;
-  transition: border-color 250ms var(--transition-smooth);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 8px rgba(0, 62, 97, 0.05);
+  transition: border-color 250ms var(--transition-smooth), box-shadow 250ms var(--transition-smooth);
 }
 
 .select:focus {
-  border-color: var(--color-accent);
+  border-color: #004e7a;
   outline: none;
-  box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+  box-shadow:
+    0 0 0 3.5px rgba(0, 78, 122, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6);
 }
 
 .textarea {
   width: 100%;
   min-height: 110px;
   padding: var(--space-4);
-  border: 1.5px solid var(--color-border);
-  border-radius: var(--radius-control);
-  background: var(--color-surface);
+  border: 1.5px solid rgba(255, 255, 255, 0.5);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.4);
+  backdrop-filter: blur(20px) saturate(1.4);
+  -webkit-backdrop-filter: blur(20px) saturate(1.4);
   color: var(--color-text);
   font: inherit;
   font-size: 0.95rem;
   line-height: 1.55;
   resize: vertical;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.5),
+    0 2px 8px rgba(0, 62, 97, 0.05);
   transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 :global([data-theme="dark"]) .textarea {
-  background: rgba(255, 255, 255, 0.035);
-  border-color: rgba(255, 255, 255, 0.09);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
   box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .textarea:hover {
-  border-color: rgba(0, 112, 168, 0.5);
+  background: rgba(255, 255, 255, 0.5);
+  border-color: rgba(0, 78, 122, 0.3);
 }
 
 .textarea:focus {
-  border-color: #0070a8;
+  background: rgba(255, 255, 255, 0.55);
+  border-color: #004e7a;
   outline: none;
-  box-shadow: 0 0 0 4px rgba(0, 112, 168, 0.2), 0 4px 16px rgba(0, 78, 122, 0.12);
+  box-shadow:
+    0 0 0 3.5px rgba(0, 78, 122, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    0 4px 16px rgba(0, 78, 122, 0.08);
 }
 
 :global([data-theme="dark"]) .textarea:focus {
@@ -508,16 +573,21 @@ form.narrow .muted {
 }
 
 form.narrow .section {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid var(--color-border);
-  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.25);
+  border: 1.5px solid rgba(255, 255, 255, 0.35);
+  border-radius: 22px;
   padding: var(--space-5);
-  box-shadow: none;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.4),
+    0 2px 8px rgba(0, 62, 97, 0.03);
+  backdrop-filter: blur(12px) saturate(1.3);
+  -webkit-backdrop-filter: blur(12px) saturate(1.3);
 }
 
 :global([data-theme="dark"]) form.narrow .section {
-  background: rgba(255, 255, 255, 0.025);
-  border-color: rgba(255, 255, 255, 0.07);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
 }
 
 form.narrow .section::before {
