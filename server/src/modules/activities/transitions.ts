@@ -37,7 +37,12 @@ export type ActivityAction =
   | "MODERATION_CLOSE"
   | "ADMIN_CANCEL"
   | "RESOLVE_COMPLETED"
-  | "RESOLVE_CANCELLED";
+  | "RESOLVE_CANCELLED"
+  // Service payment mode negotiation
+  | "PROPOSE_PAYMENT_MODE"
+  | "CONFIRM_PAYMENT_MODE"
+  | "MARK_PAYMENT_SENT"
+  | "CONFIRM_PAYMENT_RECEIVED";
 
 // Who may take an action. CREATOR owns the post or request; ACCEPTER took it
 // (A2 decision 7). OTHER_PARTICIPANT is the participant who did not ask for
@@ -90,6 +95,10 @@ export const NOT_COMPLETION_REQUESTED: readonly Sub[] = [
   "ORDER_CONFIRMED",
   "FOOD_COLLECTED",
   "SERVICE_DELIVERED",
+  // Service payment mode negotiation sub-statuses (all cancellable / auto-closeable)
+  "PAYMENT_MODE_PROPOSED",
+  "AWAITING_PAYMENT",
+  "PAYMENT_SENT",
 ];
 const NOT_TERMINAL = [{ status: "OPEN" }, { status: "ACCEPTED" }, { status: "IN_PROGRESS" }, { status: "DISPUTED" }] as const;
 
@@ -120,6 +129,18 @@ export const TRANSITIONS: readonly TransitionRule[] = [
     by: ["ACCEPTER"],
     records: ["SERVICE_DELIVERED"],
   },
+
+  // --- Service payment mode negotiation.
+  // Step 1: Giver (ACCEPTER) proposes a mode (Pre-pay / Post-pay).
+  { action: "PROPOSE_PAYMENT_MODE", types: ["SERVICE"], from: [{ status: "ACCEPTED", subStatus: [null] }], to: { status: "ACCEPTED", subStatus: "PAYMENT_MODE_PROPOSED" }, by: ["ACCEPTER"] },
+  // Step 2: Taker (CREATOR) confirms. Service layer overrides subStatus via
+  // options.data: AWAITING_PAYMENT for PRE_PAY, null for POST_PAY.
+  { action: "CONFIRM_PAYMENT_MODE", types: ["SERVICE"], from: [{ status: "ACCEPTED", subStatus: ["PAYMENT_MODE_PROPOSED"] }], to: { status: "ACCEPTED", subStatus: null }, by: ["CREATOR"] },
+  // PRE_PAY Step 3: Taker marks payment sent.
+  { action: "MARK_PAYMENT_SENT", types: ["SERVICE"], from: [{ status: "ACCEPTED", subStatus: ["AWAITING_PAYMENT"] }], to: { status: "ACCEPTED", subStatus: "PAYMENT_SENT" }, by: ["CREATOR"] },
+  // PRE_PAY Step 4: Giver confirms payment received → auto IN_PROGRESS.
+  // Service layer also marks the payment record PAID in the same transaction.
+  { action: "CONFIRM_PAYMENT_RECEIVED", types: ["SERVICE"], from: [{ status: "ACCEPTED", subStatus: ["PAYMENT_SENT"] }], to: { status: "IN_PROGRESS", subStatus: null }, by: ["ACCEPTER"] },
 
   // --- Two-step completion (5.3), only once started (12.2)
   { action: "REQUEST_COMPLETION", types: RIDE, from: [{ status: "IN_PROGRESS", subStatus: ["RIDE_CONFIRMED"] }], to: { status: "IN_PROGRESS", subStatus: "COMPLETION_REQUESTED" }, by: ["EITHER"] },

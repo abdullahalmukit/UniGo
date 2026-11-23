@@ -41,6 +41,8 @@ export const serviceSelect = {
       subArea: { select: subAreaSelect },
       estimatedBudget: true,
       instructions: true,
+      paymentMode: true,
+      paymentModeProposedBy: true,
       createdAt: true,
     },
   },
@@ -54,10 +56,22 @@ export async function serviceView(row: ServiceRow, viewerId: string) {
   const isAccepter = viewerId === row.accepterId;
   const participant = mine || isAccepter;
 
+  // Fetch payment status so the client can decide cancel permissions
+  const paymentRecord = participant
+    ? await import("../../lib/prisma.js").then(({ prisma }) =>
+        prisma.paymentRecord.findUnique({
+          where: { activityId: row.id },
+          select: { status: true },
+        }),
+      )
+    : null;
+  const paymentPaid = paymentRecord?.status === "PAID";
+
   return {
     id: row.id,
     status: row.status,
     subStatus: row.subStatus,
+    paymentPaid,
     startTime: row.startTime.toISOString(),
     preferredDate: req.preferredDate.toISOString().slice(0, 10),
     hasPreferredTime: req.hasPreferredTime,
@@ -84,6 +98,11 @@ export async function serviceView(row: ServiceRow, viewerId: string) {
     itemDetails: req.itemDetails,
     quantity: req.quantity,
     instructions: req.instructions,
+    // Payment mode negotiation fields
+    paymentMode: req.paymentMode,
+    // Tells the client whether the mode has been agreed (confirmed by taker).
+    // True when paymentMode is set AND we are past the PAYMENT_MODE_PROPOSED state.
+    paymentModeConfirmed: req.paymentMode !== null && row.subStatus !== "PAYMENT_MODE_PROPOSED",
     referenceImage: req.referenceImageKey ? await signPrivateFileUrl(req.referenceImageKey) : null,
     requester: await miniProfile(row.creator),
     accepter: row.accepter ? await miniProfile(row.accepter) : null,

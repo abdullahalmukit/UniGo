@@ -23,6 +23,9 @@ export type ServiceRequest = {
   id: string;
   status: ActivityStatus;
   subStatus: string | null;
+  paymentPaid: boolean;
+  paymentMode: "PRE_PAY" | "POST_PAY" | null;
+  paymentModeConfirmed: boolean;
   startTime: string;
   preferredDate: string;
   hasPreferredTime: boolean;
@@ -123,6 +126,17 @@ export const updateServiceRequest = (id: string, input: EditServiceInput) => api
 export const acceptServiceRequest = (id: string) => api<One>(`/service/requests/${enc(id)}/accept`, { method: "POST" });
 export const startService = (id: string) => api<One>(`/service/requests/${enc(id)}/start`, { method: "POST" });
 export const deliverService = (id: string) => api<One>(`/service/requests/${enc(id)}/deliver`, { method: "POST" });
+export const cancelService = (id: string, reason: string) =>
+  api<One>(`/service/requests/${enc(id)}/cancel`, { method: "POST", body: { reason } });
+
+export const proposePaymentMode = (id: string, mode: "PRE_PAY" | "POST_PAY") =>
+  api<One>(`/service/requests/${enc(id)}/propose-payment-mode`, { method: "POST", body: { mode } });
+export const confirmPaymentMode = (id: string) =>
+  api<One>(`/service/requests/${enc(id)}/confirm-payment-mode`, { method: "POST" });
+export const markPaymentSent = (id: string) =>
+  api<One>(`/service/requests/${enc(id)}/mark-payment-sent`, { method: "POST" });
+export const confirmPaymentReceived = (id: string) =>
+  api<One>(`/service/requests/${enc(id)}/confirm-payment-received`, { method: "POST" });
 
 export const adminServiceCategoriesApi = {
   list: () => api<{ categories: ServiceCategory[] }>("/admin/services/categories/all"),

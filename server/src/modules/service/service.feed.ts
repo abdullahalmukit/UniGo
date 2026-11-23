@@ -32,6 +32,7 @@ const serviceFeedSelect = {
       pickupLng: true,
       offeredAmount: true,
       estimatedBudget: true,
+      category: { select: { code: true } },
     },
   },
 } as const satisfies Prisma.ActivitySelect;
@@ -74,6 +75,7 @@ async function items(userId: string, rows: Row[], now = new Date()): Promise<Fee
         bookings: [],
         activeBookings: 0,
         food: null,
+        service: { categoryCode: s.category.code },
       };
     }),
   );

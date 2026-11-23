@@ -16,14 +16,19 @@ import { formErrors } from "../../lib/errors";
 import { SkeletonList, SubPageHeader } from "../account/SubPage";
 import { PaymentCard } from "../activity/PaymentCard";
 import { ReviewPanel } from "../activity/ReviewPanel";
-import { cancelActivity, confirmCompletion, deleteActivity } from "../ride/ride-api";
+import { confirmCompletion, deleteActivity } from "../ride/ride-api";
 import { ReasonField } from "../ride/RideActions";
 import { PersonRow, Route, taka } from "../ride/RideCard";
 import styles from "../ride/ride.module.css";
 import {
   acceptServiceRequest,
+  cancelService,
+  confirmPaymentMode,
+  confirmPaymentReceived,
   deliverService,
   getServiceRequest,
+  markPaymentSent,
+  proposePaymentMode,
   startService,
   type ServiceRequest,
 } from "./service-api";
@@ -64,6 +69,21 @@ export function ServiceDetailPage() {
 
   useEffect(reload, [reload]);
 
+  // Auto-poll while ACCEPTED (payment mode negotiation) or POST_PAY COMPLETION_REQUESTED
+  // so both sides see updates without manual refresh
+  useEffect(() => {
+    if (!request) return;
+    const isNegotiating = request.status === "ACCEPTED";
+    const isAwaitingPayment =
+      request.status === "IN_PROGRESS" &&
+      request.subStatus === "COMPLETION_REQUESTED" &&
+      request.paymentMode === "POST_PAY" &&
+      !request.paymentPaid;
+    if (!isNegotiating && !isAwaitingPayment) return;
+    const timer = setInterval(reload, 4000);
+    return () => clearInterval(timer);
+  }, [reload, request?.status, request?.subStatus, request?.paymentMode, request?.paymentPaid]);
+
   if (!request) {
     return (
       <div className={styles.narrow}>
@@ -81,6 +101,22 @@ export function ServiceDetailPage() {
   const isRequester = request.role === "REQUESTER";
   const isCompletionRequested = request.subStatus === "COMPLETION_REQUESTED";
   const active = request.status === "ACCEPTED" || request.status === "IN_PROGRESS" || request.status === "DISPUTED";
+
+  // Cancel permission rules:
+  // - ACCEPTED: both can cancel
+  // - IN_PROGRESS + payment NOT paid: both can cancel
+  // - IN_PROGRESS + payment PAID: only accepter can cancel (requester must dispute)
+  // - COMPLETION_REQUESTED or SERVICE_DELIVERED: nobody can cancel
+  const canCancel = (() => {
+    if (!active || isCompletionRequested) return false;
+    if (request.status === "ACCEPTED") return true;
+    if (request.status === "IN_PROGRESS") {
+      if (isAccepter) return true;
+      // Requester blocked from cancelling once payment is made
+      return !request.paymentPaid;
+    }
+    return false;
+  })();
 
   const runAction = async (action: () => Promise<unknown>, successMessage: string) => {
     setBusy(true);
@@ -130,7 +166,7 @@ export function ServiceDetailPage() {
 
   const handleCancel = async () => {
     await runAction(async () => {
-      await cancelActivity(request.id, cancelReason.trim());
+      await cancelService(request.id, cancelReason.trim());
       setSheet(null);
     }, t("service.actions.cancelledToast"));
   };
@@ -219,10 +255,42 @@ export function ServiceDetailPage() {
         <ContactRow phone={request.phone} name={other?.name} />
       </section>
 
-      {/* Payment & Reviews */}
-      {participant && !isOpen && (
-        <PaymentCard key={`${request.status}-${request.subStatus}`} activityId={request.id} />
+      {/* Payment Mode Agreement Panel — shown when both parties are involved and status is ACCEPTED */}
+      {participant && request.status === "ACCEPTED" && (
+        <PaymentModeAgreementPanel
+          request={request}
+          isAccepter={isAccepter}
+          isRequester={isRequester}
+          busy={busy}
+          setBusy={setBusy}
+          onChanged={reload}
+        />
       )}
+
+      {/* Payment & Reviews */}
+      {participant && !isOpen && (() => {
+        // PRE_PAY: payment handled internally via PaymentModeAgreementPanel — never show PaymentCard
+        if (request.paymentMode === "PRE_PAY") return null;
+        // ACCEPTED: always hide (work hasn't started yet)
+        if (request.status === "ACCEPTED") return null;
+        // POST_PAY: only unlock payment after taker confirms delivery (COMPLETION_REQUESTED)
+        if (request.paymentMode === "POST_PAY" && request.subStatus !== "COMPLETION_REQUESTED") return null;
+
+        return (
+          <>
+            {/* Hint for legacy flow: payment locked until provider marks delivery */}
+            {request.paymentMode === null &&
+              request.status === "IN_PROGRESS" &&
+              request.subStatus !== "SERVICE_DELIVERED" &&
+              request.subStatus !== "COMPLETION_REQUESTED" && (
+                <p className={styles.muted} style={{ padding: "0 16px", fontSize: "0.85rem" }}>
+                  {t("payment.serviceDeliverFirst")}
+                </p>
+              )}
+            <PaymentCard key={`${request.status}-${request.subStatus}`} activityId={request.id} />
+          </>
+        );
+      })()}
       {participant && request.status === "COMPLETED" && (
         <ReviewPanel activityId={request.id} />
       )}
@@ -258,12 +326,16 @@ export function ServiceDetailPage() {
       {participant && !isOpen && (
         <div className={styles.sticky}>
           <div className={styles.actions}>
-            {/* Accepter can start when ACCEPTED */}
-            {request.status === "ACCEPTED" && isAccepter && (
-              <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void handleStart()}>
-                <Play aria-hidden size={16} /> {t("service.actions.start")}
-              </button>
-            )}
+            {/* Accepter can start when ACCEPTED — only when payment mode is confirmed POST_PAY, or no payment mode set (legacy/backward compat) */}
+            {request.status === "ACCEPTED" && isAccepter &&
+              request.subStatus !== "PAYMENT_MODE_PROPOSED" &&
+              request.subStatus !== "AWAITING_PAYMENT" &&
+              request.subStatus !== "PAYMENT_SENT" &&
+              (request.paymentModeConfirmed && request.paymentMode === "POST_PAY") && (
+                <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void handleStart()}>
+                  <Play aria-hidden size={16} /> {t("service.actions.start")}
+                </button>
+              )}
 
             {/* Accepter can deliver when IN_PROGRESS */}
             {request.status === "IN_PROGRESS" && isAccepter && !isCompletionRequested && (
@@ -272,14 +344,42 @@ export function ServiceDetailPage() {
               </button>
             )}
 
-            {/* Requester can confirm completion when COMPLETION_REQUESTED */}
-            {isCompletionRequested && isRequester && (
+            {/* POST_PAY at COMPLETION_REQUESTED:
+                - Taker: PaymentCard shows method selector + "sent in Cash" hint.
+                  Confirm only unlocks AFTER Giver marks received (paymentPaid = true).
+                - Giver: PaymentCard shows "৳X sent in Cash — Mark as received" button.
+                  After marking: Taker gets Confirm button. */}
+            {request.status === "IN_PROGRESS" && isCompletionRequested && request.paymentMode === "POST_PAY" && isRequester && request.completionRequestedBy === "OTHER" && (
+              <>
+                {request.paymentPaid ? (
+                  /* Giver confirmed receipt → Taker can now confirm completion */
+                  <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void handleConfirmCompletion()}>
+                    <CheckCircle2 aria-hidden size={16} /> {t("ride.actions.confirm")}
+                  </button>
+                ) : (
+                  /* Waiting for Giver to mark received — PaymentCard above handles the UI */
+                  <p className={styles.muted}>{t("service.actions.postPayWaitingGiver")}</p>
+                )}
+              </>
+            )}
+            {request.status === "IN_PROGRESS" && isCompletionRequested && request.paymentMode === "POST_PAY" && isAccepter && (
+              request.paymentPaid ? (
+                /* Giver: payment confirmed received — waiting for taker's final confirm */
+                <p className={styles.muted}>{t("service.actions.postPayReceivedConfirm")}</p>
+              ) : (
+                /* Giver: PaymentCard above shows Mark as received — just an extra hint */
+                <p className={styles.muted}>{t("service.actions.waitingForPayment")}</p>
+              )
+            )}
+
+            {/* Legacy / non-POST_PAY: standard completion flow */}
+            {request.status === "IN_PROGRESS" && isCompletionRequested && request.paymentMode !== "POST_PAY" && isRequester && request.completionRequestedBy === "OTHER" && (
               <button type="button" className={buttonStyles.primary} disabled={busy} onClick={() => void handleConfirmCompletion()}>
                 <CheckCircle2 aria-hidden size={16} /> {t("ride.actions.confirm")}
               </button>
             )}
 
-            {isCompletionRequested && isAccepter && (
+            {request.status === "IN_PROGRESS" && isCompletionRequested && request.paymentMode !== "POST_PAY" && (isAccepter || (isRequester && request.completionRequestedBy === "ME")) && (
               <p className={styles.muted}>{t("ride.actions.waiting")}</p>
             )}
 
@@ -289,10 +389,15 @@ export function ServiceDetailPage() {
               </Link>
             )}
 
-            {active && !isCompletionRequested && (
+            {canCancel && (
               <button type="button" className={buttonStyles.secondary} disabled={busy} onClick={() => setSheet("cancel")}>
                 {t("service.actions.cancel")}
               </button>
+            )}
+
+            {/* Requester blocked from cancel after payment — show hint */}
+            {active && !isCompletionRequested && isRequester && request.paymentPaid && (
+              <p className={styles.muted}>{t("service.actions.paidCannotCancel")}</p>
             )}
 
             {active && request.status !== "DISPUTED" && (
@@ -359,5 +464,176 @@ export function ServiceDetailPage() {
         reportedUserId={other?.id}
       />
     </div>
+  );
+}
+
+// ─── Payment Mode Agreement Panel ────────────────────────────────────────────
+
+type PanelProps = {
+  request: ServiceRequest;
+  isAccepter: boolean;
+  isRequester: boolean;
+  busy: boolean;
+  setBusy: (v: boolean) => void;
+  onChanged: () => void;
+};
+
+function PaymentModeAgreementPanel({ request, isAccepter, isRequester, busy, setBusy, onChanged }: PanelProps) {
+  const { t } = useTranslation();
+  const toast = useToast();
+  const [selected, setSelected] = useState<"PRE_PAY" | "POST_PAY" | null>(null);
+
+  const run = async (action: () => Promise<unknown>, msg: string) => {
+    setBusy(true);
+    try {
+      await action();
+      toast.show(msg);
+      onChanged();
+    } catch {
+      toast.show(t("errors.generic"), "error");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const sub = request.subStatus;
+  const mode = request.paymentMode;
+
+  // ── State 1: Giver selects mode then confirms ─────────────────────────────
+  if (sub === null && isAccepter && mode === null) {
+    return <PaymentModeSelectorPanel request={request} busy={busy} run={run} t={t} />;
+  }
+
+  // ── State 2a: Proposal sent — Giver waiting ────────────────────────────────
+  if (sub === "PAYMENT_MODE_PROPOSED" && isAccepter) {
+    return (
+      <section className={styles.section}>
+        <p className={styles.muted}>{t("service.actions.paymentModePending")}</p>
+      </section>
+    );
+  }
+
+  // ── State 2b: Proposal received — Taker must confirm ─────────────────────
+  if (sub === "PAYMENT_MODE_PROPOSED" && isRequester) {
+    const modeLabel = mode === "PRE_PAY" ? t("service.actions.prePayLabel") : t("service.actions.postPayLabel");
+    return (
+      <section className={styles.section}>
+        <p style={{ marginBottom: 8 }}>{t("service.actions.paymentModeProposed", { mode: modeLabel })}</p>
+        <button
+          type="button"
+          className={buttonStyles.primary}
+          disabled={busy}
+          onClick={() => run(() => confirmPaymentMode(request.id), t("service.actions.paymentModeProposed", { mode: modeLabel }))}
+        >
+          {t("service.actions.confirmMode")}
+        </button>
+      </section>
+    );
+  }
+
+  // ── State 3a: PRE_PAY — Taker must send payment ───────────────────────────
+  if (sub === "AWAITING_PAYMENT" && isRequester) {
+    return (
+      <section className={styles.section}>
+        <p style={{ marginBottom: 8 }}>{t("service.actions.awaitingPayment")}</p>
+        <button
+          type="button"
+          className={buttonStyles.primary}
+          disabled={busy}
+          onClick={() => run(() => markPaymentSent(request.id), t("service.actions.markPaymentSent"))}
+        >
+          {t("service.actions.markPaymentSent")}
+        </button>
+      </section>
+    );
+  }
+
+  // ── State 3b: PRE_PAY — Giver waiting for payment ────────────────────────
+  if (sub === "AWAITING_PAYMENT" && isAccepter) {
+    return (
+      <section className={styles.section}>
+        <p className={styles.muted}>{t("service.actions.waitingForPayment")}</p>
+      </section>
+    );
+  }
+
+  // ── State 4a: PRE_PAY — Giver must confirm receipt ───────────────────────
+  if (sub === "PAYMENT_SENT" && isAccepter) {
+    return (
+      <section className={styles.section}>
+        <button
+          type="button"
+          className={buttonStyles.primary}
+          disabled={busy}
+          onClick={() => run(() => confirmPaymentReceived(request.id), t("service.actions.confirmPaymentReceived"))}
+        >
+          {t("service.actions.confirmPaymentReceived")}
+        </button>
+      </section>
+    );
+  }
+
+  // ── State 4b: PRE_PAY — Taker waiting for confirmation ───────────────────
+  if (sub === "PAYMENT_SENT" && isRequester) {
+    return (
+      <section className={styles.section}>
+        <p className={styles.muted}>{t("service.actions.paymentSentWaiting")}</p>
+      </section>
+    );
+  }
+
+  // ── State 5: POST_PAY confirmed — show info ───────────────────────────────
+  if (request.paymentModeConfirmed && mode === "POST_PAY") {
+    return (
+      <section className={styles.section}>
+        <p className={styles.muted}>{t("service.actions.postPayAgreed")}</p>
+      </section>
+    );
+  }
+
+  return null;
+}
+
+// ── Selector sub-component (own state so select doesn't re-render parent) ──
+type SelectorProps = {
+  request: ServiceRequest;
+  busy: boolean;
+  run: (action: () => Promise<unknown>, msg: string) => Promise<void>;
+  t: (key: string, opts?: Record<string, string>) => string;
+};
+
+function PaymentModeSelectorPanel({ request, busy, run, t }: SelectorProps) {
+  const [selected, setSelected] = useState<"PRE_PAY" | "POST_PAY" | null>(null);
+
+  return (
+    <section className={styles.section}>
+      <p style={{ fontWeight: 600, marginBottom: 10 }}>{t("service.actions.proposePaymentMode")}</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8, marginBottom: 12 }}>
+        {(["PRE_PAY", "POST_PAY"] as const).map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            className={selected === opt ? buttonStyles.primary : buttonStyles.secondary}
+            onClick={() => setSelected(opt)}
+          >
+            {opt === "PRE_PAY" ? t("service.actions.prePayLabel") : t("service.actions.postPayLabel")}
+          </button>
+        ))}
+      </div>
+      <button
+        type="button"
+        className={buttonStyles.primary}
+        disabled={busy || selected === null}
+        onClick={() =>
+          selected &&
+          run(
+            () => proposePaymentMode(request.id, selected),
+            t("service.actions.paymentModeProposed", { mode: selected === "PRE_PAY" ? "Pre-pay" : "Post-pay" }),
+          )
+        }
+      >
+        {t("service.actions.confirmMode")}
+      </button>
+    </section>
   );
 }

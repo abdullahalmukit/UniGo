@@ -21,6 +21,7 @@ export function RideActions({
   chatId,
   onChanged,
   sticky = true,
+  paymentStatus = null,
 }: {
   activityId: string;
   status: ActivityStatus;
@@ -30,6 +31,8 @@ export function RideActions({
   onChanged: () => void;
   // Off inside Activity cards
   sticky?: boolean;
+  // When provided, Confirm is blocked until payment is PAID
+  paymentStatus?: "PAID" | "UNPAID" | null;
 }) {
   const { t } = useTranslation();
   const toast = useToast();
@@ -71,14 +74,21 @@ export function RideActions({
         </button>
       )}
       {completionRequested && completionRequestedBy === "OTHER" && (
-        <button
-          type="button"
-          className={buttonStyles.primary}
-          disabled={busy}
-          onClick={() => void run(() => confirmCompletion(activityId), t("ride.actions.completed"))}
-        >
-          {t("ride.actions.confirm")}
-        </button>
+        <>
+          {paymentStatus === "UNPAID" ? (
+            /* Payment not yet confirmed — block confirm, show hint */
+            <p className={styles.muted}>{t("ride.actions.payFirstThenConfirm")}</p>
+          ) : (
+            <button
+              type="button"
+              className={buttonStyles.primary}
+              disabled={busy}
+              onClick={() => void run(() => confirmCompletion(activityId), t("ride.actions.completed"))}
+            >
+              {t("ride.actions.confirm")}
+            </button>
+          )}
+        </>
       )}
       {completionRequested && completionRequestedBy === "ME" && <p className={styles.muted}>{t("ride.actions.waiting")}</p>}
       {chatId && active && (

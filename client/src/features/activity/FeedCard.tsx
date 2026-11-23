@@ -27,14 +27,17 @@ export function ItemStatus({ item }: { item: FeedItem }) {
   return <ToneChip tone={tone} label={t(`ride.postStatus.${item.status}`)} />;
 }
 
-function kindLabel(item: FeedItem, t: (key: string) => string) {
+function kindLabel(item: FeedItem, t: (key: string, opts?: Record<string, unknown>) => string) {
   if (item.kind === "FOOD") return item.food?.restaurantName ?? t("food.detailTitle");
   if (item.kind === "CARPOOL_POST") return t("carpool.kind.post");
   if (item.kind === "CARPOOL_BOOKING") return t("carpool.kind.booking");
   if (item.kind === "CARPOOL_SESSION") return t("carpool.kind.session");
   if (item.kind === "RIDE_OFFER") return t("ride.kind.offer");
   if (item.kind === "RIDE_BOOKING") return t("activity.kind.booking");
-  if (item.kind === "SERVICE") return t("service.detailTitle");
+  if (item.kind === "SERVICE") {
+    if (item.service?.categoryCode) return t(`service.categories.${item.service.categoryCode}`, { defaultValue: item.service.categoryCode });
+    return t("service.kind");
+  }
   return t("ride.kind.request");
 }
 
@@ -54,12 +57,19 @@ export function FeedCard({
   const isOffer = item.kind === "RIDE_OFFER";
   const isFood = item.kind === "FOOD";
   const isCarpool = item.feature === "CARPOOL";
+  const isService = item.feature === "SERVICE";
   const amount = isCarpool
     ? t(item.kind === "CARPOOL_POST" ? "carpool.priceFrom" : "carpool.perMonth", { amount: taka(item.amount, i18n.language) })
     : isOffer
       ? t("ride.perSeat", { amount: taka(item.amount, i18n.language) })
       : t("ride.total", { amount: taka(item.amount, i18n.language) });
-  const featureLabel = isFood ? "activity.filters.food" : isCarpool ? "activity.filters.carpool" : "activity.filters.ride";
+  const featureLabel = isFood
+    ? "activity.filters.food"
+    : isCarpool
+      ? "activity.filters.carpool"
+      : isService
+        ? "activity.filters.service"
+        : "activity.filters.ride";
   const listsBookings = (isOffer && mode === "activity") || (item.kind === "CARPOOL_POST" && mode === "activity") || (item.kind === "CARPOOL_SESSION" && item.role === "REQUESTED");
 
   return (
@@ -97,11 +107,13 @@ export function FeedCard({
         <PersonRow
           person={item.otherPerson}
           caption={
-            isFood
-              ? t(item.role === "REQUESTED" ? "food.role.accepter" : "food.role.requester")
-              : item.kind === "RIDE_BOOKING" || isCarpool || item.role === "REQUESTED"
-                ? t("ride.role.rider")
-                : t("ride.role.passenger")
+            isService
+              ? t(item.role === "REQUESTED" ? "service.role.accepter" : "service.role.requester")
+              : isFood
+                ? t(item.role === "REQUESTED" ? "food.role.accepter" : "food.role.requester")
+                : item.kind === "RIDE_BOOKING" || isCarpool || item.role === "REQUESTED"
+                  ? t("ride.role.rider")
+                  : t("ride.role.passenger")
           }
         />
       )}
@@ -248,6 +260,20 @@ function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void })
     );
   }
 
+  // Service: all actions (payment mode, start, deliver, confirm) live on the detail page
+  if (item.kind === "SERVICE") {
+    return (
+      <div className={styles.actions}>
+        {item.chatId && RUNNING.includes(item.status) && (
+          <Link to={`/inbox/${item.chatId}`} className={buttonStyles.secondary}>
+            {t("ride.actions.chat")}
+          </Link>
+        )}
+        {open}
+      </div>
+    );
+  }
+
   // ACCEPTED and IN_PROGRESS: start, mark completed, confirm, chat, cancel
   return (
     <div className={styles.actions}>
@@ -259,6 +285,7 @@ function Actions({ item, onChanged }: { item: FeedItem; onChanged: () => void })
         chatId={item.chatId}
         onChanged={onChanged}
         sticky={false}
+        paymentStatus={item.payment?.status ?? null}
       />
       {open}
     </div>
