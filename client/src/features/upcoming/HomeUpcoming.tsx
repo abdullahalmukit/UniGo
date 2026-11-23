@@ -60,25 +60,6 @@ export function HomeUpcoming() {
             <span>{t("home.browseServices")}</span>
             <ArrowRight size={16} aria-hidden />
           </Link>
-          <div className={styles.quickBar}>
-            <span className={styles.quickLabel}>{t("home.quickExplore")}</span>
-            <Link to="/ride" className={styles.quickChip}>
-              <Car size={13} aria-hidden />
-              <span>{t("features.ride.name")}</span>
-            </Link>
-            <Link to="/food" className={styles.quickChip}>
-              <UtensilsCrossed size={13} aria-hidden />
-              <span>{t("features.food.name")}</span>
-            </Link>
-            <Link to="/carpool" className={styles.quickChip}>
-              <Repeat size={13} aria-hidden />
-              <span>{t("features.carpool.name")}</span>
-            </Link>
-            <Link to="/service" className={styles.quickChip}>
-              <Wrench size={13} aria-hidden />
-              <span>{t("features.service.name")}</span>
-            </Link>
-          </div>
         </div>
       </div>
     );

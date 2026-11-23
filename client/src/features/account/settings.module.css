@@ -21,38 +21,39 @@
   flex: none;
   align-items: center;
   justify-content: center;
-  width: 42px;
-  height: 42px;
-  border-radius: 12px;
-  color: var(--color-text);
-  background: var(--color-surface);
-  border: 1.5px solid var(--color-border);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  color: #007aff;
+  background: rgba(0, 122, 255, 0.1);
+  border: none;
+  box-shadow: none;
+  transition: all 180ms ease;
 }
 
 [data-theme="dark"] .back {
-  background: rgba(255, 255, 255, 0.04);
-  border-color: rgba(255, 255, 255, 0.1);
+  background: rgba(10, 132, 255, 0.15);
+  color: #0a84ff;
+  border-color: transparent;
 }
 
 .back:hover {
-  background: var(--color-accent);
-  border-color: var(--color-accent);
-  color: #ffffff;
-  transform: translateX(-3px);
-  box-shadow: 0 4px 14px rgba(0, 78, 122, 0.35);
+  background: rgba(0, 122, 255, 0.18);
+  border-color: transparent;
+  color: #007aff;
+  transform: none;
+  box-shadow: none;
 }
 
 .back:active {
-  transform: scale(0.95);
+  transform: scale(0.9);
 }
 
 .title {
   flex: 1;
-  font-size: 1.55rem;
-  font-weight: 800;
-  letter-spacing: -0.03em;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.02em;
   color: var(--color-text);
   line-height: 1.25;
 }

@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { NavLink, Outlet, useMatch } from "react-router";
+import { Avatar } from "../../components/Avatar";
+import { fileUrl, useMe } from "../../features/account/account-api";
 import { useUnreadTotal } from "../../features/inbox/unread";
 import { useNotificationUnread } from "../../features/notifications/notifications-api";
 import { Footer } from "./Footer";
@@ -13,6 +15,7 @@ import styles from "./layout.module.css";
 // page; CSS shows the one that fits.
 export function AppLayout() {
   const { t } = useTranslation();
+  const me = useMe();
   // Unread chat messages (B2b) and notifications (B2c), kept live by the socket.
   const unread = { messages: useUnreadTotal(), notifications: useNotificationUnread() };
   // An open chat fills the screen down to its message box: no footer there.
@@ -28,12 +31,14 @@ export function AppLayout() {
         </div>
       </header>
 
-      <header className={styles.desktopBar}>
-        <div className={styles.desktopInner}>
+      {/* Desktop floating pill navbar */}
+      <div className={styles.desktopBarWrapper}>
+        <header className={styles.desktopBar}>
           <Logo />
           <nav aria-label={t("nav.main")} className={styles.desktopNav}>
-            {desktopLinks.map(({ to, labelKey, end }) => (
+            {desktopLinks.map(({ to, labelKey, icon: Icon, end }) => (
               <NavLink key={to} to={to} end={end} className={({ isActive }) => linkClass(styles.desktopLink, isActive)}>
+                <Icon aria-hidden size={16} strokeWidth={1.9} className={styles.desktopLinkIcon} />
                 {t(labelKey)}
                 {to === "/inbox" && unread.messages > 0 && (
                   <span className={styles.inlineBadge}>
@@ -43,12 +48,19 @@ export function AppLayout() {
                 )}
               </NavLink>
             ))}
-            <span className={styles.divider} aria-hidden />
-            <IconLink item={notificationsLink} unread={unread.notifications} />
-            <IconLink item={accountLink} />
           </nav>
-        </div>
-      </header>
+          <div className={styles.desktopActions}>
+            <IconLink item={notificationsLink} unread={unread.notifications} />
+            <NavLink to="/account" aria-label={t("nav.account")} className={({ isActive }) => linkClass(styles.avatarLink, isActive)}>
+              <Avatar
+                name={me?.profile?.fullName ?? me?.email ?? "?"}
+                src={fileUrl(me?.photo)}
+                size={34}
+              />
+            </NavLink>
+          </div>
+        </header>
+      </div>
 
       <main className={styles.main}>
         <Outlet />

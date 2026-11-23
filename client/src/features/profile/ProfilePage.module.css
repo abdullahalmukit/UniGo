@@ -1,47 +1,49 @@
-/* ── Profile Page — SUPREME TIER PREMIUM ── */
+/* ── Profile Page — iOS 17 Style ── */
 
+/* Photo hero card */
 .photoCard {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-5);
-  padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 62, 97, 0.05);
+  gap: 18px;
+  padding: 20px 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 18px;
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 20px rgba(0,0,0,0.06);
   overflow: hidden;
-  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
-  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: transform 180ms ease;
 }
 
 .photoCard::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 3px;
+  top: 0; left: 0; right: 0;
+  height: 2px;
   background: var(--gradient-primary);
+  opacity: 0.6;
 }
 
-.photoCard:hover {
-  transform: translateY(-3px) scale(1.008);
-  border-color: rgba(0, 78, 122, 0.25);
-  box-shadow: var(--shadow-card-hover), var(--glow-accent);
+[data-theme="dark"] .photoCard {
+  background: rgba(44, 44, 46, 0.72);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 4px 24px rgba(0,0,0,0.3);
 }
 
 .photoText {
   flex: 1;
-  display: grid;
-  gap: var(--space-3);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
   min-width: 0;
 }
 
 .name {
-  font-size: 1.5rem;
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.03em;
+  font-size: 1.25rem;
+  font-weight: 700;
+  letter-spacing: -0.025em;
   color: var(--color-text);
   line-height: 1.25;
 }
@@ -49,91 +51,154 @@
 .photoButtons {
   display: flex;
   flex-wrap: wrap;
-  gap: var(--space-2);
+  gap: 8px;
+  margin-top: 4px;
 }
 
-/* Metadata grid */
+/* Account info card — iOS facts rows */
 .facts {
   display: grid;
-  grid-template-columns: max-content 1fr;
-  gap: var(--space-3) var(--space-5);
+  gap: 0;
   margin: 0;
-  align-items: baseline;
 }
 
 .facts dt {
+  display: none; /* iOS style: label is shown inline */
+}
+
+/* iOS-style row: label left, value right */
+.facts {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.facts dt {
+  display: block;
   color: var(--color-text-muted);
-  font-size: var(--text-caption);
-  align-self: center;
-  font-weight: var(--weight-medium);
-  letter-spacing: 0.01em;
+  font-size: 0.8125rem;
+  font-weight: 400;
+  margin-bottom: 1px;
 }
 
 .facts dd {
   margin: 0;
   min-width: 0;
   color: var(--color-text);
-  font-weight: var(--weight-medium);
+  font-size: 0.9375rem;
+  font-weight: 400;
+  padding: 11px 0;
+  border-bottom: 0.5px solid rgba(60,60,67,0.15);
+}
+
+[data-theme="dark"] .facts dd {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.facts dt + dd {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Override: show dt/dd side by side like iOS */
+.facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  align-items: center;
+  gap: 0;
+}
+
+.facts dt {
+  padding: 11px 16px 11px 0;
+  border-bottom: 0.5px solid rgba(60,60,67,0.15);
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-weight: 400;
+}
+
+[data-theme="dark"] .facts dt {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.facts dd {
+  padding: 11px 0;
+  border-bottom: 0.5px solid rgba(60,60,67,0.15);
+  margin: 0;
+  font-size: 0.9375rem;
+  font-weight: 400;
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .facts dd {
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+/* remove last row border */
+.facts dt:last-of-type,
+.facts dd:last-of-type {
+  border-bottom: none;
 }
 
 .status {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2);
+  gap: 8px;
 }
 
 .inlineLink {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--color-accent);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  color: #007aff;
+  font-size: 0.875rem;
+  font-weight: 500;
+  text-decoration: none;
+  transition: opacity 150ms ease;
 }
 
-.inlineLink:hover {
-  opacity: 0.8;
-  transform: translateX(2px);
-}
+[data-theme="dark"] .inlineLink { color: #0a84ff; }
+.inlineLink:hover { opacity: 0.75; }
 
+/* Locked hint — iOS info note */
 .locked {
-  margin-top: var(--space-3);
-  padding: var(--space-3) var(--space-4);
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
-  border-left: 3px solid var(--status-amber-fg);
-  border-radius: var(--radius-control);
+  margin-top: 10px;
+  padding: 10px 14px;
+  background: rgba(255, 204, 0, 0.1);
+  border: none;
+  border-left: 3px solid #ffcc00;
+  border-radius: 10px;
   color: var(--color-text-muted);
-  font-size: var(--text-caption);
+  font-size: 0.8125rem;
   line-height: 1.45;
+}
+
+[data-theme="dark"] .locked {
+  background: rgba(255, 214, 10, 0.08);
+  border-left-color: #ffd60a;
 }
 
 @media (max-width: 420px) {
   .photoCard {
     flex-direction: column;
     text-align: center;
-    padding: var(--space-4);
+    padding: 20px 16px;
   }
   .photoButtons {
     justify-content: center;
   }
   .facts {
     grid-template-columns: 1fr;
-    gap: 4px;
   }
-  .facts dd + dt {
-    margin-top: var(--space-3);
+  .facts dt {
+    padding-bottom: 2px;
+    border-bottom: none;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+  }
+  .facts dd {
+    padding-top: 2px;
+    padding-bottom: 11px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .photoCard {
-    animation: none;
-  }
-  .photoCard:hover,
-  .inlineLink:hover {
-    transform: none;
-  }
+  .photoCard { transition: none; }
 }

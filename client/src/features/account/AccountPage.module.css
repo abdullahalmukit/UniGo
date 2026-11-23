@@ -1,4 +1,4 @@
-/* ── Account Page — SUPREME TIER PREMIUM ── */
+/* ── Account Page — iOS 17 Style ── */
 
 .visuallyHidden {
   position: absolute;
@@ -9,132 +9,110 @@
   white-space: nowrap;
 }
 
-/* Profile Card — Luxury hero card with gradient top accent & ambient glow */
+/* ── Profile Card — iOS large identity cell ── */
 .profileCard {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  margin-bottom: var(--space-5);
-  padding: var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.03), 0 8px 24px rgba(0, 62, 97, 0.05);
+  gap: 14px;
+  margin-bottom: 20px;
+  padding: 16px 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 18px;
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 20px rgba(0,0,0,0.06);
   color: var(--color-text);
   overflow: hidden;
-  animation: fadeInUp 500ms cubic-bezier(0.4, 0, 0.2, 1) both;
-  transition: all 350ms cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  transition: transform 180ms ease, opacity 180ms ease;
 }
 
+.profileCard:active {
+  transform: scale(0.985);
+  opacity: 0.85;
+}
+
+[data-theme="dark"] .profileCard {
+  background: rgba(44, 44, 46, 0.72);
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.05) inset, 0 4px 20px rgba(0,0,0,0.3);
+}
+
+/* subtle top gradient line like iOS accent */
 .profileCard::before {
   content: "";
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 4px;
+  top: 0; left: 0; right: 0;
+  height: 2px;
   background: var(--gradient-primary);
-  background-size: 200% 200%;
-  animation: gradient-shift 6s ease infinite;
-}
-
-.profileCard::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  border-radius: var(--radius-card);
-  background: radial-gradient(circle at 100% 0%, rgba(0, 78, 122, 0.08) 0%, transparent 60%);
-  opacity: 0;
-  pointer-events: none;
-  transition: opacity 350ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.profileCard:hover {
-  transform: translateY(-4px) scale(1.008);
-  border-color: rgba(0, 78, 122, 0.28);
-  box-shadow: var(--shadow-card-hover), var(--glow-accent);
-}
-
-.profileCard:hover::after {
-  opacity: 1;
+  opacity: 0.7;
 }
 
 .profileText {
   flex: 1;
-  display: grid;
-  gap: 4px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
   min-width: 0;
 }
 
 .profileName {
-  font-size: var(--text-title);
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.03em;
+  font-size: 1.0625rem;
+  font-weight: 600;
+  letter-spacing: -0.02em;
   color: var(--color-text);
   line-height: 1.25;
 }
 
 .profileMeta {
   color: var(--color-text-muted);
-  font-size: var(--text-caption);
+  font-size: 0.8125rem;
   line-height: 1.4;
 }
 
 .riderBadge {
   display: inline-flex;
   align-items: center;
-  justify-self: start;
-  gap: 6px;
-  padding: 3px var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  border: 1px solid rgba(0, 78, 122, 0.2);
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  gap: 4px;
+  margin-top: 4px;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
+  font-size: 0.75rem;
+  font-weight: 600;
+  border: none;
 }
 
-.riderBadge:hover {
-  background: var(--color-accent);
-  color: var(--color-on-accent);
-  box-shadow: 0 2px 10px rgba(0, 62, 97, 0.3);
-}
-
-/* Verification Card — Glassmorphic banner with vibrant accent */
+/* ── Verification Card ── */
 .verificationCard {
   position: relative;
   display: flex;
   align-items: center;
-  gap: var(--space-4);
-  min-height: 74px;
-  margin-bottom: var(--space-6);
-  padding: var(--space-4) var(--space-5);
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-left: 4px solid var(--color-accent);
-  border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  gap: 14px;
+  min-height: 64px;
+  margin-bottom: 20px;
+  padding: 14px 18px;
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-left: 3px solid #007aff;
+  border-radius: 18px;
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 16px rgba(0,0,0,0.06);
   color: var(--color-text);
-  overflow: hidden;
-  animation: fadeInUp 550ms cubic-bezier(0.4, 0, 0.2, 1) both;
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  text-decoration: none;
+  transition: transform 180ms ease, opacity 180ms ease;
 }
 
-.verificationCard::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background: linear-gradient(90deg, rgba(0, 78, 122, 0.05) 0%, transparent 40%);
-  pointer-events: none;
-}
+.verificationCard:active { transform: scale(0.985); opacity: 0.85; }
 
-.verificationCard:hover {
-  transform: translateY(-3px) scale(1.006);
-  border-color: rgba(0, 78, 122, 0.3);
-  border-left-color: var(--color-accent);
-  box-shadow: var(--shadow-card-hover), var(--glow-accent);
+[data-theme="dark"] .verificationCard {
+  background: rgba(44, 44, 46, 0.72);
+  border-color: rgba(255,255,255,0.08);
+  border-left-color: #0a84ff;
 }
 
 .verificationIcon {
@@ -142,103 +120,99 @@
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  border-radius: var(--radius-pill);
-  background: var(--color-accent-soft);
-  color: var(--color-accent);
-  transition: transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: rgba(0, 122, 255, 0.12);
+  color: #007aff;
 }
 
-.verificationCard:hover .verificationIcon {
-  transform: scale(1.1) rotate(4deg);
+[data-theme="dark"] .verificationIcon {
+  background: rgba(10, 132, 255, 0.18);
+  color: #0a84ff;
 }
 
-.verificationText {
-  flex: 1;
-  display: grid;
-  gap: 3px;
-}
+.verificationText { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.verificationTitle { font-size: 0.9375rem; font-weight: 600; color: var(--color-text); }
+.verificationAction { font-size: 0.8125rem; color: #007aff; font-weight: 500; }
+[data-theme="dark"] .verificationAction { color: #0a84ff; }
 
-.verificationTitle {
-  font-weight: var(--weight-bold);
-  letter-spacing: -0.01em;
-  color: var(--color-text);
-}
-
-.verificationAction {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  color: var(--color-accent);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.01em;
-  transition: transform 200ms cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.verificationCard:hover .verificationAction {
-  transform: translateX(3px);
-}
-
-/* Choice Segmented Control — Glass pill track with elevated thumb */
+/* ── Choice Segmented Control — iOS style ── */
 .choice {
   display: grid;
   grid-auto-columns: 1fr;
   grid-auto-flow: column;
-  gap: 4px;
-  padding: 5px;
-  background: var(--color-surface-muted);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-control);
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.04);
-  animation: fadeInUp 600ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  gap: 2px;
+  padding: 2px;
+  background: rgba(118, 118, 128, 0.12);
+  border: none;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+[data-theme="dark"] .choice {
+  background: rgba(118, 118, 128, 0.24);
 }
 
 .choiceOption {
   position: relative;
-  min-height: var(--tap-target);
+  min-height: 36px;
   padding: 0 var(--space-3);
   border: 0;
-  border-radius: calc(var(--radius-control) - 4px);
+  border-radius: 8px;
   background: transparent;
-  color: var(--color-text-muted);
-  font-weight: var(--weight-medium);
+  color: var(--color-text);
+  font-size: 0.875rem;
+  font-weight: 500;
   cursor: pointer;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 200ms ease;
 }
 
 .choiceOption:hover:not([aria-checked="true"]) {
-  color: var(--color-text);
-  background: rgba(0, 78, 122, 0.05);
+  background: rgba(0,0,0,0.04);
 }
 
 .choiceOption[aria-checked="true"] {
-  background: var(--color-surface);
-  color: var(--color-accent);
-  box-shadow: 0 2px 8px rgba(0, 62, 97, 0.16), 0 1px 2px rgba(0, 0, 0, 0.06);
-  font-weight: var(--weight-bold);
+  background: rgba(255, 255, 255, 0.95);
+  color: var(--color-text);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  font-weight: 600;
 }
 
-.choiceOption:active {
-  transform: scale(0.97);
+[data-theme="dark"] .choiceOption[aria-checked="true"] {
+  background: rgba(58, 58, 60, 0.98);
+  color: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 
-/* Menu — Supreme luxury surface with fluid hover slide */
+.choiceOption:active { transform: scale(0.97); }
+
+/* ── Menu — iOS inset grouped table ── */
 .menu {
-  margin: var(--space-6) 0 0;
+  margin: 20px 0 0;
   padding: 0;
   list-style: none;
-  background: var(--color-surface);
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-card);
+  background: rgba(255, 255, 255, 0.62);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 18px;
   overflow: hidden;
-  box-shadow: var(--shadow-card);
-  animation: fadeInUp 650ms cubic-bezier(0.4, 0, 0.2, 1) both;
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 20px rgba(0,0,0,0.05);
+}
+
+[data-theme="dark"] .menu {
+  background: rgba(44, 44, 46, 0.72);
+  border-color: rgba(255,255,255,0.08);
+  box-shadow: 0 1px 0 rgba(255,255,255,0.04) inset, 0 4px 24px rgba(0,0,0,0.3);
 }
 
 .menu > li + li {
-  border-top: 1px solid var(--color-border);
+  border-top: 0.5px solid rgba(60, 60, 67, 0.15);
+}
+
+[data-theme="dark"] .menu > li + li {
+  border-top-color: rgba(255, 255, 255, 0.1);
 }
 
 .menuItem {
@@ -246,108 +220,122 @@
   align-items: center;
   justify-content: space-between;
   gap: var(--space-3);
-  min-height: 58px;
-  padding: 0 var(--space-5);
-  transition: background 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  min-height: 50px;
+  padding: 0 18px;
+  transition: background 100ms ease;
 }
 
 .menuLink {
   color: var(--color-text);
+  font-size: 0.9375rem;
+  font-weight: 400;
   text-decoration: none;
-  transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background 100ms ease;
 }
 
 .menuLink:hover {
-  background: var(--color-accent-soft);
-  padding-left: calc(var(--space-5) + 6px);
-  color: var(--color-accent);
+  background: rgba(0, 0, 0, 0.04);
+  padding-left: 18px;
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .menuLink:hover {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .menuLink:active {
-  transform: scale(0.99);
+  background: rgba(0, 0, 0, 0.08);
 }
 
-.menuMuted {
-  color: var(--color-text-muted);
+[data-theme="dark"] .menuLink:active {
+  background: rgba(255, 255, 255, 0.1);
 }
+
+.menuMuted { color: var(--color-text-muted); font-size: 0.9375rem; }
+
+/* chevron color — iOS muted gray */
+.menuLink svg,
+.menuItem svg { color: rgba(60, 60, 67, 0.4); }
+[data-theme="dark"] .menuLink svg,
+[data-theme="dark"] .menuItem svg { color: rgba(235, 235, 245, 0.4); }
 
 .adminLink {
   display: inline-flex;
   align-items: center;
   gap: var(--space-2);
-  color: var(--color-accent);
-  font-weight: var(--weight-bold);
-  padding: 4px 8px;
-  border-radius: var(--radius-control);
-  transition: all 200ms cubic-bezier(0.4, 0, 0.2, 1);
+  color: #007aff;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  padding: 0;
+  border-radius: 0;
+  transition: opacity 150ms ease;
 }
 
-.adminLink:hover {
-  background: var(--color-accent-soft);
-  transform: translateY(-1px);
-}
+[data-theme="dark"] .adminLink { color: #0a84ff; }
+.adminLink:hover { opacity: 0.75; background: transparent; transform: none; }
 
 .soon {
   display: inline-flex;
   align-items: center;
   gap: var(--space-1);
-  color: var(--color-text-muted);
-  font-size: var(--text-caption);
+  color: rgba(60,60,67,0.4);
+  font-size: 0.875rem;
 }
+
+[data-theme="dark"] .soon { color: rgba(235,235,245,0.4); }
 
 .soonBadge {
-  padding: 3px var(--space-3);
-  border-radius: var(--radius-pill);
-  background: var(--status-grey-bg);
-  color: var(--status-grey-fg);
-  font-size: var(--text-caption);
-  font-weight: var(--weight-medium);
-  border: 1px solid rgba(0, 0, 0, 0.04);
-  letter-spacing: 0.02em;
+  padding: 2px 10px;
+  border-radius: 20px;
+  background: rgba(118, 118, 128, 0.12);
+  color: rgba(60, 60, 67, 0.6);
+  font-size: 0.75rem;
+  font-weight: 500;
+  border: none;
 }
 
-/* Logout Button */
+[data-theme="dark"] .soonBadge {
+  background: rgba(118, 118, 128, 0.24);
+  color: rgba(235, 235, 245, 0.6);
+}
+
+/* ── Logout — iOS destructive red style ── */
 .logout {
   width: 100%;
-  margin-top: var(--space-6);
-  transition: all 300ms cubic-bezier(0.4, 0, 0.2, 1);
+  margin-top: 20px;
+  min-height: 50px;
+  background: rgba(255, 255, 255, 0.62);
+  backdrop-filter: blur(40px) saturate(1.8);
+  -webkit-backdrop-filter: blur(40px) saturate(1.8);
+  border: 1px solid rgba(255, 255, 255, 0.75);
+  border-radius: 18px;
+  color: #ff3b30;
+  font-size: 0.9375rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  box-shadow: 0 1px 0 rgba(255,255,255,0.6) inset, 0 4px 16px rgba(0,0,0,0.05);
+  transition: opacity 150ms ease, transform 150ms ease;
 }
 
-.logout:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 16px rgba(220, 38, 38, 0.18);
+[data-theme="dark"] .logout {
+  background: rgba(44, 44, 46, 0.72);
+  border-color: rgba(255,255,255,0.08);
+  color: #ff453a;
 }
 
-.logout:active {
-  transform: scale(0.98);
-}
+.logout:hover { opacity: 0.82; }
+.logout:active { transform: scale(0.985); opacity: 0.7; }
 
 /* Media Queries */
 @media (min-width: 768px) {
-  .choice {
-    max-width: 480px;
-  }
-  .logout {
-    width: auto;
-  }
+  .choice { max-width: 480px; }
+  .logout { width: auto; min-width: 180px; }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .profileCard,
-  .verificationCard,
-  .choice,
-  .menu {
-    animation: none;
-  }
-  .profileCard::before {
-    animation: none;
-  }
-  .profileCard:hover,
-  .verificationCard:hover,
-  .logout:hover,
-  .choiceOption:active,
-  .menuLink:active,
-  .logout:active {
-    transform: none;
-  }
+  .profileCard, .verificationCard, .logout { transition: none; }
+  .profileCard:active, .verificationCard:active, .logout:active { transform: none; }
 }

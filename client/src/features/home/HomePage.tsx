@@ -18,6 +18,7 @@ import { buttonStyles, Section } from "../../components/ui";
 import type { Banner, SpotlightItem } from "../content/content-api";
 import { getBanners, getSpotlight } from "../content/content-api";
 import { HomeUpcoming } from "../upcoming/HomeUpcoming";
+import { useMe } from "../account/account-api";
 import styles from "./HomePage.module.css";
 
 const SEEN_STORIES_KEY = "unigo_seen_stories";
@@ -40,6 +41,7 @@ const quickActions: {
 
 export function HomePage() {
   const { t } = useTranslation();
+  const me = useMe();
   const [spotlight, setSpotlight] = useState<SpotlightItem[]>([]);
   const [banners, setBanners] = useState<Banner[]>([]);
   const [activeStory, setActiveStory] = useState<SpotlightItem | null>(null);
@@ -78,8 +80,14 @@ export function HomePage() {
     <>
       <Section title={t("home.featuresTitle")}>
         <div className={styles.features}>
-          {featureList.map(({ key, picture }) => (
-            <Link key={key} to={`/${key}`} className={styles.featureCard}>
+          {featureList.map(({ key, icon: Icon, picture }) => (
+            <Link key={key} to={`/${key}`} className={`${styles.featureCard} ${styles[`featureCard_${key}`]}`}>
+              {/* glass sheen overlay */}
+              <span className={styles.featureGlass} aria-hidden />
+              {/* icon badge */}
+              <span className={`${styles.featureIcon} ${styles[`featureIcon_${key}`]}`}>
+                <Icon size={20} strokeWidth={2} aria-hidden />
+              </span>
               <span className={styles.featureName}>{t(`features.${key}.name`)}</span>
               <span className={styles.featureHint}>{t(`features.${key}.hint`)}</span>
               <span className={styles.featureTag}>{t(`features.${key}.tag`)}</span>
@@ -100,10 +108,17 @@ export function HomePage() {
       </Section>
 
       {banners.length > 0 && (
-        <Section title={t("home.bannersTitle")}>
+        <Section
+          title={t("home.bannersTitle")}
+          action={
+            <a href="/announcements" className={styles.seeAll}>
+              {t("home.seeAll")} →
+            </a>
+          }
+        >
           <ul className={styles.banners}>
             {banners.map((b) => {
-              const cardContent = (
+              const inner = (
                 <>
                   <img src={b.imageUrl} alt={b.title} className={styles.bannerImage} loading="lazy" />
                   <div className={styles.bannerOverlay}>
@@ -115,10 +130,10 @@ export function HomePage() {
                 <li key={b.id}>
                   {b.linkUrl ? (
                     <a href={b.linkUrl} target="_blank" rel="noopener noreferrer" className={styles.bannerCard}>
-                      {cardContent}
+                      {inner}
                     </a>
                   ) : (
-                    <div className={styles.bannerCard}>{cardContent}</div>
+                    <div className={styles.bannerCard}>{inner}</div>
                   )}
                 </li>
               );
@@ -127,16 +142,18 @@ export function HomePage() {
         </Section>
       )}
 
-      <Section
-        title={t("home.upcomingTitle")}
-        action={
-          <Link to="/upcoming" className={styles.seeAll}>
-            {t("home.seeAll")}
-          </Link>
-        }
-      >
-        <HomeUpcoming />
-      </Section>
+      {me && (
+        <Section
+          title={t("home.upcomingTitle")}
+          action={
+            <Link to="/upcoming" className={styles.seeAll}>
+              {t("home.seeAll")}
+            </Link>
+          }
+        >
+          <HomeUpcoming />
+        </Section>
+      )}
 
       <Section title={t("home.quickActionsTitle")}>
         <div className={styles.quickActionsContainer}>
@@ -184,23 +201,23 @@ export function HomePage() {
               return (
                 <li key={item.id} className={styles.story}>
                   <button type="button" className={styles.storyButton} onClick={() => openStory(item)}>
-                    <span className={`${styles.storyRing} ${isSeen ? styles.storyRingSeen : ""}`}>
-                      {item.mediaType === "IMAGE" ? (
-                        <img
-                          src={item.mediaUrl}
-                          alt={item.title ?? ""}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                        />
-                      ) : (
-                        <video
-                          src={item.mediaUrl}
-                          style={{ width: "100%", height: "100%", objectFit: "cover" }}
-                          muted
-                          playsInline
-                        />
-                      )}
-                    </span>
-                    <span className={styles.storyTitle}>{item.title ?? t("home.spotlight.viewStory")}</span>
+                    {item.mediaType === "IMAGE" ? (
+                      <img
+                        src={item.mediaUrl}
+                        alt={item.title ?? ""}
+                        className={styles.storyImage}
+                      />
+                    ) : (
+                      <video
+                        src={item.mediaUrl}
+                        className={styles.storyImage}
+                        muted
+                        playsInline
+                      />
+                    )}
+                    <div className={styles.storyOverlay}>
+                      <span className={styles.storyTitle}>{item.title ?? t("home.spotlight.viewStory")}</span>
+                    </div>
                   </button>
                 </li>
               );
