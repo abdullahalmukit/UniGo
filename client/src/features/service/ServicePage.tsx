@@ -23,6 +23,7 @@ const TABS: Tab[] = ["available", "mine", "accepted"];
 export function ServicePage() {
   const { t } = useTranslation();
   const [tab, setTab] = useState<Tab>("available");
+  const [search, setSearch] = useState("");
 
   return (
     <div className={styles.page}>
@@ -35,23 +36,40 @@ export function ServicePage() {
         </div>
       </div>
 
-      <div className={styles.tabs} role="tablist" aria-label={t("service.title")}>
-        {TABS.map((key) => (
-          <button
-            key={key}
-            type="button"
-            role="tab"
-            aria-selected={tab === key}
-            className={tab === key ? `${styles.tab} ${styles.tabActive}` : styles.tab}
-            onClick={() => setTab(key)}
-          >
-            {t(`service.tabs.${key}`)}
-          </button>
-        ))}
+      <div className={styles.controlsRow}>
+        <div className={styles.tabs} role="tablist" aria-label={t("service.title")}>
+          {TABS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              role="tab"
+              aria-selected={tab === key}
+              className={tab === key ? `${styles.tab} ${styles.tabActive}` : styles.tab}
+              onClick={() => setTab(key)}
+            >
+              {t(`service.tabs.${key}`)}
+            </button>
+          ))}
+        </div>
+
+        {tab === "available" && (
+          <div className={styles.searchBar}>
+            <span className={styles.searchIconWrapper} aria-hidden>
+              <Search size={18} className={styles.searchIcon} />
+            </span>
+            <input
+              type="search"
+              placeholder={t("service.searchPlaceholder")}
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              className={styles.searchInput}
+            />
+          </div>
+        )}
       </div>
 
       {tab === "available" ? (
-        <AvailableList />
+        <AvailableList search={search} />
       ) : (
         <MyServiceActivities role={tab === "mine" ? "requested" : "accepted"} />
       )}
@@ -59,11 +77,10 @@ export function ServicePage() {
   );
 }
 
-function AvailableList() {
+function AvailableList({ search }: { search: string }) {
   const { t } = useTranslation();
   const [categories, setCategories] = useState<ServiceCategory[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("all");
-  const [search, setSearch] = useState("");
   const [items, setItems] = useState<ServiceCardItem[] | null>(null);
   const [page, setPage] = useState(1);
   const [hasMore, setHasMore] = useState(false);
@@ -114,18 +131,6 @@ function AvailableList() {
   return (
     <>
       <div className={styles.filterSection}>
-        {/* Search Bar */}
-        <div className={styles.searchBar}>
-          <Search size={18} aria-hidden className={styles.searchIcon} />
-          <input
-            type="search"
-            placeholder={t("service.searchPlaceholder")}
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            className={styles.searchInput}
-          />
-        </div>
-
         {/* Category Filter Chips */}
         <div className={styles.chips} role="group" aria-label={t("service.category")}>
           <button

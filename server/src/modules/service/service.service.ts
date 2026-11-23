@@ -1,5 +1,5 @@
 import { rules } from "../../config/rules.js";
-import { Prisma } from "../../generated/prisma/client.js";
+import { Prisma, type ActivitySubStatus } from "../../generated/prisma/client.js";
 import { prisma } from "../../lib/prisma.js";
 import { AppError } from "../../utils/app-error.js";
 import { dhakaWallTime } from "../../utils/time.js";
@@ -260,8 +260,116 @@ export async function startService(userId: string, activityId: string, now = new
   return serviceView(await loadService(activityId), userId);
 }
 
-export async function deliverService(userId: string, activityId: string, now = new Date()) {
+export async function cancelServiceRequest(userId: string, activityId: string, reason: string, now = new Date()) {  const current = await loadService(activityId);
+  const isCreator = current.creatorId === userId;
+  const isAccepter = current.accepterId === userId;
+  if (!isCreator && !isAccepter) throw notFound();
+
+  // If IN_PROGRESS and payment is already PAID, only the accepter (service provider) can cancel.
+  // The requester cannot cancel after paying — they must raise a dispute instead.
+  if (current.status === "IN_PROGRESS") {
+    const payment = await prisma.paymentRecord.findUnique({
+      where: { activityId },
+      select: { status: true },
+    });
+    if (payment?.status === "PAID" && isCreator) {
+      throw new AppError(
+        403,
+        "PAYMENT_MADE_CANNOT_CANCEL",
+        "Payment has already been made. You can no longer cancel — raise a dispute if there is a problem.",
+      );
+    }
+  }
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    const activity = await tx.activity.findFirst({ where: { id: activityId, type: "SERVICE" }, select: engineActivitySelect });
+    if (!activity) throw notFound();
+    return applyTransition(tx, activity, "CANCEL", { type: "USER", id: userId }, { now, reason: reason.trim() || undefined });
+  });
+  await afterActivityCommit([outcome]);
+  return serviceView(await loadService(activityId), userId);
+}
+
+// ── Payment mode negotiation ─────────────────────────────────────────────────
+
+// Step 1: Giver proposes a payment mode (shown in UI after accept).
+export async function proposePaymentMode(userId: string, activityId: string, mode: "PRE_PAY" | "POST_PAY", now = new Date()) {
   const current = await loadService(activityId);
+  if (current.accepterId !== userId) throw notFound();
+
+  // Store the proposed mode on the service request (before transitioning so the
+  // view can read it even when the sub-status is PAYMENT_MODE_PROPOSED).
+  await prisma.serviceRequest.update({
+    where: { activityId },
+    data: { paymentMode: mode, paymentModeProposedBy: userId },
+  });
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    const activity = await tx.activity.findFirst({ where: { id: activityId, type: "SERVICE" }, select: engineActivitySelect });
+    if (!activity) throw notFound();
+    return applyTransition(tx, activity, "PROPOSE_PAYMENT_MODE", { type: "USER", id: userId }, { now });
+  });
+  await afterActivityCommit([outcome]);
+  return serviceView(await loadService(activityId), userId);
+}
+
+// Step 2: Taker confirms the proposed mode.
+export async function confirmPaymentMode(userId: string, activityId: string, now = new Date()) {
+  const current = await loadService(activityId);
+  if (current.creatorId !== userId) throw notFound();
+
+  const sr = await prisma.serviceRequest.findUniqueOrThrow({ where: { activityId }, select: { paymentMode: true } });
+  if (!sr.paymentMode) throw new AppError(400, "NO_PAYMENT_MODE", "No payment mode has been proposed yet");
+
+  // For PRE_PAY, stay in ACCEPTED but move to AWAITING_PAYMENT so the taker
+  // knows they should send money. For POST_PAY, go back to null (ready to start).
+  const toSubStatus: ActivitySubStatus | null = sr.paymentMode === "PRE_PAY" ? "AWAITING_PAYMENT" : null;
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    const activity = await tx.activity.findFirst({ where: { id: activityId, type: "SERVICE" }, select: engineActivitySelect });
+    if (!activity) throw notFound();
+    return applyTransition(tx, activity, "CONFIRM_PAYMENT_MODE", { type: "USER", id: userId }, { now, data: { subStatus: toSubStatus } });
+  });
+  await afterActivityCommit([outcome]);
+  return serviceView(await loadService(activityId), userId);
+}
+
+// PRE_PAY Step 3: Taker marks they have physically sent the payment.
+export async function markPaymentSent(userId: string, activityId: string, now = new Date()) {
+  const current = await loadService(activityId);
+  if (current.creatorId !== userId) throw notFound();
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    const activity = await tx.activity.findFirst({ where: { id: activityId, type: "SERVICE" }, select: engineActivitySelect });
+    if (!activity) throw notFound();
+    return applyTransition(tx, activity, "MARK_PAYMENT_SENT", { type: "USER", id: userId }, { now });
+  });
+  await afterActivityCommit([outcome]);
+  return serviceView(await loadService(activityId), userId);
+}
+
+// PRE_PAY Step 4: Giver confirms they received the payment → auto IN_PROGRESS
+// and payment record marked PAID in the same transaction.
+export async function confirmPaymentReceived(userId: string, activityId: string, now = new Date()) {
+  const current = await loadService(activityId);
+  if (current.accepterId !== userId) throw notFound();
+
+  const outcome = await runActivityTransaction(async (tx) => {
+    const activity = await tx.activity.findFirst({ where: { id: activityId, type: "SERVICE" }, select: engineActivitySelect });
+    if (!activity) throw notFound();
+    const result = await applyTransition(tx, activity, "CONFIRM_PAYMENT_RECEIVED", { type: "USER", id: userId }, { now });
+    // Mark the payment record as paid — the giver has confirmed they received it.
+    await tx.paymentRecord.updateMany({
+      where: { activityId, status: "UNPAID" },
+      data: { status: "PAID", paidAt: now, markedPaidById: userId },
+    });
+    return result;
+  });
+  await afterActivityCommit([outcome]);
+  return serviceView(await loadService(activityId), userId);
+}
+
+export async function deliverService(userId: string, activityId: string, now = new Date()) {  const current = await loadService(activityId);
   if (current.accepterId !== userId) throw notFound();
 
   const outcome = await runActivityTransaction(async (tx) => {

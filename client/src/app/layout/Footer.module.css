@@ -9,6 +9,9 @@
   border-top: 1px solid var(--color-border);
   /* Phones: end above the fixed bottom tabs */
   padding-bottom: calc(var(--tabs-height) + env(safe-area-inset-bottom));
+  font-family: var(--font-ios);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .footer::before {
@@ -57,6 +60,7 @@
   max-width: 34ch;
   color: var(--color-text-muted);
   line-height: 1.6;
+  letter-spacing: -0.015em;
 }
 
 .contact {
@@ -104,6 +108,7 @@
   color: var(--color-accent);
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
+  letter-spacing: -0.01em;
 }
 
 /* ── Link columns ── */
@@ -116,8 +121,8 @@
 .heading {
   margin: 0 0 var(--space-3);
   font-size: var(--text-caption);
-  font-weight: var(--weight-bold);
-  letter-spacing: 0.06em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
   color: var(--color-text);
 }
@@ -135,6 +140,7 @@
   align-items: center;
   min-height: 36px;
   color: var(--color-text-muted);
+  letter-spacing: -0.012em;
   text-decoration: none;
   transition: color 200ms var(--transition-smooth), transform 200ms var(--transition-smooth);
 }
@@ -196,6 +202,7 @@
 .memberName {
   font-size: var(--text-caption);
   font-weight: var(--weight-medium);
+  letter-spacing: -0.012em;
   color: var(--color-text);
   white-space: nowrap;
 }
@@ -240,6 +247,7 @@
   padding-top: var(--space-4);
   border-top: 1px solid var(--color-border);
   font-size: var(--text-caption);
+  letter-spacing: -0.012em;
   color: var(--color-text-muted);
 }
 
@@ -261,6 +269,7 @@
   align-items: center;
   min-height: 32px;
   color: var(--color-text-muted);
+  letter-spacing: -0.012em;
   text-decoration: none;
 }
 

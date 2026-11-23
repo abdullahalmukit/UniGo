@@ -41,6 +41,8 @@ export type FeedItem = {
   activeBookings: number;
   // B4: food only (pickup = restaurant, destination = delivery location)
   food: { restaurantName: string; items: string; quantity: number; foodPrice: number; deliveryCharge: number; cancellableByMe: boolean } | null;
+  // B5: service only
+  service?: { categoryCode: string } | null;
   // B6a: carpool only
   carpool?: {
     postId: string;

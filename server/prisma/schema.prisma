@@ -130,6 +130,15 @@ enum ActivitySubStatus {
   FOOD_COLLECTED
   SERVICE_DELIVERED
   COMPLETION_REQUESTED
+  // Service payment mode negotiation
+  PAYMENT_MODE_PROPOSED
+  AWAITING_PAYMENT
+  PAYMENT_SENT
+}
+
+enum ServicePaymentMode {
+  PRE_PAY
+  POST_PAY
 }
 
 // Why the system or an admin (not a participant) ended an activity.
@@ -1220,6 +1229,9 @@ model ServiceRequest {
   subAreaId          String?  @map("sub_area_id") @db.Char(36)
   estimatedBudget    Decimal? @map("estimated_budget") @db.Decimal(10, 2)
   instructions       String?  @db.Text
+  // Payment mode agreement (negotiated after accept via chat)
+  paymentMode        ServicePaymentMode? @map("payment_mode")
+  paymentModeProposedBy String?          @map("payment_mode_proposed_by") @db.Char(36)
   createdAt          DateTime @default(now()) @map("created_at")
   updatedAt          DateTime @updatedAt @map("updated_at")
 

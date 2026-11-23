@@ -57,9 +57,23 @@ type PaymentActivity = { type: ActivityType; status: ActivityStatus; subStatus: 
 // B4 (Q3): food is payable from ORDER_CONFIRMED on (students often pay by
 // bKash before the food is bought). The sub-status is empty only before the
 // order was confirmed, and it stays set through every later step.
+//
+// Service: payment is only allowed after the accepter has marked delivery
+// (subStatus = SERVICE_DELIVERED or COMPLETION_REQUESTED), or once the
+// activity is fully COMPLETED / NOT_MARKED. This prevents the requester from
+// being asked to pay before the work is done.
 function isPayable(activity: PaymentActivity) {
   if (!PAYABLE.includes(activity.status)) return false;
   if (activity.type === "FOOD") return activity.subStatus !== null || activity.status === "COMPLETED";
+  if (activity.type === "SERVICE") {
+    if (activity.status === "COMPLETED" || activity.status === "NOT_MARKED" || activity.status === "DISPUTED") return true;
+    // IN_PROGRESS: only after delivery has been marked
+    if (activity.status === "IN_PROGRESS") {
+      return activity.subStatus === "SERVICE_DELIVERED" || activity.subStatus === "COMPLETION_REQUESTED";
+    }
+    // ACCEPTED (before service even started) → not payable yet
+    return false;
+  }
   return true;
 }
 
@@ -104,6 +118,7 @@ export function paymentView(
     payee: isPayee ? ("ME" as const) : ("OTHER" as const),
     // B4: for food the method is part of the order details both confirm
     canChooseMethod: !isFood && record.status === "UNPAID" && record.activity.status !== "CANCELLED",
+    // Only the payee (receiver) can mark payment as received — this is the final confirmation.
     canMarkPaid: isPayee && record.status === "UNPAID" && record.method !== null && isPayable(record.activity),
   };
 }
@@ -124,7 +139,7 @@ export async function setPaymentMethod(userId: string, activityId: string, metho
   return getPayment(userId, activityId);
 }
 
-// Only the payee, after a method is chosen; conditional, so it happens once.
+// Only the payee (receiver) can mark payment as received — final, cannot be undone.
 export async function markPaymentPaid(userId: string, activityId: string, now = new Date()) {
   const record = await load(userId, activityId);
   if (record.payeeId !== userId) throw new AppError(403, "NOT_PAYEE", "Only the person who receives the money can mark it paid");

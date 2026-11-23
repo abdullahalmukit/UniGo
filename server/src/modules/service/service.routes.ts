@@ -5,11 +5,16 @@ import { parseInput, validateBody } from "../../middleware/validate.js";
 import { fillPersonStats } from "../users/stats.service.js";
 import {
   acceptServiceRequest,
+  cancelServiceRequest,
+  confirmPaymentMode,
+  confirmPaymentReceived,
   createServiceRequest,
   deliverService,
   getServiceRequest,
   listServiceCategories,
   listServiceRequests,
+  markPaymentSent,
+  proposePaymentMode,
   startService,
   updateServiceRequest,
 } from "./service.service.js";
@@ -75,6 +80,39 @@ serviceRouter.post("/requests/:id/start", requireCanAct, async (req, res) => {
 // Deliver service (transitions to SERVICE_DELIVERED, requests completion)
 serviceRouter.post("/requests/:id/deliver", requireCanAct, async (req, res) => {
   const request = await deliverService(me(req), id(req.params.id));
+  res.json(await fillPersonStats({ request }));
+});
+
+// Cancel service (payment-aware: requester blocked from cancelling if payment is PAID)
+serviceRouter.post("/requests/:id/cancel", requireCanAct, async (req, res) => {
+  const reason = typeof req.body?.reason === "string" ? req.body.reason : "";
+  const request = await cancelServiceRequest(me(req), id(req.params.id), reason);
+  res.json(await fillPersonStats({ request }));
+});
+
+// Payment mode negotiation
+serviceRouter.post("/requests/:id/propose-payment-mode", requireCanAct, async (req, res) => {
+  const mode = req.body?.mode;
+  if (mode !== "PRE_PAY" && mode !== "POST_PAY") {
+    res.status(400).json({ code: "INVALID_MODE", message: "mode must be PRE_PAY or POST_PAY" });
+    return;
+  }
+  const request = await proposePaymentMode(me(req), id(req.params.id), mode as "PRE_PAY" | "POST_PAY");
+  res.json(await fillPersonStats({ request }));
+});
+
+serviceRouter.post("/requests/:id/confirm-payment-mode", requireCanAct, async (req, res) => {
+  const request = await confirmPaymentMode(me(req), id(req.params.id));
+  res.json(await fillPersonStats({ request }));
+});
+
+serviceRouter.post("/requests/:id/mark-payment-sent", requireCanAct, async (req, res) => {
+  const request = await markPaymentSent(me(req), id(req.params.id));
+  res.json(await fillPersonStats({ request }));
+});
+
+serviceRouter.post("/requests/:id/confirm-payment-received", requireCanAct, async (req, res) => {
+  const request = await confirmPaymentReceived(me(req), id(req.params.id));
   res.json(await fillPersonStats({ request }));
 });
 

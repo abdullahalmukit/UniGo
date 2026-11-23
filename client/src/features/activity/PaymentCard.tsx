@@ -18,6 +18,8 @@ export function PaymentCard({ activityId }: { activityId: string }) {
   const [payment, setPayment] = useState<Payment | null>(null);
   const [busy, setBusy] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  // Local flag: Taker clicked "I've paid" — shows waiting hint until Giver marks received
+  const [payerNotified, setPayerNotified] = useState(false);
 
   const load = useCallback(() => {
     getPayment(activityId)
@@ -28,10 +30,14 @@ export function PaymentCard({ activityId }: { activityId: string }) {
 
   if (!payment) return null;
 
+  const isPayer = payment.payee === "OTHER";
+  const isPayee = payment.payee === "ME";
+
   const choose = async (method: (typeof PAYMENT_METHODS)[number]) => {
     setBusy(true);
     try {
       setPayment(await setPaymentMethod(activityId, method));
+      setPayerNotified(false); // reset if they change method
     } catch (failure) {
       toast.show(formErrors(failure, t).form ?? t("errors.generic"), "error");
     } finally {
@@ -48,13 +54,15 @@ export function PaymentCard({ activityId }: { activityId: string }) {
         <ToneChip tone={payment.status === "PAID" ? "green" : "amber"} label={t(`payment.status.${payment.status}`)} />
       </div>
       <p className={styles.amount}>
-        ৳{taka(payment.amount, i18n.language)} · {payment.payee === "ME" ? t("payment.youReceive") : t("payment.youPay")}
+        ৳{taka(payment.amount, i18n.language)} · {isPayee ? t("payment.youReceive") : t("payment.youPay")}
       </p>
       {payment.foodCost !== undefined && payment.foodCost !== null && (
         <p className={styles.note}>
           {t("payment.foodSplit", { food: taka(payment.foodCost, i18n.language), charge: taka(payment.deliveryCharge ?? 0, i18n.language) })}
         </p>
       )}
+
+      {/* Method selector — both can choose while UNPAID */}
       <div className={styles.methods} role="group" aria-label={t("payment.method")}>
         {PAYMENT_METHODS.map((method) => (
           <button
@@ -69,14 +77,64 @@ export function PaymentCard({ activityId }: { activityId: string }) {
           </button>
         ))}
       </div>
-      {payment.payee === "ME" && payment.status === "UNPAID" && (
-        <button type="button" className={buttonStyles.secondary} disabled={!payment.canMarkPaid || busy} onClick={() => setConfirm(true)}>
-          {t("payment.markPaid")}
-        </button>
+
+      {/* ── PAYER (Requester / Taker) side ── */}
+      {isPayer && payment.status === "UNPAID" && (
+        <>
+          {!payment.method && (
+            <p className={styles.note}>{t("payment.chooseFirst")}</p>
+          )}
+          {payment.method && !payerNotified && (
+            /* Method chosen → show "I've paid" button */
+            <button
+              type="button"
+              className={buttonStyles.primary}
+              disabled={busy}
+              onClick={() => {
+                setPayerNotified(true);
+                toast.show(t("payment.payerNotifiedToast"));
+              }}
+            >
+              {t("payment.markPaidPayer")}
+            </button>
+          )}
+          {payment.method && payerNotified && (
+            /* After clicking "I've paid" → waiting hint */
+            <p className={styles.note}>
+              {t("payment.payerSentHint", { method: t(`payment.methods.${payment.method}`) })}
+            </p>
+          )}
+        </>
       )}
-      {payment.payee === "ME" && payment.status === "UNPAID" && !payment.method && <p className={styles.note}>{t("payment.chooseFirst")}</p>}
-      {payment.foodCost !== undefined && payment.foodCost !== null && payment.status === "UNPAID" && <p className={styles.note}>{t("payment.foodMethodInOrder")}</p>}
+
+      {/* ── PAYEE (Giver / Accepter) side — shows what method + confirm ── */}
+      {isPayee && payment.status === "UNPAID" && (
+        <>
+          {payment.method ? (
+            <>
+              <p className={styles.note}>
+                {t("payment.payeeSentInfo", { amount: taka(payment.amount, i18n.language), method: t(`payment.methods.${payment.method}`) })}
+              </p>
+              <button
+                type="button"
+                className={buttonStyles.secondary}
+                disabled={!payment.canMarkPaid || busy}
+                onClick={() => setConfirm(true)}
+              >
+                {t("payment.markPaid")}
+              </button>
+            </>
+          ) : (
+            <p className={styles.note}>{t("payment.payeeWaitingMethod")}</p>
+          )}
+        </>
+      )}
+
+      {payment.foodCost !== undefined && payment.foodCost !== null && payment.status === "UNPAID" && (
+        <p className={styles.note}>{t("payment.foodMethodInOrder")}</p>
+      )}
       <p className={styles.note}>{t("payment.noGateway")}</p>
+
       <ConfirmSheet
         title={t("payment.confirmTitle")}
         open={confirm}

@@ -71,7 +71,7 @@ export function RidePage() {
         </div>
       </div>
 
-      <div className={styles.row}>
+      <div className={styles.controlsRow}>
         <div className={styles.tabs} role="tablist" aria-label={t("ride.title")}>
           {TABS.map((key) => (
             <button
